@@ -6,10 +6,43 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXFileReference section */
+		12B519261BD976AB00230988 /* dipole.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dipole.cpp; path = src/dipole.cpp; sourceTree = "<group>"; };
+		12B519271BD976AB00230988 /* dipole.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dipole.hpp; path = src/dipole.hpp; sourceTree = "<group>"; };
+		12B519281BD976AB00230988 /* gauss_boost.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gauss_boost.cpp; path = src/gauss_boost.cpp; sourceTree = "<group>"; };
+		12B519291BD976AB00230988 /* gauss_boost.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gauss_boost.hpp; path = src/gauss_boost.hpp; sourceTree = "<group>"; };
+		12B5192A1BD976AB00230988 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = src/main.cpp; sourceTree = "<group>"; };
+		12B5192B1BD976AB00230988 /* wave_function.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = wave_function.cpp; path = src/wave_function.cpp; sourceTree = "<group>"; };
+		12B5192C1BD976AB00230988 /* wave_function.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = wave_function.hpp; path = src/wave_function.hpp; sourceTree = "<group>"; };
+		12B5192D1BD979D000230988 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		12B5192E1BD9825400230988 /* tools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tools.cpp; path = ../../../../code/amplitudelib_v2/tools/tools.cpp; sourceTree = "<group>"; };
+		12B5192F1BD9825400230988 /* tools.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = tools.hpp; path = ../../../../code/amplitudelib_v2/tools/tools.hpp; sourceTree = "<group>"; };
+		12B519301BD982E700230988 /* config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = config.hpp; path = ../../../../code/amplitudelib_v2/tools/config.hpp; sourceTree = "<group>"; };
+		12B519311BD98AB900230988 /* smooth_ws_nuke.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = smooth_ws_nuke.cpp; path = src/smooth_ws_nuke.cpp; sourceTree = "<group>"; };
+		12B519321BD98AB900230988 /* smooth_ws_nuke.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = smooth_ws_nuke.hpp; path = src/smooth_ws_nuke.hpp; sourceTree = "<group>"; };
+		12B519331BD98F8F00230988 /* diffraction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = diffraction.cpp; path = src/diffraction.cpp; sourceTree = "<group>"; };
+		12B519341BD98F8F00230988 /* diffraction.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = diffraction.hpp; path = src/diffraction.hpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
 /* Begin PBXGroup section */
 		12B5191B1BD9765200230988 = {
 			isa = PBXGroup;
 			children = (
+				12B519301BD982E700230988 /* config.hpp */,
+				12B5192E1BD9825400230988 /* tools.cpp */,
+				12B5192F1BD9825400230988 /* tools.hpp */,
+				12B5192D1BD979D000230988 /* Makefile */,
+				12B519261BD976AB00230988 /* dipole.cpp */,
+				12B519271BD976AB00230988 /* dipole.hpp */,
+				12B519311BD98AB900230988 /* smooth_ws_nuke.cpp */,
+				12B519331BD98F8F00230988 /* diffraction.cpp */,
+				12B519341BD98F8F00230988 /* diffraction.hpp */,
+				12B519321BD98AB900230988 /* smooth_ws_nuke.hpp */,
+				12B519281BD976AB00230988 /* gauss_boost.cpp */,
+				12B519291BD976AB00230988 /* gauss_boost.hpp */,
+				12B5192A1BD976AB00230988 /* main.cpp */,
+				12B5192B1BD976AB00230988 /* wave_function.cpp */,
+				12B5192C1BD976AB00230988 /* wave_function.hpp */,
 			);
 			sourceTree = "<group>";
 		};
@@ -140,8 +173,15 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
+				New_Setting = "";
+				OTHER_CFLAGS = (
+					"`/opt/local/bin/gsl-config",
+					"--cflags`",
+				);
+				OTHER_LDFLAGS = (
+					"`/opt/local/bin/gsl-config",
+					"--libs`",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -150,8 +190,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
+				New_Setting = "";
+				OTHER_CFLAGS = (
+					"`/opt/local/bin/gsl-config",
+					"--cflags`",
+				);
+				OTHER_LDFLAGS = (
+					"`/opt/local/bin/gsl-config",
+					"--libs`",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
