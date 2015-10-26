@@ -123,7 +123,7 @@ double Ipsat_Nucleons::WS_unnorm(double r
 
 double Ipsat_Nucleons::Tp(double b)
 {
-    return std::exp(- b*b / (2.0*B_p));
+    return 1.0/(2.0*M_PI*B_p)*std::exp(- b*b / (2.0*B_p));
 }
 
 std::vector<Vec> &Ipsat_Nucleons::GetNucleons()

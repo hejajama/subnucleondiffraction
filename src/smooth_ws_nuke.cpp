@@ -35,4 +35,6 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
     
     return 1.0 - exp( -gdist.Gluedist(xpom, r*r) *r*r* A*T_A(b, A));
     
+    // TA need normalization here!
+    
 }
