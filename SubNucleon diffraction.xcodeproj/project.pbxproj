@@ -6,7 +6,30 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */; settings = {ASSET_TAGS = (); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		120170161BDA883A00A440E4 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		120170121BDA7EE600A440E4 /* gdist_dglap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gdist_dglap.cpp; path = src/gdist_dglap.cpp; sourceTree = "<group>"; };
+		120170131BDA7EE600A440E4 /* gdist_dglap.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gdist_dglap.hpp; path = src/gdist_dglap.hpp; sourceTree = "<group>"; };
+		120170181BDA883A00A440E4 /* SubNucleonDiffraction */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SubNucleonDiffraction; sourceTree = BUILT_PRODUCTS_DIR; };
+		120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipsat_nucleons.cpp; path = src/ipsat_nucleons.cpp; sourceTree = "<group>"; };
+		120170241BDAA9F100A440E4 /* ipsat_nucleons.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ipsat_nucleons.hpp; path = src/ipsat_nucleons.hpp; sourceTree = "<group>"; };
+		12117B6B1BDE537700D2BF9A /* vector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vector.cpp; path = src/vector.cpp; sourceTree = "<group>"; };
+		12117B6C1BDE537700D2BF9A /* vector.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = vector.hpp; path = src/vector.hpp; sourceTree = "<group>"; };
 		12B519261BD976AB00230988 /* dipole.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dipole.cpp; path = src/dipole.cpp; sourceTree = "<group>"; };
 		12B519271BD976AB00230988 /* dipole.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dipole.hpp; path = src/dipole.hpp; sourceTree = "<group>"; };
 		12B519281BD976AB00230988 /* gauss_boost.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gauss_boost.cpp; path = src/gauss_boost.cpp; sourceTree = "<group>"; };
@@ -24,10 +47,41 @@
 		12B519341BD98F8F00230988 /* diffraction.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = diffraction.hpp; path = src/diffraction.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFrameworksBuildPhase section */
+		120170151BDA883A00A440E4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
 /* Begin PBXGroup section */
+		120170191BDA883A00A440E4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				120170181BDA883A00A440E4 /* SubNucleonDiffraction */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1201701A1BDA883A00A440E4 /* SubNucleonDiffraction */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = SubNucleonDiffraction;
+			sourceTree = "<group>";
+		};
 		12B5191B1BD9765200230988 = {
 			isa = PBXGroup;
 			children = (
+				12117B6B1BDE537700D2BF9A /* vector.cpp */,
+				12117B6C1BDE537700D2BF9A /* vector.hpp */,
+				120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */,
+				120170241BDAA9F100A440E4 /* ipsat_nucleons.hpp */,
+				120170121BDA7EE600A440E4 /* gdist_dglap.cpp */,
+				120170131BDA7EE600A440E4 /* gdist_dglap.hpp */,
 				12B519301BD982E700230988 /* config.hpp */,
 				12B5192E1BD9825400230988 /* tools.cpp */,
 				12B5192F1BD9825400230988 /* tools.hpp */,
@@ -43,6 +97,8 @@
 				12B5192A1BD976AB00230988 /* main.cpp */,
 				12B5192B1BD976AB00230988 /* wave_function.cpp */,
 				12B5192C1BD976AB00230988 /* wave_function.hpp */,
+				1201701A1BDA883A00A440E4 /* SubNucleonDiffraction */,
+				120170191BDA883A00A440E4 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -64,6 +120,26 @@
 		};
 /* End PBXLegacyTarget section */
 
+/* Begin PBXNativeTarget section */
+		120170171BDA883A00A440E4 /* SubNucleonDiffraction */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1201701D1BDA883A00A440E4 /* Build configuration list for PBXNativeTarget "SubNucleonDiffraction" */;
+			buildPhases = (
+				120170141BDA883A00A440E4 /* Sources */,
+				120170151BDA883A00A440E4 /* Frameworks */,
+				120170161BDA883A00A440E4 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SubNucleonDiffraction;
+			productName = SubNucleonDiffraction;
+			productReference = 120170181BDA883A00A440E4 /* SubNucleonDiffraction */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
 /* Begin PBXProject section */
 		12B5191C1BD9765200230988 /* Project object */ = {
 			isa = PBXProject;
@@ -71,6 +147,9 @@
 				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = Heikki;
 				TargetAttributes = {
+					120170171BDA883A00A440E4 = {
+						CreatedOnToolsVersion = 7.0.1;
+					};
 					12B519201BD9765200230988 = {
 						CreatedOnToolsVersion = 7.0.1;
 					};
@@ -84,15 +163,46 @@
 				en,
 			);
 			mainGroup = 12B5191B1BD9765200230988;
+			productRefGroup = 120170191BDA883A00A440E4 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				12B519201BD9765200230988 /* SubNucleon diffraction */,
+				120170171BDA883A00A440E4 /* SubNucleonDiffraction */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXSourcesBuildPhase section */
+		120170141BDA883A00A440E4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
 /* Begin XCBuildConfiguration section */
+		1201701E1BDA883A00A440E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		1201701F1BDA883A00A440E4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
 		12B519211BD9765200230988 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -174,13 +284,11 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				New_Setting = "";
-				OTHER_CFLAGS = (
-					"`/opt/local/bin/gsl-config",
-					"--cflags`",
-				);
+				OTHER_CFLAGS = "-I/opt/local/include";
 				OTHER_LDFLAGS = (
-					"`/opt/local/bin/gsl-config",
-					"--libs`",
+					"-L/opt/local/lib",
+					"-lgsl",
+					"-lgslcblas",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -191,13 +299,11 @@
 			buildSettings = {
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				New_Setting = "";
-				OTHER_CFLAGS = (
-					"`/opt/local/bin/gsl-config",
-					"--cflags`",
-				);
+				OTHER_CFLAGS = "-I/opt/local/include";
 				OTHER_LDFLAGS = (
-					"`/opt/local/bin/gsl-config",
-					"--libs`",
+					"-L/opt/local/lib",
+					"-lgsl",
+					"-lgslcblas",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -206,6 +312,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1201701D1BDA883A00A440E4 /* Build configuration list for PBXNativeTarget "SubNucleonDiffraction" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1201701E1BDA883A00A440E4 /* Debug */,
+				1201701F1BDA883A00A440E4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		12B5191F1BD9765200230988 /* Build configuration list for PBXProject "SubNucleon diffraction" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -222,6 +337,7 @@
 				12B519251BD9765200230988 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

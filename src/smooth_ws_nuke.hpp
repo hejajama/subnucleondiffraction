@@ -8,6 +8,7 @@
 #define smooth_ws_nuke_hpp
 
 #include "dipole.hpp"
+#include "gdist_dglap.hpp"
 
 class Smooth_ws_nuke : public DipoleAmplitude
 {
@@ -16,6 +17,7 @@ public:
     double Amplitude(double xpom, double q1[2], double q2[2] );
 private:
     int A;
+    DGLAPDist gdist;
     
 };
 

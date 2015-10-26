@@ -12,10 +12,6 @@ using Amplitude::SQR;
 
 
 
-
-
-
-
 using namespace std;
 
 Smooth_ws_nuke::Smooth_ws_nuke()
@@ -37,6 +33,6 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
     // Take the nucleon density at the geometric center of the two quarks
     double b = std::sqrt( SQR( (q1[0]+q2[0])/2.0 ) + SQR( (q1[1]+q2[1])/2.0) );
     
-    return 1.0 - exp( -r*r* A*T_A(b, A));
+    return 1.0 - exp( -gdist.Gluedist(xpom, r*r) *r*r* A*T_A(b, A));
     
 }

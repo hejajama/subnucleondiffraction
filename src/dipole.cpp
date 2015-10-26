@@ -13,3 +13,7 @@ double DipoleAmplitude::Amplitude(double xpom, double q1[2], double q2[2] )
     return 0; // Not defined, shouldnt be here
 }
 
+void DipoleAmplitude::InitializeTarget()
+{
+    // Nothing to do if not overloaded
+}

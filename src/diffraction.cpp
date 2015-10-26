@@ -6,12 +6,44 @@
 #include "diffraction.hpp"
 #include <gsl/gsl_monte.h>
 #include <gsl/gsl_monte_miser.h>
+#include <gsl/gsl_integration.h>
 
+
+const int ZINT_INTERVALS = 15;
+const double ZINT_RELACCURACY = 0.1;
+double MCINTACCURACY = 0.2;
+const int MCINTPOINTS = 1e6;
 
 Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
 {
     dipole=&dipole_;
     wavef=&wavef_;
+    num_of_averages = 1;
+}
+
+/*
+ * Calculate total diffractive cross section
+ * Requires average over different nucleon configurations
+ *
+ * First take the square, then average
+ */
+double Diffraction::TotalCrossSection(double xpom, double Qsqr, double t)
+{
+    // Testing: only amplitude squared
+    double amp = ScatteringAmplitude(xpom, Qsqr, t);
+    return amp*amp/(16.0*M_PI);
+}
+
+/*
+ * Calculate total diffractive cross section
+ * Requires average over different nucleon configurations
+ *
+ * First average, then take the square
+ */
+double Diffraction::CoherentCrossSection(double xpom, double Qsqr, double t)
+{
+    
+    return 0;
 }
 
 /* 
@@ -29,6 +61,10 @@ struct Inthelper_amplitude
     double xpom;
     double Qsqr;
     double t;
+    double r;
+    double theta_r;
+    double b;
+    double theta_b;
 };
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par);
@@ -49,7 +85,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t)
     // MC integration parameters: b, theta_b, r, theta_r
     double lower[4] = {0,0,0,0};
     double upper[4] = {100, 2.0*M_PI, 10, 2.0*M_PI};
-    
+     
     const gsl_rng_type *T;
     gsl_rng *r;
     gsl_monte_function F;
@@ -57,33 +93,111 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t)
     F.dim = 4;
     F.params = &helper;
     
+    double result,error;
+    
+    T = gsl_rng_default;
+    r = gsl_rng_alloc(T);
+    gsl_monte_miser_state *s = gsl_monte_miser_alloc(4);
+    gsl_monte_miser_integrate(&F, lower, upper, 4, MCINTPOINTS, r, s, &result, &error);
+    gsl_monte_miser_free(s);
+    
+    //if (std::abs(error/result) > MCINTACCURACY)
+    //    cerr << "#MC integral failed, result " << result << " error " << error << endl;
+    
+    return result;
+    
 }
 
+
+
+double Inthelperf_amplitude_z(double z, void* p);
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
 {
+    Inthelper_amplitude *helper = (Inthelper_amplitude*)par;
+    helper->b = vec[0];
+    helper->theta_b=vec[1];
+    helper->r = vec[2];
+    helper->theta_r = vec[3];
     
-    return 0;
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(ZINT_INTERVALS);
+    
+    gsl_function F;
+    F.function =
+    &Inthelperf_amplitude_z;
+    F.params = par;
+    double result,error;
+    int status = gsl_integration_qags(&F, 0, 1, 0, ZINT_RELACCURACY, ZINT_INTERVALS, w, &result, &error);
+    
+    if (status)
+        cerr << "#ZINT failed, result " << result << " relerror " << error << " r " << helper->r << " b " << helper->b << endl;
+    
+    gsl_integration_workspace_free(w);
+    
+    return result;
 }
 
-// Recall quark and gluon positions:
-// Quark: b + zr
-// Antiquark: b - (1-z) r
+double Inthelperf_amplitude_z(double z, void* p)
+{
+    Inthelper_amplitude *helper = (Inthelper_amplitude*)p;
+    
+    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z);
+}
 
-// If do like Lappi, Mantysaari: set z=1/2 here
-/*
-double bx = b*cos(theta_b);
-double by = b*sin(theta_b);
-double rx = r*cos(theta_r);
-double ry = r*sin(theta_r);
+double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z)
+{
+    
+    
+    
+    // Recall quark and gluon positions:
+    // Quark: b + zr
+    // Antiquark: b - (1-z) r
+    
+    // If do like Lappi, Mantysaari: set z=1/2 here
+    
+    double bx = b*cos(theta_b);
+    double by = b*sin(theta_b);
+    double rx = r*cos(theta_r);
+    double ry = r*sin(theta_r);
+    
+    // q and antiq positions
+    double tmpz = z;
+    z=0.5;      // Currently use b as geometric average
+    double qx = bx + z*rx; double qy = by + z*ry;
+    double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
+    z=tmpz;
+    
+    double res = 0;
+    
+    res = 2.0 * r * b;
+    
+    res *= wavef->PsiSqr_tot(Qsqr, r, z)/(4.0*M_PI); // Wavef
+    
+    double delta = std::sqrt(t);
+    
+    // Real part cos, imaginary part -sin
+    //res *= std::cos( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
+    res *= std::cos( b*delta*std::cos(theta_b));    // Neglect z now
+    
+    double x1[2] = {qx,qy};
+    double x2[2] = {qbarx, qbary};
+    
+    res *= dipole->Amplitude(xpom, x1, x2 );
+    
+    return res;
+    
 
-// q and antiq positions
-double qx = bx + z*rx; double qy = by + z*ry;
-double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
-*/
+}
+
 
 
 // Helpers
+
+void Diffraction::SetNumOfAverages(int n)
+{
+    num_of_averages = n;
+}
+
 DipoleAmplitude
 * Diffraction::GetDipole()
 {
