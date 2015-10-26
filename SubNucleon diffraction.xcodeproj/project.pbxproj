@@ -30,6 +30,7 @@
 		120170241BDAA9F100A440E4 /* ipsat_nucleons.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ipsat_nucleons.hpp; path = src/ipsat_nucleons.hpp; sourceTree = "<group>"; };
 		12117B6B1BDE537700D2BF9A /* vector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vector.cpp; path = src/vector.cpp; sourceTree = "<group>"; };
 		12117B6C1BDE537700D2BF9A /* vector.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = vector.hpp; path = src/vector.hpp; sourceTree = "<group>"; };
+		128186081BDE9AB60062FF52 /* average_spectra.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = average_spectra.py; path = tools/average_spectra.py; sourceTree = "<group>"; };
 		12B519261BD976AB00230988 /* dipole.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dipole.cpp; path = src/dipole.cpp; sourceTree = "<group>"; };
 		12B519271BD976AB00230988 /* dipole.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dipole.hpp; path = src/dipole.hpp; sourceTree = "<group>"; };
 		12B519281BD976AB00230988 /* gauss_boost.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gauss_boost.cpp; path = src/gauss_boost.cpp; sourceTree = "<group>"; };
@@ -95,6 +96,7 @@
 				12B519281BD976AB00230988 /* gauss_boost.cpp */,
 				12B519291BD976AB00230988 /* gauss_boost.hpp */,
 				12B5192A1BD976AB00230988 /* main.cpp */,
+				128186081BDE9AB60062FF52 /* average_spectra.py */,
 				12B5192B1BD976AB00230988 /* wave_function.cpp */,
 				12B5192C1BD976AB00230988 /* wave_function.hpp */,
 				1201701A1BDA883A00A440E4 /* SubNucleonDiffraction */,
