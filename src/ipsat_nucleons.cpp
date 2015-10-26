@@ -88,7 +88,7 @@ void Ipsat_Nucleons::InitializeTarget()
         
         // Try again if smallestdist/largestdist does not match the limits
         if (smallestdist < mindist )
-            cout << "Again... Smallest dist: " << smallestdist << " , largest: " << largestdist << endl;
+            cerr << "Again... Smallest dist: " << smallestdist << " , largest: " << largestdist << endl;
     } while (smallestdist < mindist );
     
     
