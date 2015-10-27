@@ -12,7 +12,7 @@
 const int ZINT_INTERVALS = 8;
 const double ZINT_RELACCURACY = 0.3;
 double MCINTACCURACY = 0.2;
-const int MCINTPOINTS = 5e5;
+const int MCINTPOINTS = 1e7;
 
 Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
 {
@@ -100,6 +100,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t)
     gsl_monte_miser_state *s = gsl_monte_miser_alloc(4);
     gsl_monte_miser_integrate(&F, lower, upper, 4, MCINTPOINTS, r, s, &result, &error);
     gsl_monte_miser_free(s);
+    gsl_rng_free(r);
     
     //if (std::abs(error/result) > MCINTACCURACY)
     //    cerr << "#MC integral failed, result " << result << " error " << error << endl;
@@ -145,9 +146,7 @@ double Inthelperf_amplitude_z(double z, void* p)
 }
 
 double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z)
-{
-    
-    
+{ 
     
     // Recall quark and gluon positions:
     // Quark: b + zr

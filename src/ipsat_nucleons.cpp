@@ -102,11 +102,13 @@ void Ipsat_Nucleons::InitializeTarget()
 Ipsat_Nucleons::Ipsat_Nucleons()
 {
     A=197;
-    mindist = 2;
+    mindist = 0;
     ws_delta=0.54*FMGEV;
     ws_ra = 1.12 * std::pow(A, 1.0/3.0) * FMGEV;
     
     B_p = 4.0; // Teels the proton transverse size, GeV^2
+    
+    saturation = true;
     
 }
 
