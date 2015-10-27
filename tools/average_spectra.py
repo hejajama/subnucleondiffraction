@@ -8,7 +8,7 @@ import sys
 sys.path.append("/Users/heikki/lib/")
 from matplotlibhelper import *
 
-dir="../testit/"
+dir="../ipsat/"
 
 tdata=[]
 ydata=[]

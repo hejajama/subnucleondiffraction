@@ -32,6 +32,8 @@ public:
     
     double WS_unnorm(double r);  // WS distribution normalized to unity
     
+    void SetSaturation(double s);
+    
 private:
     int A;
     double mindist; // How close nucleons can be
@@ -42,6 +44,8 @@ private:
     
     DGLAPDist gdist;    // DGLAP evolved xg
     // gdist.Gluedist() returns Pi^2/(2*Nc) * Alphas(x,mu(r)^2) * xg(x,r)
+    
+    bool saturation;    // Turn saturation on/off. Without saturation use linearized dipole amplitude ~r^2
     
     std::vector<Vec> nucleons; // Positions of the centers of the nucleons
 };

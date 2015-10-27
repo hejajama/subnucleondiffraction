@@ -25,10 +25,10 @@ int main()
     Ipsat_Nucleons ipsatnuke;
     ipsatnuke.InitializeTarget();
     
-    //Diffraction diff(target, wavef);
-    Diffraction diff(ipsatnuke, wavef);
+    Diffraction diff(target, wavef);
+    //Diffraction diff(ipsatnuke, wavef);
     
-    for (t=0.05; t<=0.3; t+=0.05)
+    for (t=0.01; t<=0.3; t+=0.02)
         cout << t << " " << diff.TotalCrossSection(xpom, Qsqr, t) << endl;
     
     // Try nucleus

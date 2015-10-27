@@ -9,10 +9,10 @@
 #include <gsl/gsl_integration.h>
 
 
-const int ZINT_INTERVALS = 15;
-const double ZINT_RELACCURACY = 0.1;
+const int ZINT_INTERVALS = 8;
+const double ZINT_RELACCURACY = 0.3;
 double MCINTACCURACY = 0.2;
-const int MCINTPOINTS = 1e6;
+const int MCINTPOINTS = 5e5;
 
 Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
 {

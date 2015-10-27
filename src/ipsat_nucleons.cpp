@@ -38,7 +38,10 @@ double Ipsat_Nucleons::Amplitude(double xpom, double q1[2], double q2[2] )
         tpsum = tpsum + Tp(deltab.Len());
     }
     
-    return 1.0 - std::exp( - r.LenSqr() * gdist.Gluedist(xpom, r.LenSqr()) * tpsum  );
+    if (saturation)
+        return 1.0 - std::exp( - r.LenSqr() * gdist.Gluedist(xpom, r.LenSqr()) * tpsum  );
+    else
+        return r.LenSqr() * gdist.Gluedist(xpom, r.LenSqr()) * tpsum  ;
 }
 
 
@@ -129,4 +132,9 @@ double Ipsat_Nucleons::Tp(double b)
 std::vector<Vec> &Ipsat_Nucleons::GetNucleons()
 {
     return nucleons;
+}
+
+void Ipsat_Nucleons::SetSaturation(double s)
+{
+    saturation = s;
 }

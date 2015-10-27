@@ -33,8 +33,8 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
     // Take the nucleon density at the geometric center of the two quarks
     double b = std::sqrt( SQR( (q1[0]+q2[0])/2.0 ) + SQR( (q1[1]+q2[1])/2.0) );
     
-    return 1.0 - exp( -gdist.Gluedist(xpom, r*r) *r*r* A*T_A(b, A));
+    return 1.0 - exp( -A*gdist.Gluedist(xpom, r*r) *r*r* T_A(b, A));
     
-    // TA need normalization here!
+    // As T_A is normalized to unity, we get no extra normalizatino factor for it
     
 }
