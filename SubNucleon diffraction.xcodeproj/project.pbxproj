@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */; settings = {ASSET_TAGS = (); }; };
+		12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EF91BE162F00045E7DD /* wilsonline.cpp */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -47,6 +48,8 @@
 		12B519331BD98F8F00230988 /* diffraction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = diffraction.cpp; path = src/diffraction.cpp; sourceTree = "<group>"; };
 		12B519341BD98F8F00230988 /* diffraction.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = diffraction.hpp; path = src/diffraction.hpp; sourceTree = "<group>"; };
 		12F64BC41BE01203007C4F02 /* subnucleon_config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = subnucleon_config.hpp; path = src/subnucleon_config.hpp; sourceTree = "<group>"; };
+		12F69EF91BE162F00045E7DD /* wilsonline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = wilsonline.cpp; path = src/wilsonline.cpp; sourceTree = "<group>"; };
+		12F69EFA1BE162F00045E7DD /* wilsonline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = wilsonline.hpp; path = src/wilsonline.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +98,8 @@
 				12B519341BD98F8F00230988 /* diffraction.hpp */,
 				12B519321BD98AB900230988 /* smooth_ws_nuke.hpp */,
 				12B519281BD976AB00230988 /* gauss_boost.cpp */,
+				12F69EF91BE162F00045E7DD /* wilsonline.cpp */,
+				12F69EFA1BE162F00045E7DD /* wilsonline.hpp */,
 				12B519291BD976AB00230988 /* gauss_boost.hpp */,
 				12B5192A1BD976AB00230988 /* main.cpp */,
 				12F64BC41BE01203007C4F02 /* subnucleon_config.hpp */,
@@ -183,6 +188,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */,
+				12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
