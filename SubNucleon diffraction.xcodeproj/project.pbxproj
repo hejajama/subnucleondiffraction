@@ -46,6 +46,7 @@
 		12B519321BD98AB900230988 /* smooth_ws_nuke.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = smooth_ws_nuke.hpp; path = src/smooth_ws_nuke.hpp; sourceTree = "<group>"; };
 		12B519331BD98F8F00230988 /* diffraction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = diffraction.cpp; path = src/diffraction.cpp; sourceTree = "<group>"; };
 		12B519341BD98F8F00230988 /* diffraction.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = diffraction.hpp; path = src/diffraction.hpp; sourceTree = "<group>"; };
+		12F64BC41BE01203007C4F02 /* subnucleon_config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = subnucleon_config.hpp; path = src/subnucleon_config.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +97,7 @@
 				12B519281BD976AB00230988 /* gauss_boost.cpp */,
 				12B519291BD976AB00230988 /* gauss_boost.hpp */,
 				12B5192A1BD976AB00230988 /* main.cpp */,
+				12F64BC41BE01203007C4F02 /* subnucleon_config.hpp */,
 				128186081BDE9AB60062FF52 /* average_spectra.py */,
 				12B5192B1BD976AB00230988 /* wave_function.cpp */,
 				12B5192C1BD976AB00230988 /* wave_function.hpp */,

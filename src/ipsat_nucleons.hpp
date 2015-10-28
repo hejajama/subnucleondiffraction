@@ -50,4 +50,5 @@ private:
     std::vector<Vec> nucleons; // Positions of the centers of the nucleons
 };
 
+
 #endif /* ipsat_nucleons_hpp */

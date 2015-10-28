@@ -5,13 +5,18 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
+#include <sstream>
 #include "dipole.hpp"
 #include "smooth_ws_nuke.hpp"
 #include "diffraction.hpp"
 #include "gauss_boost.hpp"
 #include "ipsat_nucleons.hpp"
 #include "vector.hpp"
+#include "subnucleon_config.hpp"
 using namespace std;
+
+string InfoStr();
 
 int main()
 {
@@ -29,6 +34,11 @@ int main()
     Diffraction diff(target, wavef);
     //Diffraction diff(ipsatnuke, wavef);
     
+    cout << "# SubNucleon Diffraction" << endl;
+    cout << "# " << InfoStr() << endl;
+    cout << "# " << wavef << endl;
+    
+    cout << "# t    dsigma/dt [GeV^4] " << endl;
     for (t=0.01; t<=0.4; t+=0.02)
         cout << t << " " << diff.TotalCrossSection(xpom, Qsqr, t) << endl;
     
@@ -44,4 +54,15 @@ int main()
     }
     */
     
+}
+
+
+string InfoStr()
+{
+    stringstream info;
+    
+    info << "Parameters: MCINTPOINTS : " << MCINTPOINTS << " ZINT_INTERVALS " << ZINT_INTERVALS << " MCINTACCURACY " << MCINTACCURACY << " ZINT_RELACCURACY " << ZINT_RELACCURACY;
+    
+    return info.str();
+
 }

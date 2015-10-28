@@ -7,12 +7,9 @@
 #include <gsl/gsl_monte.h>
 #include <gsl/gsl_monte_miser.h>
 #include <gsl/gsl_integration.h>
+#include "subnucleon_config.hpp"
 
 
-const int ZINT_INTERVALS = 8;
-const double ZINT_RELACCURACY = 0.3;
-double MCINTACCURACY = 0.2;
-const int MCINTPOINTS = 1e7;
 
 Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
 {
@@ -121,6 +118,13 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
     helper->r = vec[2];
     helper->theta_r = vec[3];
     
+    // Use the following if we integrate over z using gsl_integration
+    // For now we neglect (1-z)rDelta term, so can only integrate the wave function overlap
+    // over z. Thus, at this point we just call the integrand and in the integrand integrate the overlap over z
+    // Note that if integrand is changed, also this must be changed
+    
+    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, 0.5); // Put z=0.5 as it sets b to the geometric average of quarks
+    /*
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(ZINT_INTERVALS);
     
     gsl_function F;
@@ -136,6 +140,7 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
     gsl_integration_workspace_free(w);
     
     return result;
+     */
 }
 
 double Inthelperf_amplitude_z(double z, void* p)
@@ -170,7 +175,12 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     res = 2.0 * r * b;
     
-    res *= wavef->PsiSqr_tot(Qsqr, r, z)/(4.0*M_PI); // Wavef
+    //res *= wavef->PsiSqr_tot(Qsqr, r, z)/(4.0*M_PI); // Wavef
+    // As this integrand is now not integrated over z
+    // Also, this only works for photoproduction!
+    res *= wavef->PsiSqr_T_intz(Qsqr, r) / (4.0*M_PI);
+    if (Qsqr>0)
+        cerr << "ScatteringAmplitudeIntegrand currently only works for photoproduction!" << endl;
     
     double delta = std::sqrt(t);
     

@@ -8,7 +8,7 @@ import sys
 sys.path.append("/Users/heikki/lib/")
 from matplotlibhelper import *
 
-dir="../ipsat/"
+dir=sys.argv[1]
 
 tdata=[]
 ydata=[]

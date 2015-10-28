@@ -1,7 +1,7 @@
 /*
  * Overlap between the photon and the vector meson wave functions
  *
- * Heikki Mäntysaari <heikki.mantysaari@jyu.fi>, 2010
+ * Heikki Mäntysaari <heikki.mantysaari@jyu.fi>, 2010, 2015
  */
  
 #include "gauss_boost.hpp"
@@ -15,10 +15,12 @@
 #include <string>
 #include <sstream>
 
+#include "subnucleon_config.hpp"
+
 using namespace Amplitude;
 
-const REAL ZINTACCURACY=0.001;
-const int MAXITER_ZINT=100;
+const REAL ZINTACCURACY=ZINT_RELACCURACY;
+const int MAXITER_ZINT=ZINT_INTERVALS;
 const REAL MINZ=0.00001;  // Integration limits
 const REAL MAXZ=0.9999;
 
@@ -26,7 +28,7 @@ const REAL MAXZ=0.9999;
 BoostedGauss::BoostedGauss(REAL e_f_, REAL N_T_, REAL N_L_, REAL R_, 
     REAL m_f_, REAL M_V_, int delta_=1 )
 {
-    e_f=e_f;
+    e_f=e_f_;
     m_f=m_f_; M_V=M_V_;
     N_T=N_T_; N_L=N_L_;
     R=R_;
