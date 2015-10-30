@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */; settings = {ASSET_TAGS = (); }; };
 		12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EF91BE162F00045E7DD /* wilsonline.cpp */; settings = {ASSET_TAGS = (); }; };
+		12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -50,6 +51,8 @@
 		12F64BC41BE01203007C4F02 /* subnucleon_config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = subnucleon_config.hpp; path = src/subnucleon_config.hpp; sourceTree = "<group>"; };
 		12F69EF91BE162F00045E7DD /* wilsonline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = wilsonline.cpp; path = src/wilsonline.cpp; sourceTree = "<group>"; };
 		12F69EFA1BE162F00045E7DD /* wilsonline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = wilsonline.hpp; path = src/wilsonline.hpp; sourceTree = "<group>"; };
+		12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipglasma.cpp; path = src/ipglasma.cpp; sourceTree = "<group>"; };
+		12F69EFD1BE16FE10045E7DD /* ipglasma.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ipglasma.hpp; path = src/ipglasma.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +87,8 @@
 				12117B6B1BDE537700D2BF9A /* vector.cpp */,
 				12117B6C1BDE537700D2BF9A /* vector.hpp */,
 				120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */,
+				12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */,
+				12F69EFD1BE16FE10045E7DD /* ipglasma.hpp */,
 				120170241BDAA9F100A440E4 /* ipsat_nucleons.hpp */,
 				120170121BDA7EE600A440E4 /* gdist_dglap.cpp */,
 				120170131BDA7EE600A440E4 /* gdist_dglap.hpp */,
@@ -189,6 +194,7 @@
 			files = (
 				120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */,
 				12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */,
+				12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

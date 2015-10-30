@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+
 #include "dipole.hpp"
 #include "smooth_ws_nuke.hpp"
 #include "diffraction.hpp"
@@ -14,6 +15,8 @@
 #include "ipsat_nucleons.hpp"
 #include "vector.hpp"
 #include "subnucleon_config.hpp"
+#include "ipglasma.hpp"
+
 using namespace std;
 
 string InfoStr();
@@ -23,6 +26,22 @@ int main()
     double Qsqr=0;
     double t=0.1;
     double xpom=0.001;
+    
+    IPGlasma glasma("data/V.dat");
+    
+    double origin[2]={0,0};
+    
+    for (double y=-11.5; y < 11.5; y+=0.05)
+    {
+        for (double x=-11.5; x < 11.5; x+=0.05)
+        {
+            double p[2] = {x,y};
+            cout << y << " " << x << " " << glasma.Amplitude(0.01, origin, p) << endl;
+        }
+        cout << endl;
+        
+    }
+    return 0;
     
     BoostedGauss wavef("gauss-boosted.dat");
     Smooth_ws_nuke target;
