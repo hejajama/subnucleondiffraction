@@ -178,7 +178,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     //res *= wavef->PsiSqr_tot(Qsqr, r, z)/(4.0*M_PI); // Wavef
     // As this integrand is now not integrated over z
     // Also, this only works for photoproduction!
-    res *= wavef->PsiSqr_T_intz(Qsqr, r) / (4.0*M_PI);
+    res *= wavef->PsiSqr_T_intz(Qsqr, r);   // Note: 4pi factor is in PsiSqr_T_intz function!
     if (Qsqr>0)
         cerr << "ScatteringAmplitudeIntegrand currently only works for photoproduction!" << endl;
     
