@@ -6,6 +6,7 @@ import os
 import sys
 
 sys.path.append("/Users/heikki/lib/")
+sys.path.append("/nashome2/hejajama/lib/")
 from matplotlibhelper import *
 
 dir=sys.argv[1]
