@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */; settings = {ASSET_TAGS = (); }; };
-		12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EF91BE162F00045E7DD /* wilsonline.cpp */; settings = {ASSET_TAGS = (); }; };
-		12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */; settings = {ASSET_TAGS = (); }; };
+		120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */; };
+		12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EF91BE162F00045E7DD /* wilsonline.cpp */; };
+		12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,6 +32,7 @@
 		120170241BDAA9F100A440E4 /* ipsat_nucleons.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ipsat_nucleons.hpp; path = src/ipsat_nucleons.hpp; sourceTree = "<group>"; };
 		12117B6B1BDE537700D2BF9A /* vector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vector.cpp; path = src/vector.cpp; sourceTree = "<group>"; };
 		12117B6C1BDE537700D2BF9A /* vector.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = vector.hpp; path = src/vector.hpp; sourceTree = "<group>"; };
+		124AC6961BE3A4940020E15E /* filelist.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = filelist.m; sourceTree = "<group>"; };
 		128186081BDE9AB60062FF52 /* average_spectra.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = average_spectra.py; path = tools/average_spectra.py; sourceTree = "<group>"; };
 		12B519261BD976AB00230988 /* dipole.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dipole.cpp; path = src/dipole.cpp; sourceTree = "<group>"; };
 		12B519271BD976AB00230988 /* dipole.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dipole.hpp; path = src/dipole.hpp; sourceTree = "<group>"; };
@@ -96,6 +97,7 @@
 				12B5192E1BD9825400230988 /* tools.cpp */,
 				12B5192F1BD9825400230988 /* tools.hpp */,
 				12B5192D1BD979D000230988 /* Makefile */,
+				124AC6961BE3A4940020E15E /* filelist.m */,
 				12B519261BD976AB00230988 /* dipole.cpp */,
 				12B519271BD976AB00230988 /* dipole.hpp */,
 				12B519311BD98AB900230988 /* smooth_ws_nuke.cpp */,

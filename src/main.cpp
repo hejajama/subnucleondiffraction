@@ -27,6 +27,7 @@ int main()
     double t=0.1;
     double xpom=0.001;
     
+    /*
     IPGlasma glasma("data/V.dat");
     
     double origin[2]={0,0};
@@ -42,6 +43,7 @@ int main()
         
     }
     return 0;
+    */
     
     BoostedGauss wavef("gauss-boosted.dat");
     Smooth_ws_nuke target;
@@ -50,15 +52,15 @@ int main()
     ipsatnuke.InitializeTarget();
     ipsatnuke.SetSaturation(true);
     
-    Diffraction diff(target, wavef);
-    //Diffraction diff(ipsatnuke, wavef);
+    //Diffraction diff(target, wavef);
+    Diffraction diff(ipsatnuke, wavef);
     
     cout << "# SubNucleon Diffraction" << endl;
     cout << "# " << InfoStr() << endl;
     cout << "# " << wavef << endl;
     
     cout << "# t    dsigma/dt [GeV^4] " << endl;
-    for (t=0.01; t<=0.4; t+=0.02)
+    for (t=0.00; t<=0.4; t+=0.01)
         cout << t << " " << diff.TotalCrossSection(xpom, Qsqr, t) << endl;
     
     // Try nucleus
