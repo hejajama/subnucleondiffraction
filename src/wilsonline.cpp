@@ -36,12 +36,12 @@ void WilsonLine::Set(int row, int column, std::complex<double> value)
 {
     if (row >= data.size())
     {
-        cerr << "Invlaid row index " << row << " num of rows in matrix " << data.size() << endl;
+        cerr << "Invalid row index " << row << " num of rows in matrix " << data.size() << endl;
         return;
     }
     if (column >= data[row].size())
     {
-        cerr << "Invlaid column index " << column << " num of rows in matrix " << data[row].size() << endl;
+        cerr << "Invalid column index " << column << " num of rows in matrix " << data[row].size() << endl;
         return;
     }
     
@@ -56,7 +56,7 @@ WilsonLine WilsonLine::operator*(WilsonLine& w)
     
     if (Size() != w.Size())
     {
-        cerr << "Wrong matrix sizes!" << endl;
+        cerr << "Wrong matrix sizes! My size is " << Size() << ", the other size is " << w.Size() << endl;
         WilsonLine n;
         return n;
     }

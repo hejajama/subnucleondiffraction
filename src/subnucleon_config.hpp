@@ -11,7 +11,12 @@ const double ZINT_RELACCURACY = 0.3;
 const double MCINTACCURACY = 0.2;
 const int MCINTPOINTS = 1e7;
 
+enum MCINTEGRAL
+{
+    VEGAS,
+    MISER
+};
 
-
+const MCINTEGRAL MCINT = MISER;
 
 #endif /* subnucleon_config_h */

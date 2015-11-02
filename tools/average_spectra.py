@@ -11,6 +11,10 @@ from matplotlibhelper import *
 
 dir=sys.argv[1]
 
+maxnconfs = 99999999 # can limit number of configs
+if len(sys.argv)>2:
+    maxnconfs = int(sys.argv[2])
+
 tdata=[]
 ydata=[]
 
@@ -29,6 +33,9 @@ for f in os.listdir(dir):
 
     tmpxdatas.append(tmpxdata)
     tmpydatas.append(tmpydata)
+
+    if len(tmpydatas) >= maxnconfs:
+        break
 
 # average
 nconf = len(tmpydatas)

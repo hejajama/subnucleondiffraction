@@ -7,6 +7,7 @@
 #include <gsl/gsl_monte.h>
 #include <gsl/gsl_monte_miser.h>
 #include <gsl/gsl_integration.h>
+#include <gsl/gsl_monte_vegas.h>
 #include "subnucleon_config.hpp"
 
 
@@ -94,9 +95,26 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t)
     
     T = gsl_rng_default;
     r = gsl_rng_alloc(T);
-    gsl_monte_miser_state *s = gsl_monte_miser_alloc(4);
-    gsl_monte_miser_integrate(&F, lower, upper, 4, MCINTPOINTS, r, s, &result, &error);
-    gsl_monte_miser_free(s);
+    
+    if (MCINT == MISER)
+    {
+        gsl_monte_miser_state *s = gsl_monte_miser_alloc(4);
+        gsl_monte_miser_integrate(&F, lower, upper, 4, MCINTPOINTS, r, s, &result, &error);
+        gsl_monte_miser_free(s);
+    }
+    else if (MCINT == VEGAS)
+    {
+        gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(4);
+        gsl_monte_vegas_integrate(&F, lower, upper, 4, MCINTPOINTS/50, r, s, &result, &error);
+        cout << " # vegas warmup " << result << " +/- " << error << endl;
+        do
+        {
+            gsl_monte_vegas_integrate(&F, lower, upper, 4, MCINTPOINTS/5, r, s, &result, &error);
+            cout << "# Vegas interation " << result << " +/- " << error << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+        } while (fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5);
+        gsl_monte_vegas_free(s);
+    }
+    
     gsl_rng_free(r);
     
     //if (std::abs(error/result) > MCINTACCURACY)

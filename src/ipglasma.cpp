@@ -11,6 +11,7 @@
 #include <sstream>
 #include <tools/config.hpp>
 #include <tools/tools.hpp>
+#include <cstdlib>
 
 using namespace Amplitude;
 
@@ -33,6 +34,11 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
     WilsonLine prod = quark*antiquark;
     std::complex<double > amp =  1.0 - 1.0/NC * prod.Trace();
     
+    double result = amp.real();
+    if (result > 1)
+        return 1;
+    if (result < 0)
+        return 0;
     return amp.real();
 }
 
@@ -56,7 +62,7 @@ IPGlasma::IPGlasma(std::string file)
     
     if (!f.is_open())
     {
-        std::cerr << "Could not open file " << file << std::endl ;
+        std::cerr << "Could not open file " << file << " " << LINEINFO << std::endl;;
         exit(1);
         return;
     }
@@ -78,9 +84,8 @@ IPGlasma::IPGlasma(std::string file)
         ss >> y;
         
         // Datafile is in fm, but we want to use GeVs in this code
-        //x*= FMGEV;
-        //y *= FMGEV;
-        // DEBUG TODO: easier to test without changing units!
+        x*= FMGEV;
+        y *= FMGEV;
         
         // Read rows and columns
         std::vector< std::vector< std::complex<double> > > matrix;
@@ -101,6 +106,12 @@ IPGlasma::IPGlasma(std::string file)
         // Save Wilson line
         WilsonLine w(matrix);
         wilsonlines.push_back(w);
+        
+        if (w.Size() != 3)
+        {
+            cerr << "Matrix at coordinate " << x << " " << y << " has size " << w.Size() << endl;
+            exit(1);
+        }
         
         // We assume that grid is symmetric, so dont save same valeus multiple times
         // In the datafile the coordinates are increasing

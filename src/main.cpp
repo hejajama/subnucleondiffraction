@@ -27,11 +27,12 @@ int main()
     double t=0.1;
     double xpom=0.001;
     
+    //
+    //IPGlasma glasma("data/V.dat");
+    
+    //double origin[2]={0,0};
+    
     /*
-    IPGlasma glasma("data/V.dat");
-    
-    double origin[2]={0,0};
-    
     for (double y=-11.5; y < 11.5; y+=0.05)
     {
         for (double x=-11.5; x < 11.5; x+=0.05)
@@ -41,27 +42,33 @@ int main()
         }
         cout << endl;
         
-    }
-    return 0;
-    */
+    }*/
+   
+    
     
     BoostedGauss wavef("gauss-boosted.dat");
     Smooth_ws_nuke target;
     
     Ipsat_Nucleons ipsatnuke;
     ipsatnuke.InitializeTarget();
-    ipsatnuke.SetSaturation(true);
+    ipsatnuke.SetSaturation(false);
+    
+    //IPGlasma glasma("data/V.dat");
     
     //Diffraction diff(target, wavef);
     Diffraction diff(ipsatnuke, wavef);
+    //Diffraction diff(glasma, wavef);
     
     cout << "# SubNucleon Diffraction" << endl;
     cout << "# " << InfoStr() << endl;
     cout << "# " << wavef << endl;
     
     cout << "# t    dsigma/dt [GeV^4] " << endl;
-    for (t=0.00; t<=0.4; t+=0.01)
-        cout << t << " " << diff.TotalCrossSection(xpom, Qsqr, t) << endl;
+    for (t=0.0; t<=0.4; t+=0.01)
+    {
+        double res =diff.TotalCrossSection(xpom, Qsqr, t);
+        cout << t << " " << res  << endl;
+    }
     
     // Try nucleus
     
@@ -82,7 +89,14 @@ string InfoStr()
 {
     stringstream info;
     
-    info << "Parameters: MCINTPOINTS : " << MCINTPOINTS << " ZINT_INTERVALS " << ZINT_INTERVALS << " MCINTACCURACY " << MCINTACCURACY << " ZINT_RELACCURACY " << ZINT_RELACCURACY;
+    info << "Parameters: MCINTPOINTS: " << MCINTPOINTS << " ZINT_INTERVALS " << ZINT_INTERVALS << " MCINTACCURACY " << MCINTACCURACY << " ZINT _RELACCURACY " << ZINT_RELACCURACY;
+    info << ". Integration method ";
+    if (MCINT == MISER)
+        info << "MISER";
+    else if (MCINT == VEGAS)
+        info << "VEGAS";
+    else
+        info << "unknown!";
     
     return info.str();
 
