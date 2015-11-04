@@ -37,11 +37,12 @@ double Diffraction::TotalCrossSection(double xpom, double Qsqr, double t)
  * Requires average over different nucleon configurations
  *
  * First average, then take the square
+ *
+ * This code only returns Im A, later used should average and take the square
  */
 double Diffraction::CoherentCrossSection(double xpom, double Qsqr, double t)
 {
-    
-    return 0;
+    return ScatteringAmplitude(xpom, Qsqr, t);
 }
 
 /* 

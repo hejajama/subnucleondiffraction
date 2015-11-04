@@ -6,7 +6,7 @@
 #define subnucleon_config_h
 
 
-const int ZINT_INTERVALS = 8;
+const int ZINT_INTERVALS = 15;
 const double ZINT_RELACCURACY = 0.3;
 const double MCINTACCURACY = 0.2;
 const int MCINTPOINTS = 1e7;
@@ -18,5 +18,11 @@ enum MCINTEGRAL
 };
 
 const MCINTEGRAL MCINT = MISER;
+
+enum PROCESS
+{
+    COHERENT,
+    INCOHERENT
+};
 
 #endif /* subnucleon_config_h */

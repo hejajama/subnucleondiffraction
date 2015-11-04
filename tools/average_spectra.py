@@ -4,12 +4,23 @@
 
 import os
 import sys
+import math
+
+using math.PI
 
 sys.path.append("/Users/heikki/lib/")
 sys.path.append("/nashome2/hejajama/lib/")
 from matplotlibhelper import *
 
-dir=sys.argv[1]
+dir = ""
+coherent = False
+
+if sys.argv[1] == "-coherent":
+    coherent+True
+    dir = sys.argv[2]
+    print "# Calculating coherent cross section"
+else:
+    dir=sys.argv[1]
 
 maxnconfs = 99999999 # can limit number of configs
 if len(sys.argv)>2:
@@ -40,6 +51,7 @@ for f in os.listdir(dir):
 # average
 nconf = len(tmpydatas)
 
+print "# Dir: " + dir
 print "# Number of files: " + str(len(tmpydatas))
 
 for i in range(len(tmpydatas[0])):
@@ -49,6 +61,9 @@ for i in range(len(tmpydatas[0])):
         for j in range(len(tmpydatas)):
             sum+=tmpydatas[j][i]
         avg = sum/len(tmpydatas)
+        
+        if coherent:
+            avg = avg*avg / (16.0*pi)
 
         tdata.append(t)
         ydata.append(avg)

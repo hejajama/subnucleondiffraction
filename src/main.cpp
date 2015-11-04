@@ -21,11 +21,23 @@ using namespace std;
 
 string InfoStr();
 
-int main()
+
+int main(int argc, char* argv[])
 {
     double Qsqr=0;
     double t=0.1;
     double xpom=0.001;
+    PROCESS p = INCOHERENT;
+    
+    for (int i=1; i<argc; i++)
+    {
+        if (string(argv[i])=="-coherent")
+            p = COHERENT;
+        else if (string(argv[i])=="-incoherent")
+            p = INCOHERENT;
+        
+    }
+    
     
     //
     //IPGlasma glasma("data/V.dat");
@@ -63,10 +75,17 @@ int main()
     cout << "# " << InfoStr() << endl;
     cout << "# " << wavef << endl;
     
-    cout << "# t    dsigma/dt [GeV^4] " << endl;
-    for (t=0.0; t<=0.4; t+=0.01)
+    if (p == INCOHERENT)
+        cout << "# t    dsigma/dt [GeV^4] " << endl;
+    if (p == COHERENT)
+        cout << "# t    Re A [GeV^2] " << endl;
+    for (t=0.0; t<=0.41; t+=0.1)
     {
-        double res =diff.TotalCrossSection(xpom, Qsqr, t);
+        double res = 0;
+        if (p == INCOHERENT)
+            res =diff.TotalCrossSection(xpom, Qsqr, t);
+        else if (p == COHERENT)
+            res = diff.CoherentCrossSection(xpom, Qsqr, t);
         cout << t << " " << res  << endl;
     }
     
