@@ -6,7 +6,7 @@ import os
 import sys
 import math
 
-using math.PI
+
 
 sys.path.append("/Users/heikki/lib/")
 sys.path.append("/nashome2/hejajama/lib/")
@@ -16,15 +16,17 @@ dir = ""
 coherent = False
 
 if sys.argv[1] == "-coherent":
-    coherent+True
+    coherent= True
     dir = sys.argv[2]
     print "# Calculating coherent cross section"
 else:
     dir=sys.argv[1]
 
 maxnconfs = 99999999 # can limit number of configs
-if len(sys.argv)>2:
-    maxnconfs = int(sys.argv[2])
+
+if coherent == False:
+    if len(sys.argv)>2:
+        maxnconfs = int(sys.argv[2])
 
 tdata=[]
 ydata=[]

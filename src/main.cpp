@@ -21,6 +21,8 @@ using namespace std;
 
 string InfoStr();
 
+bool saturation = true; // For ipsat
+
 
 int main(int argc, char* argv[])
 {
@@ -35,6 +37,8 @@ int main(int argc, char* argv[])
             p = COHERENT;
         else if (string(argv[i])=="-incoherent")
             p = INCOHERENT;
+        else if (string(argv[i])=="-nonsat")
+            saturation = false;
         
     }
     
@@ -63,7 +67,7 @@ int main(int argc, char* argv[])
     
     Ipsat_Nucleons ipsatnuke;
     ipsatnuke.InitializeTarget();
-    ipsatnuke.SetSaturation(false);
+    ipsatnuke.SetSaturation(saturation);
     
     //IPGlasma glasma("data/V.dat");
     
@@ -79,7 +83,7 @@ int main(int argc, char* argv[])
         cout << "# t    dsigma/dt [GeV^4] " << endl;
     if (p == COHERENT)
         cout << "# t    Re A [GeV^2] " << endl;
-    for (t=0.0; t<=0.41; t+=0.1)
+    for (t=0.0; t<=0.21; t+=0.005)
     {
         double res = 0;
         if (p == INCOHERENT)
@@ -116,6 +120,11 @@ string InfoStr()
         info << "VEGAS";
     else
         info << "unknown!";
+    info <<" Saturation: ";
+    if (saturation)
+        info << "enabled";
+    else
+        info << "disabled";
     
     return info.str();
 

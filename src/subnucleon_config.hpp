@@ -9,7 +9,7 @@
 const int ZINT_INTERVALS = 15;
 const double ZINT_RELACCURACY = 0.3;
 const double MCINTACCURACY = 0.2;
-const int MCINTPOINTS = 1e7;
+const int MCINTPOINTS = 1e6;
 
 enum MCINTEGRAL
 {
@@ -17,7 +17,7 @@ enum MCINTEGRAL
     MISER
 };
 
-const MCINTEGRAL MCINT = MISER;
+const MCINTEGRAL MCINT = VEGAS;
 
 enum PROCESS
 {
