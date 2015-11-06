@@ -5,11 +5,12 @@
 #ifndef subnucleon_config_h
 #define subnucleon_config_h
 
-
 const int ZINT_INTERVALS = 15;
 const double ZINT_RELACCURACY = 0.3;
 const double MCINTACCURACY = 0.2;
-const int MCINTPOINTS = 1e6;
+extern int MCINTPOINTS ;
+
+extern bool REAL_PART;  // Calculate real part of the amplitude
 
 enum MCINTEGRAL
 {

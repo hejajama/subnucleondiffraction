@@ -205,7 +205,11 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     // Real part cos, imaginary part -sin
     //res *= std::cos( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
-    res *= std::cos( b*delta*std::cos(theta_b));    // Neglect z now
+    
+    if (REAL_PART)
+        res *= std::cos( b*delta*std::cos(theta_b));    // Neglect z now
+    else
+        res *= -std::sin( b*delta*std::cos(theta_b));
     
     double x1[2] = {qx,qy};
     double x2[2] = {qbarx, qbary};

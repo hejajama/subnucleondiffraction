@@ -9,6 +9,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include <tools/tools.hpp>
+
 #include "dipole.hpp"
 #include "smooth_ws_nuke.hpp"
 #include "diffraction.hpp"
@@ -40,7 +42,12 @@ int main(int argc, char* argv[])
             p = INCOHERENT;
         else if (string(argv[i])=="-nonsat")
             saturation = false;
-        
+        else if (string(argv[i])=="-mcintpoints")
+            MCINTPOINTS = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-real")
+            REAL_PART = true;
+        else if (string(argv[i])=="-imag")
+            REAL_PART = false;
     }
     
     
@@ -127,9 +134,12 @@ string InfoStr()
         info << "unknown!";
     info <<" Saturation: ";
     if (saturation)
-        info << "enabled";
+        info << "enabled. ";
     else
-        info << "disabled";
+        info << "disabled. ";
+    
+    if (REAL_PART) info << "Real part";
+    else info << "Imaginary part";
     
     return info.str();
 

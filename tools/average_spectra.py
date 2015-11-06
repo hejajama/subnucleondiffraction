@@ -51,9 +51,12 @@ for f in files:
     fname = dir + f
     
     parse = fname.split("_")
-    if int(parse[-1]) > maxnconfs:
-        continue
-
+    try:
+        if int(parse[-1]) > maxnconfs:
+            continue
+    except ValueError:
+            print "WTF file " + fname
+            continue
     readfile_xy(fname, tmpxdata, tmpydata)
 
     # If we calculate incoherent scattering, we average the squared amplitude
