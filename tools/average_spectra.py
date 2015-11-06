@@ -14,19 +14,21 @@ from matplotlibhelper import *
 
 dir = ""
 coherent = False
-
-if sys.argv[1] == "-coherent":
-    coherent= True
-    dir = sys.argv[2]
-    print "# Calculating coherent cross section"
-else:
-    dir=sys.argv[1]
-
 maxnconfs = 99999999 # can limit number of configs
 
-if coherent == False:
-    if len(sys.argv)>2:
-        maxnconfs = int(sys.argv[2])
+for i in range(len(sys.argv)):
+    if sys.argv[i]=="-coherent":
+        coherent= True
+    elif sys.argv[i]=="-incoherent":
+        coherent = False
+    elif sys.argv[i]=="-dir":
+        dir = sys.argv[i+1]
+    elif sys.argv[i]=="-maxconf":
+        maxnconfs = int(sys.argv[i+1])
+    elif sys.argv[i][0]=="-":
+        print "Unknown argument " + sys.argv[i]
+        sys.exit(1)
+
 
 tdata=[]
 ydata=[]
@@ -36,19 +38,32 @@ first=1
 tmpxdatas=[]
 tmpydatas=[]
 
-for f in os.listdir(dir):
+if coherent == False:
+    print "# Total diffractive cross section"
+else:
+    print "# Coherent cross section"
+
+files = os.listdir(dir)
+for f in files:
     tmpydata=[]
     tmpxdata=[]
     
     fname = dir + f
+    
+    parse = fname.split("_")
+    if int(parse[-1]) > maxnconfs:
+        continue
 
     readfile_xy(fname, tmpxdata, tmpydata)
+
+    # If we calculate incoherent scattering, we average the squared amplitude
+    if coherent == False:
+        for i in range(len(tmpydata)):
+            tmpydata[i] = tmpydata[i]*tmpydata[i]
 
     tmpxdatas.append(tmpxdata)
     tmpydatas.append(tmpydata)
 
-    if len(tmpydatas) >= maxnconfs:
-        break
 
 # average
 nconf = len(tmpydatas)
@@ -64,8 +79,10 @@ for i in range(len(tmpydatas[0])):
             sum+=tmpydatas[j][i]
         avg = sum/len(tmpydatas)
         
-        if coherent:
+        if coherent:    # Coherent scattering: now we have averated, then we squared
             avg = avg*avg / (16.0*pi)
+        else:   # Incoherent
+            avg = avg / (16.0*pi)
 
         tdata.append(t)
         ydata.append(avg)

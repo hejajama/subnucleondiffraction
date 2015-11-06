@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <iomanip>
 
 #include "dipole.hpp"
 #include "smooth_ws_nuke.hpp"
@@ -29,7 +30,7 @@ int main(int argc, char* argv[])
     double Qsqr=0;
     double t=0.1;
     double xpom=0.001;
-    PROCESS p = INCOHERENT;
+    PROCESS p = COHERENT;
     
     for (int i=1; i<argc; i++)
     {
@@ -86,11 +87,15 @@ int main(int argc, char* argv[])
     for (t=0.0; t<=0.21; t+=0.005)
     {
         double res = 0;
+        cout.precision(5);
         if (p == INCOHERENT)
             res =diff.TotalCrossSection(xpom, Qsqr, t);
         else if (p == COHERENT)
             res = diff.CoherentCrossSection(xpom, Qsqr, t);
-        cout << t << " " << res  << endl;
+        cout << t << " ";
+        cout.precision(10);
+        cout << res  << endl;
+
     }
     
     // Try nucleus
