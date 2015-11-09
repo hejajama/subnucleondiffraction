@@ -43,9 +43,9 @@
 		12B5192B1BD976AB00230988 /* wave_function.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = wave_function.cpp; path = src/wave_function.cpp; sourceTree = "<group>"; };
 		12B5192C1BD976AB00230988 /* wave_function.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = wave_function.hpp; path = src/wave_function.hpp; sourceTree = "<group>"; };
 		12B5192D1BD979D000230988 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
-		12B5192E1BD9825400230988 /* tools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tools.cpp; path = ../../../../code/amplitudelib_v2/tools/tools.cpp; sourceTree = "<group>"; };
-		12B5192F1BD9825400230988 /* tools.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = tools.hpp; path = ../../../../code/amplitudelib_v2/tools/tools.hpp; sourceTree = "<group>"; };
-		12B519301BD982E700230988 /* config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = config.hpp; path = ../../../../code/amplitudelib_v2/tools/config.hpp; sourceTree = "<group>"; };
+		12B5192E1BD9825400230988 /* tools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tools.cpp; path = ../amplitudelib_v2/tools/tools.cpp; sourceTree = "<group>"; };
+		12B5192F1BD9825400230988 /* tools.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = tools.hpp; path = ../amplitudelib_v2/tools/tools.hpp; sourceTree = "<group>"; };
+		12B519301BD982E700230988 /* tools */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = tools; path = ../amplitudelib_v2/tools; sourceTree = "<group>"; };
 		12B519311BD98AB900230988 /* smooth_ws_nuke.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = smooth_ws_nuke.cpp; path = src/smooth_ws_nuke.cpp; sourceTree = "<group>"; };
 		12B519321BD98AB900230988 /* smooth_ws_nuke.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = smooth_ws_nuke.hpp; path = src/smooth_ws_nuke.hpp; sourceTree = "<group>"; };
 		12B519331BD98F8F00230988 /* diffraction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = diffraction.cpp; path = src/diffraction.cpp; sourceTree = "<group>"; };
@@ -95,7 +95,7 @@
 				120170241BDAA9F100A440E4 /* ipsat_nucleons.hpp */,
 				120170121BDA7EE600A440E4 /* gdist_dglap.cpp */,
 				120170131BDA7EE600A440E4 /* gdist_dglap.hpp */,
-				12B519301BD982E700230988 /* config.hpp */,
+				12B519301BD982E700230988 /* tools */,
 				12B5192E1BD9825400230988 /* tools.cpp */,
 				12B5192F1BD9825400230988 /* tools.hpp */,
 				12B5192D1BD979D000230988 /* Makefile */,

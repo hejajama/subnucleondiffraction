@@ -7,6 +7,7 @@
  */
 
 #include "dipole.hpp"
+#include <string>
 
 double DipoleAmplitude::Amplitude(double xpom, double q1[2], double q2[2] )
 {
@@ -16,4 +17,9 @@ double DipoleAmplitude::Amplitude(double xpom, double q1[2], double q2[2] )
 void DipoleAmplitude::InitializeTarget()
 {
     // Nothing to do if not overloaded
+}
+
+std::string DipoleAmplitude::InfoStr()
+{
+    return "Dipole modle InfoStr not implemented";
 }

@@ -21,6 +21,8 @@ public:
     // Array points are x and y coordinates
     double Amplitude(double xpom, double q1[2], double q2[2] );
     
+    std::string InfoStr();
+    
 
 private:
     WilsonLine& GetWilsonLine( double x, double y); // Find Wilson line that corresponds to the coordinate
@@ -28,6 +30,8 @@ private:
     std::vector< double > xcoords;
     std::vector< double > ycoords;
     std::vector< WilsonLine  > wilsonlines;
+    
+    std::string datafile;
     
     
 };

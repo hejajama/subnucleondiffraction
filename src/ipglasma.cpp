@@ -31,7 +31,18 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
     WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
     WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
     antiquark = antiquark.HermitianConjugate();
-    WilsonLine prod = quark*antiquark;
+    
+    WilsonLine prod;
+    try {
+        prod =  quark*antiquark;
+    } catch (...) {
+        cerr << "Matrix multiplication failed!" << endl;
+        cout << "Quark: " << q1[0] << ", " << q1[1] << endl;
+        cout << quark << endl;
+        cout << "Antiquark: " << q2[0] << ", " << q2[1] << endl;
+        cout << antiquark << endl;
+        exit(1);
+    }
     std::complex<double > amp =  1.0 - 1.0/NC * prod.Trace();
     
     double result = amp.real();
@@ -48,6 +59,16 @@ WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
     int xind = FindIndex(x, xcoords);
     int yind = FindIndex(y, ycoords);
     
+    // Handle edges
+    if (xind < 0)
+        xind = 0;
+    if (xind >= xcoords.size())
+        xind = xcoords.size()-1;
+
+    if (yind < 0)
+        yind = 0;
+    if (yind >= ycoords.size())
+        yind = ycoords.size()-1;
     //cout << "Coordinates " << x << ", "  << y << " indeces " << xind << ", " << yind << endl;
     
     return wilsonlines[ xind*xcoords.size() + yind];
@@ -57,6 +78,7 @@ WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
 IPGlasma::IPGlasma(std::string file)
 {
     // Load data
+    datafile = file;
     // Syntax: x y [fm] matrix elements Re Im for elements (0,0), (0,1), (0,2), (1,0), ...
     std::ifstream f(file.c_str());
     
@@ -137,5 +159,14 @@ IPGlasma::IPGlasma(std::string file)
 
         
     
+}
+
+
+
+std::string IPGlasma::InfoStr()
+{
+    std::stringstream ss;
+    ss << "IPGlasma loaded from file " << datafile ;
+    return ss.str();
 }
 

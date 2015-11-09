@@ -8,6 +8,7 @@
 #include "vector.hpp"
 #include <gsl/gsl_rng.h>
 #include <tools/config.hpp>
+#include <sstream>
 
 using namespace Amplitude;
 
@@ -139,4 +140,18 @@ std::vector<Vec> &Ipsat_Nucleons::GetNucleons()
 void Ipsat_Nucleons::SetSaturation(double s)
 {
     saturation = s;
+}
+
+
+std::string Ipsat_Nucleons::InfoStr()
+{
+    std::stringstream ss;
+    ss << "IPsat model ";
+    if (saturation)
+        ss << "with saturation";
+    else
+        ss << "no saturation";
+    
+    ss <<". A=" << A << ", B_p=" << B_p << ", minimum nucleon-nucleon distance=" << mindist;
+    return ss.str();
 }

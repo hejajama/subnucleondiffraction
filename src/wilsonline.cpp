@@ -56,9 +56,7 @@ WilsonLine WilsonLine::operator*(WilsonLine& w)
     
     if (Size() != w.Size())
     {
-        cerr << "Wrong matrix sizes! My size is " << Size() << ", the other size is " << w.Size() << endl;
-        WilsonLine n;
-        return n;
+        throw "WrongMatrixSize";
     }
     
     for (int row=0; row < Size(); row++)

@@ -24,8 +24,7 @@ using namespace std;
 
 string InfoStr();
 
-bool saturation = true; // For ipsat
-
+DipoleAmplitude *amp;
 
 int main(int argc, char* argv[])
 {
@@ -34,20 +33,49 @@ int main(int argc, char* argv[])
     double xpom=0.001;
     PROCESS p = COHERENT;
     
+    
+    
+    if (string(argv[1])=="-help")
+    {
+        cout << "-real, -imag: set real/imaginary part" << endl;
+        cout << "-dipole [ipsat,ipnonsat,ipglasma] [ipglasmafile]" << endl;
+        cout << "-mcintpoints points" << endl;
+        return 0;
+    }
+        
+    
     for (int i=1; i<argc; i++)
     {
         if (string(argv[i])=="-coherent")
             p = COHERENT;
         else if (string(argv[i])=="-incoherent")
             p = INCOHERENT;
-        else if (string(argv[i])=="-nonsat")
-            saturation = false;
         else if (string(argv[i])=="-mcintpoints")
             MCINTPOINTS = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-real")
             REAL_PART = true;
         else if (string(argv[i])=="-imag")
             REAL_PART = false;
+        else if (string(argv[i])=="-dipole")
+        {
+            if (string(argv[i+1])=="ipsat")
+            {
+                amp = new Ipsat_Nucleons;
+                ((Ipsat_Nucleons*)amp)->SetSaturation(true);
+            }
+            else if (string(argv[i+1])=="ipnonsat")
+            {
+                amp = new Ipsat_Nucleons;
+                ((Ipsat_Nucleons*)amp)->SetSaturation(false);
+            }
+            else if (string(argv[i+1])=="ipglasma")
+                amp = new IPGlasma(argv[i+2]);
+            else
+            {
+                cerr << "Unknown dipole " << argv[i+1] << endl;
+                return -1;
+            }
+        }
     }
     
     
@@ -73,15 +101,10 @@ int main(int argc, char* argv[])
     BoostedGauss wavef("gauss-boosted.dat");
     Smooth_ws_nuke target;
     
-    Ipsat_Nucleons ipsatnuke;
-    ipsatnuke.InitializeTarget();
-    ipsatnuke.SetSaturation(saturation);
+    amp->InitializeTarget();
     
-    //IPGlasma glasma("data/V.dat");
-    
-    //Diffraction diff(target, wavef);
-    Diffraction diff(ipsatnuke, wavef);
-    //Diffraction diff(glasma, wavef);
+
+    Diffraction diff(*amp, wavef);
     
     cout << "# SubNucleon Diffraction" << endl;
     cout << "# " << InfoStr() << endl;
@@ -105,17 +128,10 @@ int main(int argc, char* argv[])
 
     }
     
-    // Try nucleus
+
+
     
-    
-    
-    /*
-    vector<Vec> nukes = ipsatnuke.GetNucleons();
-    for (int i = 0; i < nukes.size(); i++)
-    {
-        cout << nukes[i].GetX() << " " << nukes[i].GetY() << endl;
-    }
-    */
+    delete amp;
     
 }
 
@@ -132,14 +148,12 @@ string InfoStr()
         info << "VEGAS";
     else
         info << "unknown!";
-    info <<" Saturation: ";
-    if (saturation)
-        info << "enabled. ";
-    else
-        info << "disabled. ";
     
-    if (REAL_PART) info << "Real part";
-    else info << "Imaginary part";
+    info << " Dipole: " << amp->InfoStr();
+
+    
+    if (REAL_PART) info << ". Real part";
+    else info << ". Imaginary part";
     
     return info.str();
 

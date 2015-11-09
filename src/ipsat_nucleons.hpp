@@ -9,6 +9,7 @@
 
 #include "dipole.hpp"
 #include <vector>
+#include <string>
 #include "vector.hpp"
 #include "gdist_dglap.hpp"
 
@@ -33,6 +34,8 @@ public:
     double WS_unnorm(double r);  // WS distribution normalized to unity
     
     void SetSaturation(double s);
+    
+    std::string InfoStr();
     
 private:
     int A;

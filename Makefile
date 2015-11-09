@@ -1,4 +1,4 @@
-CXXFLAGS = `/opt/local/bin/gsl-config --cflags` -I /Users/heikki/code/amplitudelib_v2/ -O2
+CXXFLAGS = `/opt/local/bin/gsl-config --cflags` -I ../amplitudelib_v2/ -O2
 LDFLAGS = `/opt/local/bin/gsl-config --libs`
 
 include filelist.m

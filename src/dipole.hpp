@@ -9,6 +9,8 @@
 #ifndef dipole_h_
 #define dipole_h_
 
+#include <string>
+
 class DipoleAmplitude {
 public:
     // Evaluate dipole ampltitude, qaurks at coordinates x1 and x2
@@ -19,6 +21,9 @@ public:
     // This is called before Amplitude() is evaluated. When averaging over nuclear configurations
     // this always samples a new configuration.
     virtual void InitializeTarget();
+    
+    // Info string about the dipole
+    virtual std::string InfoStr();
 };
 
 #endif
