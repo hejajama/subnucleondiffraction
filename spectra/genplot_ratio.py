@@ -36,11 +36,8 @@ GEVSQRTONB = 1.0e7/(5.068*5.068)
 
 # nominator fname nominator norm  denominator name denom norm  lable style
 data=[
-      ["mc_1e8/ipnonsat_1e8_nconf_100", GEVSQRTONB, "old_code/ipnonsat_incoh_step_001", 1, r"IPnonsat $10^8$", Linestyle(0)],
-      ["mc_1e7/ipnonsat_1e7_nconf_100", GEVSQRTONB, "old_code/ipnonsat_incoh_step_0005", 1, r"IPnonsat $10^7$ nc 100", Linestyle(1)],
-      ["total/ipnonsat_miser_1e7_nconf_200", GEVSQRTONB, "old_code/ipnonsat_incoh_step_0005", 1, r"IPnonsat $10^7$ nc 200", Linestyle(1)],
-      ["coherent/ipnonsat_vegas_1e6_nconf_250", GEVSQRTONB, "old_code/ipnonsat_coh_step_0005", 1, r"Coherent ipnonsat", Linestyle(3)]
-      ]
+      ["total/ipnonsat_vegas_5e6_nconf_400_imag", GEVSQRTONB, "old_code/ipnonsat_incoh_step_0005", 1, r"IPnonsat $510^6$", Linestyle(0)],
+           ]
 
 fig = figure()
 p1=fig.add_subplot(111)

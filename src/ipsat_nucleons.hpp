@@ -24,16 +24,19 @@ public:
     void InitializeTarget();
     
     std::vector<Vec>& GetNucleons();
+    std::vector<double>& GetB_ps();
     
     Ipsat_Nucleons();
     
     double MaxR();  // Max radius used to sample nucleons, depends on A, in GeV^-1
     
-    double Tp(double b);   // Proton thickness function
+    double Tp(double b, int proton_id=-1);   // Proton thickness function
     
     double WS_unnorm(double r);  // WS distribution normalized to unity
     
     void SetSaturation(double s);
+    void SetFluctuatingNucleonSize(double f); // Set proton radius to fluctuate with Gaussian width r*f
+    // Must be set before initializing target
     
     std::string InfoStr();
     
@@ -44,6 +47,8 @@ private:
     double ws_ra;       // Nuclear radius in WS distribution
     
     double B_p;     // Parameters proton transverse size, goes into the b dependence if ipsat
+    std::vector<double> B_ps;   // Sizes of the individual nucleons
+    double radius_fluctuation_fraction;
     
     DGLAPDist gdist;    // DGLAP evolved xg
     // gdist.Gluedist() returns Pi^2/(2*Nc) * Alphas(x,mu(r)^2) * xg(x,r)
@@ -51,6 +56,8 @@ private:
     bool saturation;    // Turn saturation on/off. Without saturation use linearized dipole amplitude ~r^2
     
     std::vector<Vec> nucleons; // Positions of the centers of the nucleons
+    
+    double NucleonRadiusDistribution(double r0, double r, double width); // Distribution used to sample nucleon radius
 };
 
 

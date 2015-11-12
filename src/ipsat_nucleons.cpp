@@ -36,7 +36,7 @@ double Ipsat_Nucleons::Amplitude(double xpom, double q1[2], double q2[2] )
     {
         Vec projection (nucleons[i].GetX(), nucleons[i].GetY());
         Vec deltab = b - projection;
-        tpsum = tpsum + Tp(deltab.Len());
+        tpsum = tpsum + Tp(deltab.Len(), i);
     }
     
     if (saturation)
@@ -90,11 +90,41 @@ void Ipsat_Nucleons::InitializeTarget()
                 if (tmpdist > largestdist) largestdist=tmpdist;
             }
         
+        
         // Try again if smallestdist/largestdist does not match the limits
         if (smallestdist < mindist )
             cerr << "Again... Smallest dist: " << smallestdist << " , largest: " << largestdist << endl;
     } while (smallestdist < mindist );
     
+    
+    // Sample size of the nucleon
+    if (radius_fluctuation_fraction > 0.0001)
+    {
+        cout << "Im here???" << endl;
+        for (int i=0; i<A; i++)
+        {
+            double r0 = std::sqrt(2.0*B_p);
+            
+            // How small/large distances can in principle be sampled, max deltar
+            // is r0*maxradius_n. However, the large/small radiuses are extremely unlikely
+            double maxradius_n = 5;
+            
+            double deltar = r0*radius_fluctuation_fraction;
+            double new_r=0;
+            
+            do
+            {
+                double rand = 2.0*(gsl_rng_uniform(r)-0.5);
+                new_r = r0 + rand*r0*maxradius_n;
+            } while (new_r <= 0 or gsl_rng_uniform(r) > NucleonRadiusDistribution(r0, new_r, deltar));
+            
+            B_ps[i] = new_r * new_r / 2.0;
+            
+        }
+            
+    }
+    
+
     
     gsl_rng_free(r);
 }
@@ -107,7 +137,15 @@ Ipsat_Nucleons::Ipsat_Nucleons()
     ws_delta=0.54*FMGEV;
     ws_ra = 1.12 * std::pow(A, 1.0/3.0) * FMGEV;
     
-    B_p = 4.0; // Teels the proton transverse size, GeV^2
+    B_p = 4.0; // Tells the proton transverse size, GeV^-2
+    
+    for (int i=0; i<A; i++)
+    {
+        // If fluctuating nucleon sizes are used, this is overwritten at InitializeTarget()
+        B_ps.push_back(B_p);
+        
+    }
+    radius_fluctuation_fraction = 0;
     
     saturation = true;
     
@@ -127,9 +165,13 @@ double Ipsat_Nucleons::WS_unnorm(double r
     
 }
 
-double Ipsat_Nucleons::Tp(double b)
+// Proton thicness, by defualt proton_id is -1, in that case use the default B_p
+double Ipsat_Nucleons::Tp(double b, int proton_id)
 {
-    return 1.0/(2.0*M_PI*B_p)*std::exp(- b*b / (2.0*B_p));
+    double bp = B_p;
+    if (proton_id >=0 )
+        bp = B_ps[proton_id];
+    return 1.0/(2.0*M_PI*bp)*std::exp(- b*b / (2.0*bp));
 }
 
 std::vector<Vec> &Ipsat_Nucleons::GetNucleons()
@@ -137,11 +179,25 @@ std::vector<Vec> &Ipsat_Nucleons::GetNucleons()
     return nucleons;
 }
 
+std::vector<double> &Ipsat_Nucleons::GetB_ps()
+{
+    return B_ps;
+}
+
 void Ipsat_Nucleons::SetSaturation(double s)
 {
     saturation = s;
 }
 
+void Ipsat_Nucleons::SetFluctuatingNucleonSize(double f)
+{
+    radius_fluctuation_fraction = f;
+}
+
+double Ipsat_Nucleons::NucleonRadiusDistribution(double r0, double r, double width)
+{
+    return std::exp(- SQR(r-r0)/(2.0*SQR(width)));
+};
 
 std::string Ipsat_Nucleons::InfoStr()
 {
@@ -153,5 +209,6 @@ std::string Ipsat_Nucleons::InfoStr()
         ss << "no saturation";
     
     ss <<". A=" << A << ", B_p=" << B_p << ", minimum nucleon-nucleon distance=" << mindist;
+    ss << ". Fluctuation parameter radius_fluctuation_fraction: " << radius_fluctuation_fraction;
     return ss.str();
 }

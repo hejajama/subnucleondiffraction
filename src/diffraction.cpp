@@ -107,7 +107,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t)
     {
         gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(4);
         gsl_monte_vegas_integrate(&F, lower, upper, 4, MCINTPOINTS/50, r, s, &result, &error);
-        cout << " # vegas warmup " << result << " +/- " << error << endl;
+        cout << "# vegas warmup " << result << " +/- " << error << endl;
         do
         {
             gsl_monte_vegas_integrate(&F, lower, upper, 4, MCINTPOINTS/5, r, s, &result, &error);

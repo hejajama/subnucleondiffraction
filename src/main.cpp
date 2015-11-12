@@ -32,13 +32,14 @@ int main(int argc, char* argv[])
     double t=0.1;
     double xpom=0.001;
     PROCESS p = COHERENT;
+    bool print_nucleus = false;
     
     
     
     if (string(argv[1])=="-help")
     {
         cout << "-real, -imag: set real/imaginary part" << endl;
-        cout << "-dipole [ipsat,ipnonsat,ipglasma] [ipglasmafile]" << endl;
+        cout << "-dipole [ipsat,ipnonsat,ipglasma] [ipglasmafile, ipsat_radius_fluctuation_fraction]" << endl;
         cout << "-mcintpoints points" << endl;
         return 0;
     }
@@ -58,15 +59,15 @@ int main(int argc, char* argv[])
             REAL_PART = false;
         else if (string(argv[i])=="-dipole")
         {
-            if (string(argv[i+1])=="ipsat")
+            if (string(argv[i+1])=="ipsat" or string(argv[i+1])=="ipnonsat")
             {
                 amp = new Ipsat_Nucleons;
-                ((Ipsat_Nucleons*)amp)->SetSaturation(true);
-            }
-            else if (string(argv[i+1])=="ipnonsat")
-            {
-                amp = new Ipsat_Nucleons;
-                ((Ipsat_Nucleons*)amp)->SetSaturation(false);
+                if (string(argv[i+1])=="ipsat")
+                    ((Ipsat_Nucleons*)amp)->SetSaturation(true);
+                else
+                    ((Ipsat_Nucleons*)amp)->SetSaturation(true);
+                ((Ipsat_Nucleons*)amp)->SetFluctuatingNucleonSize(StrToReal(argv[i+2]));
+                
             }
             else if (string(argv[i+1])=="ipglasma")
                 amp = new IPGlasma(argv[i+2]);
@@ -75,6 +76,10 @@ int main(int argc, char* argv[])
                 cerr << "Unknown dipole " << argv[i+1] << endl;
                 return -1;
             }
+        }
+        else if (string(argv[i])=="-print_nucleus")
+        {
+            print_nucleus = true;
         }
     }
     
@@ -109,6 +114,21 @@ int main(int argc, char* argv[])
     cout << "# SubNucleon Diffraction" << endl;
     cout << "# " << InfoStr() << endl;
     cout << "# " << wavef << endl;
+    
+    
+    if (print_nucleus)
+    {
+        // Print ipsat nucleus, todo: ipglasma
+        std::vector<Vec> positions = ((Ipsat_Nucleons*)amp)->GetNucleons();
+        std::vector<double> Bps = ((Ipsat_Nucleons*)amp)->GetB_ps() ;
+        cout << "# x   y    radius   [GeV^-1]" << endl;
+        for (int i=0; i<positions.size(); i++)
+        {
+            cout << positions[i].GetX() << " " << positions[i].GetY() << " " << std::sqrt(2.0*Bps[i]) << endl;
+        }
+        return 0;
+        
+    }
     
     if (p == INCOHERENT)
         cout << "# t    dsigma/dt [GeV^4] " << endl;
