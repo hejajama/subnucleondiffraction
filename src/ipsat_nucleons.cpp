@@ -100,7 +100,6 @@ void Ipsat_Nucleons::InitializeTarget()
     // Sample size of the nucleon
     if (radius_fluctuation_fraction > 0.0001)
     {
-        cout << "Im here???" << endl;
         for (int i=0; i<A; i++)
         {
             double r0 = std::sqrt(2.0*B_p);
