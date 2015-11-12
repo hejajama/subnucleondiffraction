@@ -97,10 +97,12 @@ print "# Number of files: " + str(len(tmpydatas))
 
 for i in range(len(tmpydatas[0])):
     t = tmpxdatas[0][i]
+    fileind=0
     try:    # if some file is not calcualted to high enough t, this we just skip that t value
         sum=0
         sum_imag=0
         for j in range(len(tmpydatas)):
+            fileind = j
             sum+=tmpydatas[j][i]
             if imagdir != "":
                 sum_imag+=tmpydatas_imag[j][i]
@@ -118,7 +120,7 @@ for i in range(len(tmpydatas[0])):
         tdata.append(t)
         ydata.append(avg)
     except:
-        print "# Skipping t index " + str(i) + " t=" + str(t)
+        print "# Skipping t index " + str(i) + " t=" + str(t) + " because of file " +str(fileind)
 
 for x,y in zip(tdata, ydata):
     print x,y

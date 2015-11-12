@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
                 if (string(argv[i+1])=="ipsat")
                     ((Ipsat_Nucleons*)amp)->SetSaturation(true);
                 else
-                    ((Ipsat_Nucleons*)amp)->SetSaturation(true);
+                    ((Ipsat_Nucleons*)amp)->SetSaturation(false);
                 ((Ipsat_Nucleons*)amp)->SetFluctuatingNucleonSize(StrToReal(argv[i+2]));
                 
             }
