@@ -20,7 +20,7 @@ maxnconfs = 99999999 # can limit number of configs
 for i in range(len(sys.argv)):
     if sys.argv[i]=="-coherent":
         coherent= True
-    elif sys.argv[i]=="-incoherent":
+    elif sys.argv[i]=="-total":
         coherent = False
     elif sys.argv[i]=="-dir":
         dir = sys.argv[i+1]

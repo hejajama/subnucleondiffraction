@@ -62,6 +62,8 @@ void Ipsat_Nucleons::InitializeTarget()
     const gsl_rng_type *T = gsl_rng_default;
     gsl_rng *r = gsl_rng_alloc(T);
     
+    cout << "# Sampling IPsat nucleus, rng name " << gsl_rng_name(r) << " seed " << gsl_rng_default_seed << " first value " << gsl_rng_get(r) << " first float " << gsl_rng_uniform(r) << endl;
+    
     
     do
     {
