@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
     PROCESS p = COHERENT;
     bool print_nucleus = false;
     
-    
+    cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015" << endl;
     
     if (string(argv[1])=="-help")
     {
@@ -104,14 +104,13 @@ int main(int argc, char* argv[])
     
     
     BoostedGauss wavef("gauss-boosted.dat");
-    Smooth_ws_nuke target;
     
     amp->InitializeTarget();
     
 
     Diffraction diff(*amp, wavef);
     
-    cout << "# SubNucleon Diffraction" << endl;
+    
     cout << "# " << InfoStr() << endl;
     cout << "# " << wavef << endl;
     
@@ -134,7 +133,7 @@ int main(int argc, char* argv[])
         cout << "# t    dsigma/dt [GeV^4] " << endl;
     if (p == COHERENT)
         cout << "# t    Re A [GeV^2] " << endl;
-    for (t=0.0; t<=0.21; t+=0.005)
+    for (t=0.0; t<=0.61; t+=0.005)
     {
         double res = 0;
         cout.precision(5);

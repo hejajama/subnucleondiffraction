@@ -6,7 +6,7 @@
 #define subnucleon_config_h
 
 const int ZINT_INTERVALS = 20;
-const double ZINT_RELACCURACY = 0.001;
+const double ZINT_RELACCURACY = 0.0001;
 const double MCINTACCURACY = 0.2;
 extern int MCINTPOINTS ;
 
