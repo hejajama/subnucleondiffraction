@@ -16,6 +16,7 @@
 #include "diffraction.hpp"
 #include "gauss_boost.hpp"
 #include "ipsat_nucleons.hpp"
+#include "ipsat_proton.hpp"
 #include "vector.hpp"
 #include "subnucleon_config.hpp"
 #include "ipglasma.hpp"
@@ -39,7 +40,7 @@ int main(int argc, char* argv[])
     if (string(argv[1])=="-help")
     {
         cout << "-real, -imag: set real/imaginary part" << endl;
-        cout << "-dipole [ipsat,ipnonsat,ipglasma] [ipglasmafile, ipsat_radius_fluctuation_fraction]" << endl;
+        cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton] [ipglasmafile, ipsat_radius_fluctuation_fraction]" << endl;
         cout << "-mcintpoints points" << endl;
         return 0;
     }
@@ -69,6 +70,8 @@ int main(int argc, char* argv[])
                 ((Ipsat_Nucleons*)amp)->SetFluctuatingNucleonSize(StrToReal(argv[i+2]));
                 
             }
+            else if (string(argv[i+1])=="ipsatproton")
+                amp = new Ipsat_Proton;
             else if (string(argv[i+1])=="ipglasma")
                 amp = new IPGlasma(argv[i+2]);
             else
@@ -82,6 +85,9 @@ int main(int argc, char* argv[])
             print_nucleus = true;
         }
     }
+    
+    
+    
     
     
     //
@@ -102,6 +108,8 @@ int main(int argc, char* argv[])
     }*/
    
     
+
+    
     
     BoostedGauss wavef("gauss-boosted.dat");
     
@@ -118,13 +126,22 @@ int main(int argc, char* argv[])
     if (print_nucleus)
     {
         // Print ipsat nucleus, todo: ipglasma
+        std::vector<Vec> positions = ((Ipsat_Proton*)amp)->GetQuarks();
+        std::vector<double> radii =((Ipsat_Proton*)amp)->GetRadii();
+        cout << "# x   y    radius   [GeV^-1]" << endl;
+        for (int i=0; i<positions.size(); i++)
+        {
+            cout << positions[i].GetX() << " " << positions[i].GetY() << " " << radii[i] << endl;
+        }
+
+        /*
         std::vector<Vec> positions = ((Ipsat_Nucleons*)amp)->GetNucleons();
         std::vector<double> Bps = ((Ipsat_Nucleons*)amp)->GetB_ps() ;
         cout << "# x   y    radius   [GeV^-1]" << endl;
         for (int i=0; i<positions.size(); i++)
         {
             cout << positions[i].GetX() << " " << positions[i].GetY() << " " << std::sqrt(2.0*Bps[i]) << endl;
-        }
+        }*/
         return 0;
         
     }
