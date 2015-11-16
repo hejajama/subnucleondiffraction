@@ -18,7 +18,7 @@ enum MCINTEGRAL
     MISER
 };
 
-const MCINTEGRAL MCINT = VEGAS;
+const MCINTEGRAL MCINT = MISER;
 
 enum PROCESS
 {
