@@ -50,8 +50,9 @@ void Ipsat_Proton::InitializeTarget()
 Ipsat_Proton::Ipsat_Proton()
 {
     saturation=true;
-    R_p = 0.895 * 5.08;
-    maxr = 5.0 * R_p;   // 0.895 fm is the proton radius
+    R_p = 0.895; // 0.895 fm is the proton radius
+    
+    maxr = 5.0 * R_p * 5.08; // Max radius sampled in GeV^-1
     // factor 5 in principle allows very large protons, but they are very unlikely
 }
 
@@ -114,8 +115,8 @@ double Ipsat_Proton::RadiusDistribution(double r)
     
     //a = \sqrt{12}/R_p = 3.87, with R_p = 0.895 from
     //http://journals.aps.org/rmp/pdf/10.1103/RevModPhys.77.1
-    double a = 3.87;
-    double norm = 1.0/0.0361451;    // Normalized to unity at maximum
+    double a = std::sqrt(12)/R_p;
+    double norm = 1.0 / ( std::pow(2.0/a, 2)*std::exp(-2) );    // Normalized to unity at maximum
     
     return norm * r*r*std::exp(-a*r);
     
