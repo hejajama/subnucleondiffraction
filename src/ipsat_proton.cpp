@@ -7,6 +7,8 @@
 #include "ipsat_proton.hpp"
 #include <gsl/gsl_rng.h>
 #include <cmath>
+#include <string>
+#include <sstream>
 
 using std::cout; using std::endl;
 
@@ -120,4 +122,17 @@ double Ipsat_Proton::RadiusDistribution(double r)
     
     return norm * r*r*std::exp(-a*r);
     
+}
+
+
+std::string Ipsat_Proton::InfoStr()
+{
+    std::stringstream ss;
+    ss << "IPsat proton consists of quarks at coordinates ";
+    for (int i=0; i<quarks.size(); i++)
+    {
+        ss << "(" << quarks[i].GetX() << ", " << quarks[i].GetY() << "), r=" << quark_radii[i] <<" ";
+    }
+    ss << ". Proton radius " << R_p << " fm";
+    return ss.str();
 }

@@ -30,6 +30,8 @@ public:
     std::vector<Vec>& GetQuarks();
     std::vector<double> &GetRadii();
     
+    std::string InfoStr();
+    
     
 private:
     DGLAPDist gdist;    // DGLAP evolved xg
