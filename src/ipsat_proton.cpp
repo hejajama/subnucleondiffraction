@@ -12,6 +12,8 @@
 
 using std::cout; using std::endl;
 
+const double FMGEV = 5.08;
+
 void Ipsat_Proton::InitializeTarget()
 {
     double smallestdist=999; double largestdist=0;
@@ -43,7 +45,7 @@ void Ipsat_Proton::InitializeTarget()
         double sintheta = 2.0*(gsl_rng_uniform(r)-0.5);     // TODO is this really uniform in theta
         Vec tmpvec(radius*costheta, radius*sintheta);
         quarks.push_back(tmpvec);
-        quark_radii.push_back(R_p / 3.0);   // Quark radius is 1/3 proton radius
+        quark_radii.push_back(R_p / 3.0 * FMGEV);   // Quark radius is 1/3 proton radius
     }
     
     
