@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     if (string(argv[1])=="-help")
     {
         cout << "-real, -imag: set real/imaginary part" << endl;
-        cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton] [ipglasmafile, ipsat_radius_fluctuation_fraction]" << endl;
+        cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width]" << endl;
         cout << "-mcintpoints points" << endl;
         return 0;
     }
@@ -71,7 +71,12 @@ int main(int argc, char* argv[])
                 
             }
             else if (string(argv[i+1])=="ipsatproton")
+            {
                 amp = new Ipsat_Proton;
+                ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+2]));
+                ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+3]));
+                
+            }
             else if (string(argv[i+1])=="ipglasma")
                 amp = new IPGlasma(argv[i+2]);
             else
@@ -150,7 +155,7 @@ int main(int argc, char* argv[])
         cout << "# t    dsigma/dt [GeV^4] " << endl;
     if (p == COHERENT)
         cout << "# t    Re A [GeV^2] " << endl;
-    for (t=0.0; t<=0.61; t+=0.005)
+    for (t=0.0; t<=2.61; t+=0.100)
     {
         double res = 0;
         cout.precision(5);

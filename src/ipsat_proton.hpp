@@ -28,7 +28,11 @@ public:
     Ipsat_Proton();
     
     std::vector<Vec>& GetQuarks();
-    std::vector<double> &GetRadii();
+    std::vector<double> GetRadii();
+    
+    // Set size parameters, affect to next InitializeTarget() call
+    void SetProtonWidth(double bp_);
+    void SetQuarkWidth(double bq_);
     
     std::string InfoStr();
     
@@ -37,9 +41,10 @@ private:
     DGLAPDist gdist;    // DGLAP evolved xg
     // gdist.Gluedist() returns Pi^2/(2*Nc) * Alphas(x,mu(r)^2) * xg(x,r)
     std::vector<Vec> quarks;    // Quark positions
-    std::vector<double> quark_radii;
+    std::vector<double> quark_bp;
     double maxr;
-    double R_p;
+    double B_p;     // Central value for the proton gaussian width
+    double B_q;     // Central value for the quark gaussian width
     bool saturation;
     
     double QuarkThickness(double r, int i); // Quark density profile for quark i, distance r from its origin
