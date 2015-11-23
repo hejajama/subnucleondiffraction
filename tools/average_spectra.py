@@ -24,8 +24,6 @@ for i in range(len(sys.argv)):
         coherent = False
     elif sys.argv[i]=="-dir":
         dir = sys.argv[i+1]
-    elif sys.argv[i]=="-imagdir":
-        imagdir = sys.argv[i+1]
     elif sys.argv[i]=="-maxconf":
         maxnconfs = int(sys.argv[i+1])
     elif sys.argv[i][0]=="-":
@@ -46,6 +44,11 @@ tmpydatas=[]
 tmpxdatas_imag=[]
 tmpydatas_imag=[]
 
+imagdir = dir + "/imag/"
+dir = dir + "/real/"
+
+fnames=[]
+
 if coherent == False:
     print "# Total diffractive cross section"
 else:
@@ -60,18 +63,25 @@ for f in files:
     tmpxdata_imag=[]
     tmpydata_imag=[]
     
-    fname = dir + f
+    fname_real = dir + f
+    fname_imag = imagdir + f
     
-    parse = fname.split("_")
+    parse = fname_real.split("_")
     try:
         if int(parse[-1]) > maxnconfs:
             continue
     except ValueError:
             print "WTF file " + fname
             continue
-    readfile_xy(fname, tmpxdata, tmpydata)
-    if imagdir != "":
-        readfile_xy( imagdir + fname.split("/")[-1], tmpxdata_imag, tmpydata_imag)
+
+    try:
+        readfile_xy(fname_real, tmpxdata, tmpydata)
+        readfile_xy( fname_imag, tmpxdata_imag, tmpydata_imag)
+    except IOError:
+        print "#File not found: " + fname_real + " or " + fname_imag
+        continue
+
+
 
     # If we calculate incoherent scattering, we average the squared amplitude
     if coherent == False:
@@ -83,6 +93,7 @@ for f in files:
 
     tmpxdatas.append(tmpxdata)
     tmpydatas.append(tmpydata)
+    fnames.append(fname_real)
 
     if imagdir != "":
         tmpxdatas_imag.append(tmpxdata_imag)
@@ -120,7 +131,7 @@ for i in range(len(tmpydatas[0])):
         tdata.append(t)
         ydata.append(avg)
     except:
-        print "# Skipping t index " + str(i) + " t=" + str(t) + " because of file " +str(fileind)
+        print "# Skipping t index " + str(i) + " t=" + str(t) + " because of file " +fnames[fileind]
 
 for x,y in zip(tdata, ydata):
     print x,y

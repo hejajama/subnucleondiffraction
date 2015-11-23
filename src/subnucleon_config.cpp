@@ -8,3 +8,7 @@
 int MCINTPOINTS = 1e7;
 
 bool REAL_PART = true;
+
+bool CORRECTIONS = false;
+
+bool FACTORIZE_ZINT = false;

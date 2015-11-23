@@ -19,6 +19,9 @@ public:
     double ScatteringAmplitude(double xpom, double Qsqr, double t);
     double ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z);
     
+    double GetBeta();   // Get correction beta assosiated with previously calculated amplitude
+    //NOTE! Currently calculated in CoherentCrossSection() only!
+    
     double CoherentCrossSection(double xpom, double Qsqr, double t);
     double TotalCrossSection(double xpom, double Qsqr, double t);
     
@@ -30,6 +33,8 @@ private:
     DipoleAmplitude* dipole;
     WaveFunction* wavef;
     int num_of_averages;
+    
+    double beta;
     
 };
 #endif /* diffraction_hpp */

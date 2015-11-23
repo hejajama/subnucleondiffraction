@@ -109,9 +109,9 @@ REAL BoostedGauss::PsiSqr_L(REAL Qsqr, REAL r, REAL z)
 {
     REAL epstmp=epsfun(z,Qsqr,SQR(m_f));
     REAL result;
-    result = M_V*Psi_L(r,z)+delta/(M_V*z*(1-z))*(SQR(m_f)*Psi_L(r,z) 
-        - 1/r*Psi_L_DR(r,z) - Psi_L_D2R(r,z));
-    result *= e_f*e*NC/M_PI*2*sqrt(Qsqr)*z*(1-z)*gsl_sf_bessel_K0(epstmp*r);
+    result = M_V*Psi_L(r,z)+delta/(M_V*z*(1.0-z))*(SQR(m_f)*Psi_L(r,z)
+        - 1.0/r*Psi_L_DR(r,z) - Psi_L_D2R(r,z));
+    result *= e_f*e*NC/M_PI*2*sqrt(Qsqr)*z*(1.0-z)*gsl_sf_bessel_K0(epstmp*r);
     return result;
 }
 
@@ -203,7 +203,7 @@ REAL BoostedGauss::PsiSqr_L_intz(REAL Qsqr, REAL r)
  */
 REAL BoostedGauss::Psi_T(REAL r, REAL z)
 {
-    return N_T*z*(1-z)*exp(-SQR(m_f)*SQR(R)/(8.0*z*(1-z))
+    return N_T*z*(1.0-z)*exp(-SQR(m_f)*SQR(R)/(8.0*z*(1.0-z))
         - 2.0*z*(1-z)*SQR(r)/SQR(R) + SQR(m_f)*SQR(R)/2.0 )
         * (1.0 + alpha*
                 ( 2.0 - SQR(m_f*R) + SQR(m_f*R)/(4.0*z*(1.0-z))
@@ -224,7 +224,7 @@ REAL BoostedGauss::Psi_T_DR(REAL r, REAL z)
 {
     return -4.0*z*(1.0-z)*r/SQR(R)*Psi_T(r,z)
         -8.0*alpha*N_T*SQR(z*(1.0-z)) * r/SQR(R)
-            * std::exp(-SQR(m_f)*SQR(R)/(8.0*z*(1-z))
+            * std::exp(-SQR(m_f)*SQR(R)/(8.0*z*(1.0-z))
                 - 2.0*z*(1-z)*SQR(r)/SQR(R) + SQR(m_f)*SQR(R)/2.0 )  ;
 }
 
@@ -233,8 +233,8 @@ REAL BoostedGauss::Psi_L_DR(REAL r, REAL z)
 {
     return -4.0*z*(1-z)*r/SQR(R)*Psi_L(r,z)
         -8.0*alpha*N_L*SQR(z*(1.0-z)) * r/SQR(R)
-            * std::exp(-SQR(m_f)*SQR(R)/(8.0*z*(1-z))
-                - 2.0*z*(1-z)*SQR(r)/SQR(R) + SQR(m_f)*SQR(R)/2.0 )  ;
+            * std::exp(-SQR(m_f)*SQR(R)/(8.0*z*(1.0-z))
+                - 2.0*z*(1.0-z)*SQR(r)/SQR(R) + SQR(m_f)*SQR(R)/2.0 )  ;
 }
 
 // \partial^2_r PSI_L(r,z)

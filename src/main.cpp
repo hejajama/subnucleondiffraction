@@ -196,6 +196,14 @@ string InfoStr()
     if (REAL_PART) info << ". Real part";
     else info << ". Imaginary part";
     
+    if (FACTORIZE_ZINT)
+        info <<". z integral factorized";
+    else info << ". z integral not factorized";
+    
+    info << ". Corrections: ";
+    if (CORRECTIONS) info << "enabled";
+    else info << "disabled";
+    
     return info.str();
 
 }
