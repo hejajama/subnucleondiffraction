@@ -67,25 +67,28 @@ for f in files:
     
     fig.suptitle(r"$Q^2=0, x=0.001$, $W \sim 100 \mathrm{GeV}$"   )
 
+bpvals = ["5.0","6.0"]
+bpvals=["4.5","7.0"]
+bqvals = ["2.0","2.5"] #["2.0","3.0"]
 
 style=0
 color=0
-for bp in ["5.0","7.0"]:
+for bp in bpvals:
     color=color+1
     #for
     #color = color + 1
-    for bq in ["2.5","3.0"]: #["0.5","1.0","1.5"]: #
+    for bq in  bqvals:
         style = style + 1
         xdata=[]
         ydata=[]
-        fname = "proton/coherent/ipsat_miser_1e5_bp_" + bp + "_bq_" + bq + "_nc_300"
+        fname = "proton/coherent/ipsat_miser_1e7_bp_" + bp + "_bq_" + bq
         print fname
         try:
             readfile_xy(fname, xdata, ydata)
             scale_list(ydata, GEVSQRTONB)
         except:
             print "Error with file " + fname
-        p1.plot(xdata, ydata, linestyle='None', marker=Datastyle(style), color=Color(color), label=r"coh $B_p=" + bp +", B_q=" + bq + r"$", linewidth=1,markersize=5)
+        p1.plot(xdata, ydata, linestyle=Linestyle(color), marker=Datastyle(style), color=Color(color), label=r"$B_p=" + bp +", B_q=" + bq + r"$", linewidth=1,markersize=5)
 
 
 # systematical
@@ -95,15 +98,13 @@ color=0
 #for p in params:
 #        bp = p[0]
 #        bq=p[1]
-for bp in ["5.0","7.0"]:
+for bp in bpvals:
     color=color+1
-    #for
-    color = color + 1
-    for bq in ["2.5","3.0"]: #["0.5","1.0","1.5"]: #
+    for bq in bqvals:
         style = style + 1
         xdata=[]
         ydata=[]
-        fname = "proton/coherent/ipsat_miser_1e5_bp_" + bp + "_bq_" + bq + "_nc_300"
+        fname = "proton/coherent/ipsat_miser_1e7_bp_" + bp + "_bq_" + bq
         print fname
         try:
             readfile_xy(fname, xdata, ydata)
@@ -114,7 +115,7 @@ for bp in ["5.0","7.0"]:
         # read total
         xdata_tot=[]
         ydata_tot=[]
-        fname = "proton/total/ipsat_miser_1e5_bp_" + bp + "_bq_" + bq + "_nc_300"
+        fname = "proton/total/ipsat_miser_1e7_bp_" + bp + "_bq_" + bq
         try:
             readfile_xy(fname, xdata_tot, ydata_tot)
             scale_list(ydata_tot, GEVSQRTONB)
@@ -127,7 +128,7 @@ for bp in ["5.0","7.0"]:
             ydata_incoh.append(tot-coh)
             tdata.append(t)
 
-        p1.plot(tdata, ydata_incoh, linestyle='None', marker=Datastyle(style), color=Color(color), label=r"", linewidth=0.5, markersize=2.5)
+        p1.plot(tdata, ydata_incoh, linestyle=Linestyle(3), marker=Datastyle(style), color=Color(color), label=r"", linewidth=0.5, markersize=2.5)
 
 # h1 data
 expx=[]
@@ -145,6 +146,25 @@ tmp=[]
 readfile_xy("proton/coherent/exp/zeus_qsqr_0", expx, expy)
 readfile_xy("proton/coherent/exp/zeus_qsqr_0", tmp, experr, ycol=2)
 p1.errorbar(expx, expy, yerr=experr, marker=datadashes[1], linestyle='None', linewidth=0.7, markersize=0.8, label=r"ZEUS $Q^2=0\mathrm{GeV}^2, 90 < W < 110 \mathrm{GeV}$")
+
+expx=[]
+expy=[]
+pluserr=[]
+minuserr=[]
+readfile_xyerrors("proton/incoherent/exp/zeus", expx, expy, pluserr, minuserr)
+# units
+scale_list(expy, 1000)
+scale_list(pluserr, 1000)
+scale_list(minuserr, 1000)
+#p1.errorbar(expx, expy, yerr=[minuserr,pluserr], marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=0.8, label=r"Incoh ZEUS $Q^2=0\mathrm{GeV}^2$")
+
+expx=[]
+expy=[]
+experr=[]
+tmp=[]
+readfile_xy("proton/incoherent/exp/h1_thesis", expx, expy)
+readfile_xy("proton/incoherent/exp/h1_thesis", tmp, experr, ycol=2)
+p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=2.1, label=r"incoh H1 $Q^2 \le 2.5\mathrm{GeV}^2, 40 < W < 110 \mathrm{GeV}$")
 
 yscale("log")
 #xscale("log")

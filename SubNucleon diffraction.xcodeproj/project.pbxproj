@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */; };
+		1217F7821C0509E50008A90C /* nucleons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1217F7801C0509E50008A90C /* nucleons.cpp */; };
 		123E8F881BFA76F700681374 /* ipsat_proton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 123E8F861BFA76F700681374 /* ipsat_proton.cpp */; };
 		12F504E61BECEFA3005540EF /* subnucleon_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F504E51BECEFA3005540EF /* subnucleon_config.cpp */; };
 		12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EF91BE162F00045E7DD /* wilsonline.cpp */; };
@@ -34,6 +35,8 @@
 		120170241BDAA9F100A440E4 /* ipsat_nucleons.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ipsat_nucleons.hpp; path = src/ipsat_nucleons.hpp; sourceTree = "<group>"; };
 		12117B6B1BDE537700D2BF9A /* vector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vector.cpp; path = src/vector.cpp; sourceTree = "<group>"; };
 		12117B6C1BDE537700D2BF9A /* vector.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = vector.hpp; path = src/vector.hpp; sourceTree = "<group>"; };
+		1217F7801C0509E50008A90C /* nucleons.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = nucleons.cpp; path = src/nucleons.cpp; sourceTree = "<group>"; };
+		1217F7811C0509E50008A90C /* nucleons.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = nucleons.hpp; path = src/nucleons.hpp; sourceTree = "<group>"; };
 		123E8F861BFA76F700681374 /* ipsat_proton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipsat_proton.cpp; path = src/ipsat_proton.cpp; sourceTree = "<group>"; };
 		123E8F871BFA76F700681374 /* ipsat_proton.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ipsat_proton.hpp; path = src/ipsat_proton.hpp; sourceTree = "<group>"; };
 		124AC6961BE3A4940020E15E /* filelist.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = filelist.m; sourceTree = "<group>"; };
@@ -96,6 +99,8 @@
 				12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */,
 				12F69EFD1BE16FE10045E7DD /* ipglasma.hpp */,
 				120170241BDAA9F100A440E4 /* ipsat_nucleons.hpp */,
+				1217F7801C0509E50008A90C /* nucleons.cpp */,
+				1217F7811C0509E50008A90C /* nucleons.hpp */,
 				123E8F861BFA76F700681374 /* ipsat_proton.cpp */,
 				123E8F871BFA76F700681374 /* ipsat_proton.hpp */,
 				120170121BDA7EE600A440E4 /* gdist_dglap.cpp */,
@@ -202,6 +207,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1217F7821C0509E50008A90C /* nucleons.cpp in Sources */,
 				120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */,
 				12F504E61BECEFA3005540EF /* subnucleon_config.cpp in Sources */,
 				12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */,

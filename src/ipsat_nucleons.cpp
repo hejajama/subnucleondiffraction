@@ -9,6 +9,7 @@
 #include <gsl/gsl_rng.h>
 #include <tools/config.hpp>
 #include <sstream>
+#include "subnucleon_config.hpp"
 
 using namespace Amplitude;
 
@@ -57,12 +58,6 @@ void Ipsat_Nucleons::InitializeTarget()
     double smallestdist=999; double largestdist=0;
     double tmpdist;
     
-    // Randomness
-    gsl_rng_env_setup();
-    const gsl_rng_type *T = gsl_rng_default;
-    gsl_rng *r = gsl_rng_alloc(T);
-    
-    cout << "# Sampling IPsat nucleus, rng name " << gsl_rng_name(r) << " seed " << gsl_rng_default_seed << " first value "; cout << gsl_rng_get(r); cout << " first float " << gsl_rng_uniform(r) << endl;
     
     
     do
@@ -72,11 +67,11 @@ void Ipsat_Nucleons::InitializeTarget()
         {
             Vec tmp;
             do {
-                Vec tmpvec (2.0*(gsl_rng_uniform(r)-0.5)*MaxR(),
-                            2.0*(gsl_rng_uniform(r)-0.5)*MaxR(),
-                            2.0*(gsl_rng_uniform(r)-0.5)*MaxR());
+                Vec tmpvec (2.0*(gsl_rng_uniform(global_rng)-0.5)*MaxR(),
+                            2.0*(gsl_rng_uniform(global_rng)-0.5)*MaxR(),
+                            2.0*(gsl_rng_uniform(global_rng)-0.5)*MaxR());
                 tmp=tmpvec;
-            } while (gsl_rng_uniform(r) > WS_unnorm(tmp.Len())); // WS distribution!
+            } while (gsl_rng_uniform(global_rng) > WS_unnorm(tmp.Len())); // WS distribution!
             nucleons.push_back(tmp);
         }
         
@@ -115,9 +110,9 @@ void Ipsat_Nucleons::InitializeTarget()
             
             do
             {
-                double rand = 2.0*(gsl_rng_uniform(r)-0.5);
+                double rand = 2.0*(gsl_rng_uniform(global_rng)-0.5);
                 new_r = r0 + rand*r0*maxradius_n;
-            } while (new_r <= 0 or gsl_rng_uniform(r) > NucleonRadiusDistribution(r0, new_r, deltar));
+            } while (new_r <= 0 or gsl_rng_uniform(global_rng) > NucleonRadiusDistribution(r0, new_r, deltar));
             
             B_ps[i] = new_r * new_r / 2.0;
             
@@ -125,9 +120,6 @@ void Ipsat_Nucleons::InitializeTarget()
             
     }
     
-
-    
-    gsl_rng_free(r);
 }
 
 

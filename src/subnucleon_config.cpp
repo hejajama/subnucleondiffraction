@@ -4,6 +4,7 @@
  */
 
 #include "subnucleon_config.hpp"
+#include <gsl/gsl_rng.h>
 
 int MCINTPOINTS = 1e7;
 

@@ -7,6 +7,7 @@
  */
 
 #include "dipole.hpp"
+#include "vector.hpp"
 #include <string>
 
 double DipoleAmplitude::Amplitude(double xpom, double q1[2], double q2[2] )
@@ -22,4 +23,11 @@ void DipoleAmplitude::InitializeTarget()
 std::string DipoleAmplitude::InfoStr()
 {
     return "Dipole modle InfoStr not implemented";
+}
+
+double DipoleAmplitude::Amplitude(double xpom, Vec q1, Vec q2)
+{
+    double quark[2] = {q1.GetX(), q1.GetY() };
+    double antiquark[2] = {q2.GetX(), q2.GetY() };
+    return Amplitude(xpom, quark, antiquark);
 }

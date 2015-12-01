@@ -10,12 +10,15 @@
 #define dipole_h_
 
 #include <string>
+#include "vector.hpp"
 
 class DipoleAmplitude {
 public:
     // Evaluate dipole ampltitude, qaurks at coordinates x1 and x2
     // Array points are x and y coordinates
     virtual double Amplitude(double xpom, double q1[2], double q2[2] );
+    
+    virtual double Amplitude(double xpom, Vec q1, Vec q2);
     
     
     // Setup the target. In practice sample nucleon positions / quark positions / whatver.

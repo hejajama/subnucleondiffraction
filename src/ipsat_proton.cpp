@@ -9,6 +9,7 @@
 #include <cmath>
 #include <string>
 #include <sstream>
+#include "subnucleon_config.hpp"
 
 using std::cout; using std::endl;
 
@@ -18,13 +19,7 @@ void Ipsat_Proton::InitializeTarget()
 {
     double smallestdist=999; double largestdist=0;
     double tmpdist;
-    
-    // Randomness
-    gsl_rng_env_setup();
-    const gsl_rng_type *T = gsl_rng_default;
-    gsl_rng *r = gsl_rng_alloc(T);
-    
-    cout << "# Sampling IPsat proton, rng name " << gsl_rng_name(r) << " seed " << gsl_rng_default_seed << " first value "; cout << gsl_rng_get(r); cout << " first float " << gsl_rng_uniform(r) << endl;
+
     
     
     quarks.clear();
@@ -38,12 +33,12 @@ void Ipsat_Proton::InitializeTarget()
         double maxr = std::sqrt(2.0*B_p)*10; // Up to 10 Gaussian widths away, note that large r is very unlikely
         
         do{
-            radius = gsl_rng_uniform(r) * maxr;
-        } while (gsl_rng_uniform(r) > RadiusDistribution(radius));
+            radius = gsl_rng_uniform(global_rng) * maxr;
+        } while (gsl_rng_uniform(global_rng) > RadiusDistribution(radius));
         
         // Sample angle
-        double costheta = 2.0*(gsl_rng_uniform(r)-0.5);
-        double sintheta = 2.0*(gsl_rng_uniform(r)-0.5);     // TODO is this really uniform in theta
+        double costheta = 2.0*(gsl_rng_uniform(global_rng)-0.5);
+        double sintheta = 2.0*(gsl_rng_uniform(global_rng)-0.5);     // TODO is this really uniform in theta
         Vec tmpvec(radius*costheta, radius*sintheta);
         quarks.push_back(tmpvec);
         quark_bp.push_back(B_q);  
@@ -159,4 +154,11 @@ void Ipsat_Proton::SetProtonWidth(double bp)
 void Ipsat_Proton::SetQuarkWidth(double bq)
 {
     B_q = bq;
+}
+
+double Ipsat_Proton::Amplitude(double xpom, Vec q1, Vec q2)
+{
+    double quark[2] = {q1.GetX(), q1.GetY() };
+    double antiquark[2] = {q2.GetX(), q2.GetY() };
+    return Amplitude(xpom, quark, antiquark);
 }

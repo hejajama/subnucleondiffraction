@@ -9,7 +9,10 @@
 #include <sstream>
 #include <iomanip>
 
+#include <gsl/gsl_rng.h>
+
 #include <tools/tools.hpp>
+
 
 #include "dipole.hpp"
 #include "smooth_ws_nuke.hpp"
@@ -20,12 +23,15 @@
 #include "vector.hpp"
 #include "subnucleon_config.hpp"
 #include "ipglasma.hpp"
+#include "nucleons.hpp"
 
 using namespace std;
 
 string InfoStr();
 
 DipoleAmplitude *amp;
+
+gsl_rng* global_rng;
 
 int main(int argc, char* argv[])
 {
@@ -40,7 +46,7 @@ int main(int argc, char* argv[])
     if (string(argv[1])=="-help")
     {
         cout << "-real, -imag: set real/imaginary part" << endl;
-        cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width]" << endl;
+        cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton,nucleons] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width]" << endl;
         cout << "-mcintpoints points" << endl;
         return 0;
     }
@@ -79,6 +85,12 @@ int main(int argc, char* argv[])
             }
             else if (string(argv[i+1])=="ipglasma")
                 amp = new IPGlasma(argv[i+2]);
+            else if (string(argv[i+1])=="nucleons")
+            {
+                amp = new Nucleons;
+                ((Nucleons*)amp)->SetProtonWidth(StrToReal(argv[i+2]));
+                ((Nucleons*)amp)->SetQuarkWidth(StrToReal(argv[i+3]));
+            }
             else
             {
                 cerr << "Unknown dipole " << argv[i+1] << endl;
@@ -113,6 +125,9 @@ int main(int argc, char* argv[])
     }*/
    
     
+    // Initialize global random number generator
+    gsl_rng_env_setup();
+    global_rng = gsl_rng_alloc(gsl_rng_default);
 
     
     
@@ -169,6 +184,8 @@ int main(int argc, char* argv[])
 
     }
     
+    
+    gsl_rng_free(global_rng);
 
 
     

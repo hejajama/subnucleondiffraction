@@ -22,6 +22,9 @@ public:
     // Array points are x and y coordinates
     double Amplitude(double xpom, double q1[2], double q2[2] );
     
+    double Amplitude(double xpom, Vec q1, Vec q2);  // this is also in DipoleAmplitude, a bit overlap...
+    
+    
     // Setup the target. In practice sample nucleon positions from Woods Saxon
     void InitializeTarget();
     

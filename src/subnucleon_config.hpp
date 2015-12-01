@@ -35,4 +35,11 @@ enum PROCESS
     INCOHERENT
 };
 
+
+// Globar random number generator - avoid initializing it mulitple times
+#include <gsl/gsl_rng.h>
+
+extern gsl_rng *global_rng;
+
 #endif /* subnucleon_config_h */
+

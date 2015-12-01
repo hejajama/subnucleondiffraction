@@ -13,6 +13,8 @@
 
 
 
+
+
 Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
 {
     dipole=&dipole_;
@@ -128,9 +130,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t)
     upper[1] = 2.0*M_PI;
     upper[2] = 10;  // Max r
     upper[3] = 2.0*M_PI;
-     
-    const gsl_rng_type *T;
-    gsl_rng *r;
+    
     gsl_monte_function F;
     F.f = &Inthelperf_amplitude_mc;
     F.dim = 4;
@@ -139,31 +139,27 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t)
     F.params = &helper;
     
     double result,error;
-    
-    T = gsl_rng_default;
-    r = gsl_rng_alloc(T);
+
     
     if (MCINT == MISER)
     {
         gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
-        gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, r, s, &result, &error);
+        gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result, &error);
         cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
         gsl_monte_miser_free(s);
     }
     else if (MCINT == VEGAS)
     {
         gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
-        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, r, s, &result, &error);
+        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result, &error);
         cout << "# vegas warmup " << result << " +/- " << error << endl;
         do
         {
-            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, r, s, &result, &error);
+            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result, &error);
             cout << "# Vegas interation " << result << " +/- " << error << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
         } while (fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 and result != 0);
         gsl_monte_vegas_free(s);
     }
-    
-    gsl_rng_free(r);
     
     //if (std::abs(error/result) > MCINTACCURACY)
     //    cerr << "#MC integral failed, result " << result << " error " << error << endl;
