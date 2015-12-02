@@ -37,9 +37,8 @@ void Ipsat_Proton::InitializeTarget()
         } while (gsl_rng_uniform(global_rng) > RadiusDistribution(radius));
         
         // Sample angle
-        double costheta = 2.0*(gsl_rng_uniform(global_rng)-0.5);
-        double sintheta = 2.0*(gsl_rng_uniform(global_rng)-0.5);     // TODO is this really uniform in theta
-        Vec tmpvec(radius*costheta, radius*sintheta);
+        double angle = 2.0*M_PI*gsl_rng_uniform(global_rng);
+        Vec tmpvec(radius*std::cos(angle), radius*std::sin(angle));
         quarks.push_back(tmpvec);
         quark_bp.push_back(B_q);  
     }
@@ -52,7 +51,27 @@ Ipsat_Proton::Ipsat_Proton()
     saturation=true;
     B_p = 4.0; // GeV^-2
     B_q = B_p/3.0;
+ 
+    gdist = new DGLAPDist();
+    allocated_gdist = true;
 }
+Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
+{
+    saturation=true;
+    B_p = 4.0; // GeV^-2
+    B_q = B_p/3.0;
+    
+    gdist = gd;
+    allocated_gdist = false;
+}
+
+Ipsat_Proton::~Ipsat_Proton()
+{
+    if (allocated_gdist)
+        delete gdist;
+}
+
+
 
 
 double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
@@ -82,9 +101,9 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
     }
     
     if (saturation)
-        return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * gdist.Gluedist(xpom, r.LenSqr()) * tpsum  );
+        return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  );
     else
-        return r.LenSqr() * 1.0/quarks.size() * gdist.Gluedist(xpom, r.LenSqr()) * tpsum  ;
+        return r.LenSqr() * 1.0/quarks.size() * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  ;
 
 }
 
@@ -119,16 +138,18 @@ double Ipsat_Proton::RadiusDistribution(double r)
     // a sampled radius. Any factor ]0,1] should work (TEST!)
     
     /*
-     * Exponential distribution, doesnt seemt to work with HERA
-    r = r / 5.08;   // r to fm
+     * Exponential distribution, doesnt seemt to work with HERA??
+     
+    r = r / 5.06778;   // r to fm
     
     //a = \sqrt{12}/R_p = 3.87, with R_p = 0.895 from
     //http://journals.aps.org/rmp/pdf/10.1103/RevModPhys.77.1
-    double a = std::sqrt(12)/R_p;
+    //double a = std::sqrt(12)/R_p;     // not working with HERA
+    double a = 2.78724; // 0.55 GeV^-1
     double norm = 1.0 / ( std::pow(2.0/a, 2)*std::exp(-2) );    // Normalized to unity at maximum
     
     return norm * r*r*std::exp(-a*r);
-     */
+    */
     
 }
 

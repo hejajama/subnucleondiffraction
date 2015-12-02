@@ -11,6 +11,7 @@
 #include <vector>
 #include "ipsat_proton.hpp"
 #include "vector.hpp"
+#include "gdist_dglap.hpp"
 
 class Nucleons : public DipoleAmplitude
 {
@@ -37,6 +38,10 @@ private:
     
     double ws_delta;
     double ws_ra;
+    
+    DGLAPDist gdist;    // Use when create nucleus from ipsat protons, so that not every proton has to
+    // load the gluon distribution
+    
 };
 
 #endif /* nucleons_hpp */

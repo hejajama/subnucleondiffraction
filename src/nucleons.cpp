@@ -54,12 +54,7 @@ void Nucleons::InitializeTarget()
     
     
     for (int i=0; i<A; i++)
-    {
-        cout << "new loop" << endl;
-        Ipsat_Proton nucleon;
-        nucleon.SetProtonWidth(B_p);
-        nucleon.SetQuarkWidth(B_q);
-        nucleon.InitializeTarget();
+    {   
     
         double maxr = 3.0*ws_ra;
         
@@ -72,14 +67,11 @@ void Nucleons::InitializeTarget()
         } while (gsl_rng_uniform(global_rng) > WS_unnorm(tmp.Len())); // WS distribution!
         nucleon_positions.push_back(tmp);
 
-        Ipsat_Proton p;
+        Ipsat_Proton p(&gdist);
         p.SetQuarkWidth(B_q);
         p.SetProtonWidth(B_p);
         p.InitializeTarget();
-        cout << "push back" << endl;
         nucleons.push_back(p);
-        
-        std::cout << "sampled coordinates " << tmp << std:: endl;
         
 
     }
