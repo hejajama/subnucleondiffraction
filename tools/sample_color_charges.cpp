@@ -6,6 +6,7 @@
 
 #include "sample_color_charges.hpp"
 #include "../src/ipsat_proton.hpp"
+#include "../src/wilsonline.hpp"
 #include <gsl/gsl_rng.h>
 #include <cmath>
 #include <gsl/gsl_roots.h>
@@ -19,8 +20,12 @@ int main(int argc, char* argv[])
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
     
+    WilsonLine w;
+    w.InitializeAsGenerator(1);
+    cout << w << endl;
+    
     Sampler sampler;
-    for (int i=0; i<10000; i++)
+    for (int i=0; i<1; i++)
     {
         cout << sampler.RandomColorCharge(0,0,0.01) << endl;
     }

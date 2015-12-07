@@ -31,6 +31,8 @@ public:
 
     std::complex<double> Trace();
     
+    void InitializeAsGenerator(int a);  // Initialize as Color matrix t^a
+    
 private:
     std::vector< std::vector< std::complex<double> > > data;
 };

@@ -146,3 +146,34 @@ std::ostream& operator<<(std::ostream& os, WilsonLine& wl)
     return os;
 }
 
+/* Initialize as SU(3) generator
+ * a=1...8
+ */
+void WilsonLine::InitializeAsGenerator(int a)
+{
+    if (a < 1 or a >8)
+    {
+        std::cerr << "SU(3) generator id must be within 1...8, asked " << a << std::endl;
+        return;
+    }
+    data.clear();
+    
+    switch(a)
+    {
+        case 1:
+            std::vector< std::complex<double> > row;
+            row.push_back(0); row.push_back(0.5); row.push_back(0);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0.5); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            break;
+    };
+    
+    
+}
+
+

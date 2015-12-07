@@ -30,19 +30,33 @@ void Ipsat_Proton::InitializeTarget()
     {
         // Radius from uniform distribution
         double radius=0;
-        //double maxr = std::sqrt(2.0*B_p)*10; // Up to 10 Gaussian widths away, note that large r is very unlikely
         double maxr = 30;
-        do{
-            radius = gsl_rng_uniform(global_rng) * maxr;
-        } while (gsl_rng_uniform(global_rng) > RadiusDistribution(radius));
         
-        //cout << radius << endl;
-        
-        // Sample angle
-        double angle = 2.0*M_PI*gsl_rng_uniform(global_rng);
-        Vec tmpvec(radius*std::cos(angle), radius*std::sin(angle));
-        quarks.push_back(tmpvec);
-        quark_bp.push_back(B_q);  
+        if (shape == GAUSSIAN)
+        {
+            do{
+                radius = gsl_rng_uniform(global_rng) * maxr;
+            } while (gsl_rng_uniform(global_rng) > GaussianRadiusDistribution(radius));
+            
+            // Sample angle
+            double angle = 2.0*M_PI*gsl_rng_uniform(global_rng);
+            Vec tmpvec(radius*std::cos(angle), radius*std::sin(angle));
+            quarks.push_back(tmpvec);
+            quark_bp.push_back(B_q);
+        }
+        else if (shape == EXPONENTIAL)
+        {
+            // We have to sample x,y,z separately
+            double x,y,z;
+            do{
+                x = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
+                y = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
+                z = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
+            } while (gsl_rng_uniform(global_rng) > ExponentialDistribution(x,y,z));
+            Vec tmpvec(x,y,z);
+            quarks.push_back(tmpvec);
+            quark_bp.push_back(B_q);
+        }
     }
     //exit(1);
     
@@ -134,42 +148,25 @@ double Ipsat_Proton::QuarkThickness(double r, int i)
 /*
  * Quark distances from the origin are sampled from this distribution
  */
-double Ipsat_Proton::RadiusDistribution(double r)
+double Ipsat_Proton::GaussianRadiusDistribution(double r)
 {
-    
-    // We want to have on averate the same distribution as in the IPsat model
-    if (shape == GAUSSIAN)
-    {
-        return 0.5*std::exp( - r*r / (2.0*B_p));
+    return 0.5*r*std::exp( - r*r / (2.0*B_p));
+}
     // Factor 0.5 should not matter, in just puts the probability always < 1 to accept
     // a sampled radius. Any factor ]0,1] should work (TEST!)
-    }
-    else if (shape == EXPONENTIAL)
-    {
+
+double Ipsat_Proton::ExponentialDistribution(double x, double y, double z)
+{
+    //a = \sqrt{12}/R_p = 3.87, with R_p = 0.895 from
+    //http://journals.aps.org/rmp/pdf/10.1103/RevModPhys.77.1
+    double a = B_p;
     
-        /*
-         * Exponential distribution, doesnt seemt to work with HERA??
-         */
-        //r = r / FMGEV;   // r to fm
-        
-        //a = \sqrt{12}/R_p = 3.87, with R_p = 0.895 from
-        //http://journals.aps.org/rmp/pdf/10.1103/RevModPhys.77.1
-        //double a = std::sqrt(12)/R_p;     // not working with HERA
-        double a = B_p;
-        //double a = 1.7*FMGEV;
-        double norm = 1.0 / ( std::pow(2.0/a, 2)*std::exp(-2) );    // Normalized to unity at maximum
-        
-        return norm * r*r*std::exp(-a*r);
-    }
-    else
-    {
-        std::cerr << "Unknown proton shape! " << std::endl;
-        return 0;
-     }
+    return std::exp( -a * std::sqrt( x*x + y*y + z*z ) );
     
 }
 
 
+        
 std::string Ipsat_Proton::InfoStr()
 {
     std::stringstream ss;

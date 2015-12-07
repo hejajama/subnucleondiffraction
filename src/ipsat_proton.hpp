@@ -62,7 +62,8 @@ private:
     
     double QuarkThickness(double r, int i); // Quark density profile for quark i, distance r from its origin
     
-    double RadiusDistribution(double r); // Distribution used to sample distances of quarks from the origin
+    double GaussianRadiusDistribution(double r);    // Used to sample Gaussian radius
+    double ExponentialDistribution(double x, double y, double z);   // Exponential distribution for a vector
     
     bool allocated_gdist;   // True if we have allocated memory for gdist in here
     
