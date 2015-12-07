@@ -13,7 +13,7 @@
 
 using std::cout; using std::endl;
 
-const double FMGEV = 5.08;
+const double FMGEV = 5.06778;
 
 void Ipsat_Proton::InitializeTarget()
 {
@@ -30,11 +30,13 @@ void Ipsat_Proton::InitializeTarget()
     {
         // Radius from uniform distribution
         double radius=0;
-        double maxr = std::sqrt(2.0*B_p)*10; // Up to 10 Gaussian widths away, note that large r is very unlikely
-        
+        //double maxr = std::sqrt(2.0*B_p)*10; // Up to 10 Gaussian widths away, note that large r is very unlikely
+        double maxr = 30;
         do{
             radius = gsl_rng_uniform(global_rng) * maxr;
         } while (gsl_rng_uniform(global_rng) > RadiusDistribution(radius));
+        
+        //cout << radius << endl;
         
         // Sample angle
         double angle = 2.0*M_PI*gsl_rng_uniform(global_rng);
@@ -42,6 +44,7 @@ void Ipsat_Proton::InitializeTarget()
         quarks.push_back(tmpvec);
         quark_bp.push_back(B_q);  
     }
+    //exit(1);
     
     
 }
@@ -51,6 +54,7 @@ Ipsat_Proton::Ipsat_Proton()
     saturation=true;
     B_p = 4.0; // GeV^-2
     B_q = B_p/3.0;
+    shape = GAUSSIAN;
  
     gdist = new DGLAPDist();
     allocated_gdist = true;
@@ -60,6 +64,7 @@ Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
     saturation=true;
     B_p = 4.0; // GeV^-2
     B_q = B_p/3.0;
+    shape = GAUSSIAN;
     
     gdist = gd;
     allocated_gdist = false;
@@ -133,23 +138,34 @@ double Ipsat_Proton::RadiusDistribution(double r)
 {
     
     // We want to have on averate the same distribution as in the IPsat model
-    return 0.5*std::exp( - r*r / (2.0*B_p));
+    if (shape == GAUSSIAN)
+    {
+        return 0.5*std::exp( - r*r / (2.0*B_p));
     // Factor 0.5 should not matter, in just puts the probability always < 1 to accept
     // a sampled radius. Any factor ]0,1] should work (TEST!)
+    }
+    else if (shape == EXPONENTIAL)
+    {
     
-    /*
-     * Exponential distribution, doesnt seemt to work with HERA??
-     
-    r = r / 5.06778;   // r to fm
-    
-    //a = \sqrt{12}/R_p = 3.87, with R_p = 0.895 from
-    //http://journals.aps.org/rmp/pdf/10.1103/RevModPhys.77.1
-    //double a = std::sqrt(12)/R_p;     // not working with HERA
-    double a = 2.78724; // 0.55 GeV^-1
-    double norm = 1.0 / ( std::pow(2.0/a, 2)*std::exp(-2) );    // Normalized to unity at maximum
-    
-    return norm * r*r*std::exp(-a*r);
-    */
+        /*
+         * Exponential distribution, doesnt seemt to work with HERA??
+         */
+        //r = r / FMGEV;   // r to fm
+        
+        //a = \sqrt{12}/R_p = 3.87, with R_p = 0.895 from
+        //http://journals.aps.org/rmp/pdf/10.1103/RevModPhys.77.1
+        //double a = std::sqrt(12)/R_p;     // not working with HERA
+        double a = B_p;
+        //double a = 1.7*FMGEV;
+        double norm = 1.0 / ( std::pow(2.0/a, 2)*std::exp(-2) );    // Normalized to unity at maximum
+        
+        return norm * r*r*std::exp(-a*r);
+    }
+    else
+    {
+        std::cerr << "Unknown proton shape! " << std::endl;
+        return 0;
+     }
     
 }
 
@@ -163,6 +179,10 @@ std::string Ipsat_Proton::InfoStr()
         ss << "(" << quarks[i].GetX() << ", " << quarks[i].GetY() << "), r=" << std::sqrt(2.0*quark_bp[i]) <<", B_q=" << quark_bp[i] ;
     }
     ss << ". Proton radius " << std::sqrt(2.0*B_p) << " GeV^-1, B_p=" << B_p << " ";
+    if (shape == GAUSSIAN)
+        ss << "Gaussian shape";
+    else if (shape == EXPONENTIAL)
+        ss << "Exponential shape, a=B_p";
     return ss.str();
 }
 
@@ -175,6 +195,11 @@ void Ipsat_Proton::SetProtonWidth(double bp)
 void Ipsat_Proton::SetQuarkWidth(double bq)
 {
     B_q = bq;
+}
+
+void Ipsat_Proton::SetShape(Proton_shape s)
+{
+    shape = s;
 }
 
 double Ipsat_Proton::Amplitude(double xpom, Vec q1, Vec q2)

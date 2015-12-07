@@ -14,6 +14,9 @@ diffraction: $(OBJECTS)
 .cpp.o: src/subnucleon_config.hpp
 	$(CXX) $(CXXFLAGS) $< -c -o $@
 
+tools: tools/sample_color_charges.o
+	$(CXX) `/opt/local/bin/gsl-config --cflags` -g $(LDFLAGS) tools/sample_color_charges.cpp src/dipole.o src/ipsat_proton.o src/vector.o src/gdist_dglap.o src/subnucleon_config.o -o tools/sample_color_charges
+
 clean:
 	rm -f $(OBJECTS)
 	rm -f diffraction

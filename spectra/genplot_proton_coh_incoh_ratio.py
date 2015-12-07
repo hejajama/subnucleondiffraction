@@ -54,9 +54,12 @@ ylabel(r"coherent/incoherent", fontsize=textsize+2)
 
 fig.suptitle(r"$Q^2=0, x=0.001$, $W \sim 100 \mathrm{GeV}$"   )
 
-bpvals = ["5.0","6.0"]
-bpvals=["4.5","7.0"]
-bqvals = ["2.0","2.5"] #["2.0","3.0"]
+
+files = [
+         ["ipsat_miser_1e6_a_1.6_bq_1.5", r"$a=1.6, B_q=1.5$", Linestyle(1), ""],
+         ["ipsat_miser_1e7_bp_1.5_bq_2.0", r"$B_p=1.5, B_q=2.0$", Linestyle(2),""],
+         ["ipsat_miser_1e7_bp_3.0_bq_2.0", r"$B_p=3.0, B_q=2.0$", Linestyle(3),""],
+         ]
 
 
 
@@ -64,39 +67,36 @@ bqvals = ["2.0","2.5"] #["2.0","3.0"]
 # systematical
 style=0
 color=0
-for bp in bpvals:
-    color=color+1
-    style=-1
-    for bq in bqvals:
-        style = style + 1
-        xdata_coh=[]
-        ydata_coh=[]
-        fname = "proton/coherent/ipsat_miser_1e7_bp_" + bp + "_bq_" + bq
-        print fname
-        try:
-            readfile_xy(fname, xdata_coh, ydata_coh)
-            scale_list(ydata_coh, GEVSQRTONB)
-        except:
-            print "Error with file " + fname
-        
-        # read total
-        xdata_tot=[]
-        ydata_tot=[]
-        fname = "proton/total/ipsat_miser_1e7_bp_" + bp + "_bq_" + bq
-        try:
-            readfile_xy(fname, xdata_tot, ydata_tot)
-            scale_list(ydata_tot, GEVSQRTONB)
-        except:
-            print "Error with file " + fname
-        
-        ydata_incoh=[]
-        tdata=[]
-        for t,tot,coh in zip(xdata_coh,ydata_tot, ydata_coh):
-            ydata_incoh.append(coh/(tot-coh))
-            tdata.append(t)
-        
-        
-        p1.plot(tdata, ydata_incoh, linestyle=Linestyle(style), marker=Datastyle(style), color=Color(color), label=r"$B_p=" + bp +", B_q=" + bq + r"$", linewidth=0.5, markersize=2.5)
+for f in files:
+    style = style + 1
+    xdata_coh=[]
+    ydata_coh=[]
+    fname = "proton/coherent/" + f[0]
+    print fname
+    try:
+        readfile_xy(fname, xdata_coh, ydata_coh)
+        scale_list(ydata_coh, GEVSQRTONB)
+    except:
+        print "Error with file " + fname
+    
+    # read total
+    xdata_tot=[]
+    ydata_tot=[]
+    fname = "proton/total/" + f[0]
+    try:
+        readfile_xy(fname, xdata_tot, ydata_tot)
+        scale_list(ydata_tot, GEVSQRTONB)
+    except:
+        print "Error with file " + fname
+    
+    ydata_incoh=[]
+    tdata=[]
+    for t,tot,coh in zip(xdata_coh,ydata_tot, ydata_coh):
+        ydata_incoh.append(coh/(tot-coh))
+        tdata.append(t)
+    
+    
+    p1.plot(tdata, ydata_incoh, linestyle=f[2], marker=f[3], color=Color(color), label=f[1], linewidth=0.5, markersize=2.5)
 
 
 expx=[]

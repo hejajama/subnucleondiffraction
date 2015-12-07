@@ -81,6 +81,7 @@ int main(int argc, char* argv[])
                 amp = new Ipsat_Proton;
                 ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+2]));
                 ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+3]));
+                ((Ipsat_Proton*)amp)->SetShape(EXPONENTIAL);
                 
             }
             else if (string(argv[i+1])=="ipglasma")
@@ -169,8 +170,8 @@ int main(int argc, char* argv[])
     if (p == INCOHERENT)
         cout << "# t    dsigma/dt [GeV^4] " << endl;
     if (p == COHERENT)
-        cout << "# t    Re A [GeV^2] " << endl;
-    for (t=0.0; t<=2.61; t+=0.100)
+        cout << "# t    Re or Im A [GeV^2] " << endl;
+    for (t=0.0; t<=2.61; t+=0.150)
     {
         double res = 0;
         cout.precision(5);

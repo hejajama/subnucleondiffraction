@@ -15,6 +15,12 @@
 #include "vector.hpp"
 #include "gdist_dglap.hpp"
 
+enum Proton_shape
+{
+    GAUSSIAN,
+    EXPONENTIAL
+};
+
 class Ipsat_Proton : public DipoleAmplitude
 {
 public:
@@ -39,6 +45,8 @@ public:
     void SetProtonWidth(double bp_);
     void SetQuarkWidth(double bq_);
     
+    void SetShape(Proton_shape s);
+    
     std::string InfoStr();
     
     
@@ -57,6 +65,8 @@ private:
     double RadiusDistribution(double r); // Distribution used to sample distances of quarks from the origin
     
     bool allocated_gdist;   // True if we have allocated memory for gdist in here
+    
+    Proton_shape shape;
 };
 
 #endif /* ipsat_proton_hpp */

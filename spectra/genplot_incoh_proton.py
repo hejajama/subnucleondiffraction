@@ -67,68 +67,62 @@ for f in files:
     
     fig.suptitle(r"$Q^2=0, x=0.001$, $W \sim 100 \mathrm{GeV}$"   )
 
-bpvals = ["5.0","6.0"]
-bpvals=["4.5","7.0"]
-bqvals = ["2.0","2.5"] #["2.0","3.0"]
+# fname title style marker
+files = [
+    ["ipsat_miser_1e6_a_1.6_bq_1.5", r"$a=1.6, B_q=1.5$", Linestyle(1), ""],
+    ["ipsat_miser_1e7_bp_4.0_bq_2.0", r"$B_p=4.0, B_q=2.0$", Linestyle(2),""],
+    ["ipsat_miser_1e7_bp_3.0_bq_2.0", r"$B_p=3.0, B_q=2.0$", Linestyle(3),""],
+]
 
 style=0
 color=0
-for bp in bpvals:
-    color=color+1
-    #for
-    #color = color + 1
-    for bq in  bqvals:
-        style = style + 1
-        xdata=[]
-        ydata=[]
-        fname = "proton/coherent/ipsat_miser_1e7_bp_" + bp + "_bq_" + bq
-        print fname
-        try:
-            readfile_xy(fname, xdata, ydata)
-            scale_list(ydata, GEVSQRTONB)
-        except:
-            print "Error with file " + fname
-        p1.plot(xdata, ydata, linestyle=Linestyle(color), marker=Datastyle(style), color=Color(color), label=r"$B_p=" + bp +", B_q=" + bq + r"$", linewidth=1,markersize=5)
+for f in files:
+    color = color + 1
+    style = style + 1
+    xdata=[]
+    ydata=[]
+    fname = "proton/coherent/" +f[0]
+    print fname
+    try:
+        readfile_xy(fname, xdata, ydata)
+        scale_list(ydata, GEVSQRTONB)
+    except:
+        print "Error with file " + fname
+    p1.plot(xdata, ydata, linestyle=f[2], marker=f[3], color=Color(color), label=f[1], linewidth=1,markersize=5)
 
 
-# systematical
-style=0
-color=0
-#params=[ ["5.0","2.5"],["6.0","2.5"],["7.0","2.5"],["5.0","3.0"], ["5.5","3.0"]]
-#for p in params:
-#        bp = p[0]
-#        bq=p[1]
-for bp in bpvals:
-    color=color+1
-    for bq in bqvals:
-        style = style + 1
-        xdata=[]
-        ydata=[]
-        fname = "proton/coherent/ipsat_miser_1e7_bp_" + bp + "_bq_" + bq
-        print fname
-        try:
-            readfile_xy(fname, xdata, ydata)
-            scale_list(ydata, GEVSQRTONB)
-        except:
-            print "Error with file " + fname
-        
-        # read total
-        xdata_tot=[]
-        ydata_tot=[]
-        fname = "proton/total/ipsat_miser_1e7_bp_" + bp + "_bq_" + bq
-        try:
-            readfile_xy(fname, xdata_tot, ydata_tot)
-            scale_list(ydata_tot, GEVSQRTONB)
-        except:
-            print "Error with file " + fname
+# incoh
+color = 0
+for f in files:
+    color = color + 1
+    style = style + 1
+    xdata=[]
+    ydata=[]
+    fname = "proton/coherent/" + f[0]
+    print fname
+    try:
+        readfile_xy(fname, xdata, ydata)
+        scale_list(ydata, GEVSQRTONB)
+    except:
+        print "Error with file " + fname
+    
+    # read total
+    xdata_tot=[]
+    ydata_tot=[]
+    fname = "proton/total/" + f[0]
+    try:
+        readfile_xy(fname, xdata_tot, ydata_tot)
+        scale_list(ydata_tot, GEVSQRTONB)
+    except:
+        print "Error with file " + fname
 
-        ydata_incoh=[]
-        tdata=[]
-        for t,tot,coh in zip(xdata,ydata_tot, ydata):
-            ydata_incoh.append(tot-coh)
-            tdata.append(t)
+    ydata_incoh=[]
+    tdata=[]
+    for t,tot,coh in zip(xdata,ydata_tot, ydata):
+        ydata_incoh.append(tot-coh)
+        tdata.append(t)
 
-        p1.plot(tdata, ydata_incoh, linestyle=Linestyle(3), marker=Datastyle(style), color=Color(color), label=r"", linewidth=0.5, markersize=2.5)
+    p1.plot(tdata, ydata_incoh, linestyle=f[2], marker=f[3], color=Color(color), label=r"", linewidth=0.5, markersize=2.5)
 
 # h1 data
 expx=[]
@@ -164,7 +158,7 @@ experr=[]
 tmp=[]
 readfile_xy("proton/incoherent/exp/h1_thesis", expx, expy)
 readfile_xy("proton/incoherent/exp/h1_thesis", tmp, experr, ycol=2)
-p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=2.1, label=r"incoh H1 $Q^2 \le 2.5\mathrm{GeV}^2, 40 < W < 110 \mathrm{GeV}$")
+#p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=2.1, label=r"incoh H1 $Q^2 \le 2.5\mathrm{GeV}^2, 40 < W < 110 \mathrm{GeV}$")
 
 yscale("log")
 #xscale("log")
