@@ -150,7 +150,7 @@ double Ipsat_Proton::QuarkThickness(double r, int i)
  */
 double Ipsat_Proton::GaussianRadiusDistribution(double r)
 {
-    return 0.5*r*std::exp( - r*r / (2.0*B_p));
+    return std::sqrt(std::exp(1) / std::exp(B_p))*r*std::exp( - r*r / (2.0*B_p));
 }
     // Factor 0.5 should not matter, in just puts the probability always < 1 to accept
     // a sampled radius. Any factor ]0,1] should work (TEST!)
@@ -164,6 +164,7 @@ double Ipsat_Proton::ExponentialDistribution(double x, double y, double z)
     return std::exp( -a * std::sqrt( x*x + y*y + z*z ) );
     
 }
+
 
 
         

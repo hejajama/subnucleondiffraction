@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
                 amp = new Ipsat_Proton;
                 ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+2]));
                 ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+3]));
-                ((Ipsat_Proton*)amp)->SetShape(EXPONENTIAL);
+                ((Ipsat_Proton*)amp)->SetShape(GAUSSIAN);
                 
             }
             else if (string(argv[i+1])=="ipglasma")
@@ -147,7 +147,13 @@ int main(int argc, char* argv[])
     if (print_nucleus)
     {
         // Print ipsat nucleus, todo: ipglasma
-        std::vector<Vec> positions = ((Ipsat_Proton*)amp)->GetQuarks();
+        
+            std::vector<Vec> positions = ((Ipsat_Proton*)amp)->GetQuarks();
+            for (int j=0; j<3; j++)
+                cout << positions[j].Len() << endl;
+        
+        return 0;
+        //std::vector<Vec> positions = ((Ipsat_Proton*)amp)->GetQuarks();
         std::vector<double> radii =((Ipsat_Proton*)amp)->GetRadii();
         cout << "# x   y    radius   [GeV^-1]" << endl;
         for (int i=0; i<positions.size(); i++)

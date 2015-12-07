@@ -49,6 +49,7 @@ public:
     
     std::string InfoStr();
     
+       
     
 private:
     DGLAPDist *gdist;    // DGLAP evolved xg
