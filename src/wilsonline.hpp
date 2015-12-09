@@ -19,6 +19,8 @@ public:
     WilsonLine(std::vector< std::vector< std::complex<double> > >  &d);
 
     WilsonLine operator*(WilsonLine& w);
+    WilsonLine operator*(std::complex<double> t);
+    WilsonLine operator+(WilsonLine& w);
     
     WilsonLine ComplexConjugate();
     WilsonLine Transpose();

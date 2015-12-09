@@ -79,6 +79,52 @@ WilsonLine WilsonLine::operator*(WilsonLine& w)
     return res;
 }
 
+WilsonLine WilsonLine::operator*(std::complex<double> t)
+{
+    std::vector< std::vector< std::complex< double> > > newdata;
+    
+    
+    for (int row=0; row < Size(); row++)
+    {
+        std::vector< std::complex< double> > tmprow;
+        for (int col=0; col < Size(); col++)
+        {
+            // Calculate element (row,column)
+            tmprow.push_back(t*Element(row, col));
+        }
+        newdata.push_back(tmprow);
+    }
+    WilsonLine res(newdata);
+    return res;
+}
+
+
+WilsonLine WilsonLine::operator+(WilsonLine& w)
+{
+    std::vector< std::vector< std::complex< double> > > newdata;
+    
+    
+    if (Size() != w.Size())
+    {
+        throw "WrongMatrixSize";
+    }
+    
+    for (int row=0; row < Size(); row++)
+    {
+        std::vector< std::complex< double> > tmprow;
+        for (int col=0; col < Size(); col++)
+        {
+            // Calculate element (row,column)
+            tmprow.push_back(Element(row, col) + w.Element(row,col));
+        }
+        newdata.push_back(tmprow);
+    }
+    WilsonLine res(newdata);
+    return res;
+}
+
+
+
 
 WilsonLine WilsonLine::ComplexConjugate()
 {
@@ -158,10 +204,12 @@ void WilsonLine::InitializeAsGenerator(int a)
     }
     data.clear();
     
+    std::complex<double> imag(0,1.0);
+    std::vector< std::complex<double> > row;
     switch(a)
     {
         case 1:
-            std::vector< std::complex<double> > row;
+            row.clear();
             row.push_back(0); row.push_back(0.5); row.push_back(0);
             data.push_back(row);
             row.clear();
@@ -169,6 +217,83 @@ void WilsonLine::InitializeAsGenerator(int a)
             data.push_back(row);
             row.clear();
             row.push_back(0); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            break;
+        case 2:
+            row.clear();
+            row.push_back(0); row.push_back(-0.5*imag); row.push_back(0);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0.5*imag); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            break;
+        case 3:
+            row.clear();
+            row.push_back(0.5); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0); row.push_back(-0.5); row.push_back(0);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            break;
+        case 4:
+            row.clear();
+            row.push_back(0); row.push_back(0); row.push_back(0.5);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0.5); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            break;
+        case 5:
+            row.clear();
+            row.push_back(0); row.push_back(0); row.push_back(-0.5*imag);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0.5*imag); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            break;
+        case 6:
+            row.clear();
+            row.push_back(0); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0); row.push_back(0); row.push_back(0.5);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0); row.push_back(0.5); row.push_back(0);
+            data.push_back(row);
+            break;
+        case 7:
+            row.clear();
+            row.push_back(0); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0); row.push_back(0); row.push_back(-0.5*imag);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0); row.push_back(0.5*imag); row.push_back(0);
+            data.push_back(row);
+            break;
+        case 8:
+            row.clear();
+            row.push_back(1.0/(2.0*std::sqrt(3))); row.push_back(0); row.push_back(0);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0); row.push_back(1.0/(2.0*std::sqrt(3))); row.push_back(0);
+            data.push_back(row);
+            row.clear();
+            row.push_back(0); row.push_back(0); row.push_back(-2.0/(2.0*std::sqrt(3)));
             data.push_back(row);
             break;
     };

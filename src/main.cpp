@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
                 amp = new Ipsat_Proton;
                 ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+2]));
                 ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+3]));
-                ((Ipsat_Proton*)amp)->SetShape(GAUSSIAN);
+                ((Ipsat_Proton*)amp)->SetShape(EXPONENTIAL);
                 
             }
             else if (string(argv[i+1])=="ipglasma")

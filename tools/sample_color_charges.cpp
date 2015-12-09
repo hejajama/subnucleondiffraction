@@ -20,17 +20,49 @@ int main(int argc, char* argv[])
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
     
-    WilsonLine w;
-    w.InitializeAsGenerator(1);
-    cout << w << endl;
-    
     Sampler sampler;
-    for (int i=0; i<1; i++)
+    WilsonLine l;
+    for (int i=1; i<=8; i++)
     {
-        cout << sampler.RandomColorCharge(0,0,0.01) << endl;
+        double rho =sampler.RandomColorCharge(0,0,0.01);
+        //cout << i << " " << rho << endl;
+        WilsonLine ta; ta.InitializeAsGenerator(i);
+        WilsonLine tmpline; tmpline = ta*rho;
+        l = l + tmpline;
     }
+   // cout << l << endl;
+    
+    sampler.FillColorCharges(0.01);
     
     return 0;
+}
+
+void Sampler::FillColorCharges(double xbj)
+{
+    // Fill coordinate grid
+    rho.clear();
+    coordinates.clear();
+    double maxr = 5;
+    int xpoints = 100;
+    double step = (2.0*maxr / xpoints);
+    for (double y = -maxr; y<= maxr; y+=step)
+    {
+        coordinates.push_back(y);
+        std::vector< std::vector < double > > tmpvec;
+        for (double x = -maxr; x<= maxr; x+= step)
+        {
+            std::vector<double> tmprho;
+            for (int a=1; a<=8; a++)
+            {
+                tmprho.push_back( RandomColorCharge(x, y, xbj) );
+            }
+          tmpvec.push_back(tmprho);
+        }
+        rho.push_back(tmpvec);
+    } 
+
+
+    
 }
 
 
@@ -50,9 +82,9 @@ double Sampler::RandomColorCharge(double x, double y, double xbj)
     // Sample color charge from the ColorChargeDistribution
     double rho;
     do{
-        rho = gsl_rng_uniform(global_rng) * 10;
+        rho = gsl_rng_uniform(global_rng) ;
     } while (gsl_rng_uniform(global_rng) > ColorChargeDistribution(rho, gmusqr));
-    
+
     return rho;
 }
 
@@ -62,6 +94,8 @@ Sampler::Sampler()
     proton.SetQuarkWidth(4);
     proton.InitializeTarget();
     Ny=100;
+
+
 }
 
 

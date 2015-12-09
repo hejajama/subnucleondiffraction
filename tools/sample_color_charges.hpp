@@ -19,11 +19,12 @@ public:
     double ColorChargeDistribution(double rho, double width);
     double RandomColorCharge(double x, double y, double xbj);
     
+    void FillColorCharges(double xbj); // Fill grid
+    
+
 private:
     Ipsat_Proton proton;
     int Ny;
-    
-    
     
     
     

@@ -69,9 +69,12 @@ for f in files:
 
 # fname title style marker
 files = [
-    ["ipsat_miser_1e6_a_1.6_bq_1.5", r"$a=1.6, B_q=1.5$", Linestyle(1), ""],
-    ["ipsat_miser_1e7_bp_4.0_bq_2.0", r"$B_p=4.0, B_q=2.0$", Linestyle(2),""],
-    ["ipsat_miser_1e7_bp_3.0_bq_2.0", r"$B_p=3.0, B_q=2.0$", Linestyle(3),""],
+         ["gaussian/ipsat_miser_1e7_bp_3.0_bq_1.0", r"$B_p=3.0, B_q=1.0$", Linestyle(1),""],
+         ["gaussian/ipsat_miser_1e7_bp_2.0_bq_2.0", r"$B_p=2.0, B_q=2.0$", Linestyle(2),""],
+         ["gaussian/ipsat_miser_1e7_bp_1.0_bq_3.0", r"$B_p=1.0, B_q=3.0$", Linestyle(3),""],
+         #["exponential/ipsat_miser_1e7_a_1.3_bq_2.0", r"$a=1.3, B_q=2.0$", Linestyle(1),""],
+         #["exponential/ipsat_miser_1e7_a_1.5_bq_1.5", r"$a=1.5, B_q=1.5$", Linestyle(2),""],
+         #["exponential/ipsat_miser_1e7_a_1.1_bq_2.0", r"$a=1.1, B_q=2.0$", Linestyle(3),""],
 ]
 
 style=0
