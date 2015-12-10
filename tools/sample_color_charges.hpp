@@ -9,7 +9,14 @@
 #include <vector>
 
 #include "../src/ipsat_proton.hpp"
+#include "../src/wilsonline.hpp"
 
+/*
+ * This class takes care of sampling color charges at one longitudinal coordinate index
+ * The final output is the grid of matrices A^+ for each transverse coordinate
+ * In order to finally get the Wilson line one should sample N_y matrices and calculate the 
+ * product of exonentials
+ */
 class Sampler
 {
 public:
@@ -21,16 +28,23 @@ public:
     
     void FillColorCharges(double xbj); // Fill grid
     
+    void FT_rho_to_k();
+    
 
 private:
     Ipsat_Proton proton;
     int Ny;
+    double as;  // alpha_s
     
-    
+    std::vector< std::vector< WilsonLine > > rho_t; // rho^a t^a for each coordinate
+    std::vector< std::vector< WilsonLine > > Aplus; // A^+(xt) at each transverse coordinate
     
     // Grid
     std::vector<double> coordinates;    // maps index -> coordinate in GeV^-1
     std::vector< std::vector< std::vector<double> > > rho;   // Grid of 8 component color vectors
+    
+    int xpoints; // Number of grid points
+
 };
 
 
