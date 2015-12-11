@@ -13,6 +13,8 @@
 #include <iostream>
 #include "fftwpp/Array.h"
 #include "fftwpp/fftw++.h"
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_linalg.h>
 gsl_rng* global_rng;
 
 using namespace std;
@@ -23,21 +25,55 @@ int main(int argc, char* argv[])
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
     
-    Sampler sampler;
-    WilsonLine l;
-    /*
-    for (int i=1; i<=8; i++)
+    std::vector<Sampler> samplers;
+    Ipsat_Proton proton;
+    proton.SetProtonWidth(0.000001);
+    proton.SetQuarkWidth(4);
+    proton.InitializeTarget();
+    // Initialize N samplers, that is, discretize in longitudinal direction
+    int nsamplers=50;
+    for (int i=0; i<nsamplers; i++)
     {
-        double rho =sampler.RandomColorCharge(0,0,0.01);
-        //cout << i << " " << rho << endl;
-        WilsonLine ta; ta.InitializeAsGenerator(i);
-        WilsonLine tmpline; tmpline = ta*rho;
-        l = l + tmpline;
+        Sampler s(50, &proton);
+        samplers.push_back(s);
+        samplers[samplers.size()-1].FillColorCharges(0.01);
+        samplers[samplers.size()-1].CalculateAplus();
+        
     }
-   // cout << l << endl;
-    */
-    sampler.FillColorCharges(0.01);
-    sampler.FT_rho_to_k();
+    
+    // Calculate Wislon lines and print them
+    int points = samplers[0].GetNumOfCoordinatePoints();
+    for (int yind=1; yind < points; yind++)
+    {
+        for (int xind=1; xind < points; xind++)
+        {
+            // V = prod_k exp(-i A^+_k)
+            WilsonLine v;
+            v.InitializeAsIdentity();
+            for (int k=0; k<nsamplers; k++)
+            {
+                WilsonLine tmp = samplers[k].GetAplus(xind,yind);
+                std::complex<double> im(0,1);
+                tmp = tmp*(-im);
+                WilsonLine exp = tmp.Exp();
+                v = v * exp;
+            }
+            
+            // Print matrix
+            cout << samplers[0].GetCoordinate(yind) << " " << samplers[0].GetCoordinate(xind) << " ";
+            for (int row=0; row<3; row++)
+            {
+                for (int col=0; col<3; col++)
+                {
+                    cout << v.Element(row,col).real() << " " << v.Element(row,col).imag() << " ";;
+                }
+            }
+            cout << endl;
+        }
+    }
+    
+    //sampler.FillColorCharges(0.01);
+    //sampler.FT_rho_to_k();
     return 0;
 }
 
@@ -47,6 +83,7 @@ void Sampler::FillColorCharges(double xbj)
     rho.clear();
     coordinates.clear();
     double maxr = 5;
+
     
     double step = (2.0*maxr / xpoints);
     for (double y = -maxr; y<= maxr; y+=step)
@@ -104,15 +141,13 @@ double Sampler::RandomColorCharge(double x, double y, double xbj)
     return rho;
 }
 
-Sampler::Sampler()
+Sampler::Sampler(int ny, Ipsat_Proton* proton_)
 {
-    proton.SetProtonWidth(0.000001);
-    proton.SetQuarkWidth(4);
-    proton.InitializeTarget();
-    Ny=100;
+    
+    Ny=ny;
     as=0.2;
-    xpoints = 50;
-
+    xpoints = 150;
+    proton = proton_;
 
 }
 
@@ -131,18 +166,19 @@ double Sampler::ColorChargeDistribution(double rho, double width)
 
 /*
  * Fourier transfer to color charge density momentum space using FFTW
+ * Then divide by k^2 and FT back, to get A^+ in x space
  */
-void Sampler::FT_rho_to_k()
+void Sampler::CalculateAplus()
 {
     unsigned int nx = coordinates.size();
     unsigned int ny = nx;
-    
-    cout << "Coordinates: " << endl;
+    /*
+    cout << "#Coordinates: " << endl;
     for (int i = 0; i < coordinates.size(); i++)
     {
-        cout << i << "-" << coordinates[i] << "  ";
+        cout << "#" <<   i << "-" << coordinates[i] << "  ";
     }
-    cout << endl;
+    cout << endl;*/
 
     
     // Initialize grip of Wilson lines in x space
@@ -159,9 +195,9 @@ void Sampler::FT_rho_to_k()
     }
     
     // FT each component of the rho_t matrix separately
-    for (int mat_y = 0; mat_y < 1; mat_y++)
+    for (int mat_y = 0; mat_y < 3; mat_y++)
     {
-        for (int mat_x=0; mat_x < 1; mat_x++)
+        for (int mat_x=0; mat_x < 3; mat_x++)
         {
             // Now create 2d grid of values of matrix[y][x]
             
@@ -175,8 +211,8 @@ void Sampler::FT_rho_to_k()
                 for (int xind=0; xind<nx; xind++)
                 {
                     // Debug: use Gaussian exp(-x^2)exp(-y^2)
-                    data(yind,xind) = std::exp( - coordinates[xind]*coordinates[xind])*std::exp( - coordinates[yind]*coordinates[yind]);
-                    //data(yind,xind) = rho_t[yind][xind].Element(mat_y, mat_x);
+                    //data(yind,xind) = std::exp( - coordinates[xind]*coordinates[xind])*std::exp( - coordinates[yind]*coordinates[yind]);
+                    data(yind,xind) = rho_t[yind][xind].Element(mat_y, mat_x);
                 }
             }
             //cout << "Color components " << mat_y << " , " << mat_x << ":  " << endl;
@@ -198,7 +234,7 @@ void Sampler::FT_rho_to_k()
                 
                 //}
                 std::complex<double> tm = data[ty][ty];
-                cout << ty << " " << tm << endl;
+               // cout << ty << " " << tm << endl;
             }
             
             
@@ -211,20 +247,33 @@ void Sampler::FT_rho_to_k()
                     // FFTW has exp(2pi k.x), so in practice it calculates the Fourier transfer at
                     // momenta 2pi k. To get the physical momenta we divide the components by 2pi
                     
-                    ///TODO: Note that the FFTW output array is periodic, and one has to really think
-                    // what is the momenta that corresponds to a given index
+                    // Calculate momenta
+                    double delta = coordinates[1] - coordinates[0];
+                    // First half of the grid points have positive momenta, starting from zero
+                    // Momenta step is 1.0/(points*delta_x)
+                    double k1,k2;
+                    if (xind <= xpoints/2)
+                        k1 = 1.0 / (xpoints * delta) * xind;
+                    else    // At boundary goes to negative
+                        k1 = -1.0/(2.0*delta) + 1.0/(xpoints*delta) * (xind - xpoints/2);
+                    if (yind <= xpoints/2)
+                        k2 = 1.0 / (xpoints * delta) * yind;
+                    else    // At boundary goes to negative
+                        k2 = -1.0/(2.0*delta) + 1.0/(xpoints*delta) * (yind - xpoints/2);
+
+                    // Test if we get a gaussian plot
+                    //std::complex<double> tmp = data[yind][xind];
+                    //cout << k1 << " " << k2 << " " << tmp.real() << " " << tmp.imag() <<endl;
                     
-                    double k1 = 1.0/coordinates[yind];
-                    double k2 = 1.0/coordinates[xind];
-                    //k1/=2.0*M_PI; k2/=2.0*M_PI;
-                    double ktsqr = 1; //k1*k1 + k2*k2 + 0.1;
+
+                    //k1/=2.0*M_PI; k2/=2.0*M_PI; //TODO!
+                    double ktsqr = k1*k1 + k2*k2;
+                    if (ktsqr < 1e-4)
+                        ktsqr = 1e-4;
                     g=1;
-                    if (isinf(ktsqr))
-                        data(yind,xind)=0;
-                    else
-                    {
-                        data(yind,xind) *= g/ktsqr;
-                    }
+
+                    data(yind,xind) *= g/ktsqr;
+                    
                 }
             }
             
@@ -244,9 +293,16 @@ void Sampler::FT_rho_to_k()
     }
     
     
-    // Should be ready!
-    for (int i = 60; i<=100; i+=10)
-        cout << Aplus[i][i].Element(0,0) << endl;
+   /* // Should be ready!
+    for (int i = 0; i < xpoints; i++)
+    {
+        for (int j=0; j<xpoints; j++)
+        {
+            cout << coordinates[i] << " " << coordinates[j] << " " << Aplus[i][j].Element(0,0).real() << endl;
+        }
+    }*/
+    //for (int i = 60; i<=100; i+=10)
+    //    cout << Aplus[i][i].Element(0,0) << endl;
     
 }
 
@@ -282,7 +338,7 @@ double Sampler::SaturationScale(double x, double y, double xbj)
     par.xbj = xbj;
     par.x = x;
     par.y=y;
-    par.proton = &proton;
+    par.proton = proton;
     f.params = &par;
     const gsl_root_fsolver_type *T = gsl_root_fsolver_bisection;
     gsl_root_fsolver *s = gsl_root_fsolver_alloc(T);
@@ -304,4 +360,19 @@ double Sampler::SaturationScale(double x, double y, double xbj)
     gsl_root_fsolver_free(s);
     return qs;
     
+}
+
+double Sampler::GetCoordinate(int ind)
+{
+    return coordinates[ind];
+}
+
+WilsonLine& Sampler::GetAplus(int xind, int yind)
+{
+    return Aplus[yind][xind];
+}
+
+int Sampler::GetNumOfCoordinatePoints()
+{
+    return coordinates.size();
 }

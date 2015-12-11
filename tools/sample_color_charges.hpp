@@ -20,7 +20,7 @@
 class Sampler
 {
 public:
-    Sampler();
+    Sampler(int ny, Ipsat_Proton* proton_);
     
     double SaturationScale(double x, double y, double xbj); // Solve saturation sacle at coordinate (x,y) at given xbj
     double ColorChargeDistribution(double rho, double width);
@@ -28,11 +28,16 @@ public:
     
     void FillColorCharges(double xbj); // Fill grid
     
-    void FT_rho_to_k();
+    void CalculateAplus();
+    
+    WilsonLine& GetAplus(int xind, int yind);
+    double GetCoordinate(int ind);
+    
+    int GetNumOfCoordinatePoints();
     
 
 private:
-    Ipsat_Proton proton;
+    Ipsat_Proton *proton;
     int Ny;
     double as;  // alpha_s
     

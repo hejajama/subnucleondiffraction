@@ -106,8 +106,8 @@ IPGlasma::IPGlasma(std::string file)
         ss >> y;
         
         // Datafile is in fm, but we want to use GeVs in this code
-        x*= FMGEV;
-        y *= FMGEV;
+        //x*= FMGEV;
+        //y *= FMGEV;
         
         // Read rows and columns
         std::vector< std::vector< std::complex<double> > > matrix;

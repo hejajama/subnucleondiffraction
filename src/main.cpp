@@ -110,20 +110,24 @@ int main(int argc, char* argv[])
     
     //
     //IPGlasma glasma("data/V.dat");
+    IPGlasma glasma("proton_samples/test");
+    double origin[2]={0,0};
+    cout << "loaded"<<endl;	
     
-    //double origin[2]={0,0};
-    
-    /*
-    for (double y=-11.5; y < 11.5; y+=0.05)
+    //for (double y=-11.5; y < 11.5; y+=0.05)
+    for (double y=-4.8; y < 4.8; y+=0.2)
     {
-        for (double x=-11.5; x < 11.5; x+=0.05)
+        //for (double x=-11.5; x < 11.5; x+=0.05)
+        for (double x=-4.8; x < 4.8; x+=0.2)
         {
             double p[2] = {x,y};
             cout << y << " " << x << " " << glasma.Amplitude(0.01, origin, p) << endl;
         }
         cout << endl;
         
-    }*/
+    }
+     
+     return 0;
    
     
     // Initialize global random number generator

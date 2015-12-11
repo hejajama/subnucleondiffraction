@@ -12,6 +12,13 @@
 #include <complex>
 #include <vector>
 
+// Enable GSL dependent features
+#define WILSONLINE_GSL
+
+#ifdef WILSONLINE_GSL
+    #include <gsl/gsl_matrix.h>
+    #include <gsl/gsl_linalg.h>
+#endif
 class WilsonLine
 {
 public:
@@ -34,6 +41,15 @@ public:
     std::complex<double> Trace();
     
     void InitializeAsGenerator(int a);  // Initialize as Color matrix t^a
+    void InitializeAsIdentity();
+    
+#ifdef WILSONLINE_GSL
+    WilsonLine Exp();   // Calculate exponential
+    
+    gsl_matrix_complex* GetGslMatrixl();
+    
+    void InitializeAsGslMatrix(gsl_matrix_complex* m);
+#endif
     
 private:
     std::vector< std::vector< std::complex<double> > > data;
@@ -41,5 +57,16 @@ private:
 
 
 std::ostream& operator<<(std::ostream& os, WilsonLine& wl);
+
+// gsl matrix tools
+#ifdef WILSONLINE_GSL
+// Matrix exponential, calculates as writing the matrix as 2Nx2N real matrix.
+// Downloaded from
+void my_gsl_complex_matrix_exponential(gsl_matrix_complex *eA, gsl_matrix_complex *A, int dimx);
+
+#endif
+
+
+
 
 #endif /* wilsonline_hpp */

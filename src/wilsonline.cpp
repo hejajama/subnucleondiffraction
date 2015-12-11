@@ -301,4 +301,112 @@ void WilsonLine::InitializeAsGenerator(int a)
     
 }
 
+void WilsonLine::InitializeAsIdentity()
+{
+    if (data.size() != 3)
+    {
+        std::cerr << "WilsonLine size is on 3x3!" << std::endl;
+        return;
+    }
+    for (int i=0; i<3; i++)
+    {
+        for (int j=0; j<3; j++)
+        {
+            if (i==j)
+                data[i][j]=1.0;
+            else
+                data[i][j]=0;
+        }
+    }
+}
+
+#ifdef WILSONLINE_GSL
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_complex.h>
+#include <gsl/gsl_complex_math.h>
+
+/*
+ * Calculate exp of matrix using GSL
+ * Way too much memory allocation, so one should optimize if doing some
+ * heavy numerics
+ */
+WilsonLine WilsonLine::Exp()
+{
+    gsl_matrix_complex* m = GetGslMatrixl();
+    gsl_matrix_complex* exp = gsl_matrix_complex_alloc(3,3);
+    my_gsl_complex_matrix_exponential(exp,m,3);
+    WilsonLine result;
+    result.InitializeAsGslMatrix(exp);
+
+    gsl_matrix_complex_free(m);
+    gsl_matrix_complex_free(exp);
+    
+    return result;
+}
+
+
+gsl_matrix_complex* WilsonLine::GetGslMatrixl()
+{
+    gsl_matrix_complex *m = gsl_matrix_complex_alloc(3,3);
+    for (int i=0; i<3; i++)
+    {
+        for (int j=0; j<3; j++)
+        {
+            gsl_complex c = gsl_complex_rect(Element(i,j).real(), Element(i,j).imag());
+            gsl_matrix_complex_set(m, i, j, c);
+        }
+    }
+    return m;
+}
+
+
+
+void my_gsl_complex_matrix_exponential(gsl_matrix_complex *eA, gsl_matrix_complex *A, int dimx)
+{
+    int j,k=0;
+    gsl_complex temp;
+    gsl_matrix *matreal =gsl_matrix_alloc(2*dimx,2*dimx);
+    gsl_matrix *expmatreal =gsl_matrix_alloc(2*dimx,2*dimx);
+    //Converting the complex matrix into real one using A=[Areal, Aimag;-Aimag,Areal]
+    for (j = 0; j < dimx;j++)
+        for (k = 0; k < dimx;k++)
+        {
+            temp=gsl_matrix_complex_get(A,j,k);
+            gsl_matrix_set(matreal,j,k,GSL_REAL(temp));
+            gsl_matrix_set(matreal,dimx+j,dimx+k,GSL_REAL(temp));
+            gsl_matrix_set(matreal,j,dimx+k,GSL_IMAG(temp));
+            gsl_matrix_set(matreal,dimx+j,k,-GSL_IMAG(temp));
+        }
+    
+    gsl_linalg_exponential_ss(matreal,expmatreal,.01);
+    
+    double realp;
+    double imagp;
+    for (j = 0; j < dimx;j++)
+        for (k = 0; k < dimx;k++)
+        {
+            realp=gsl_matrix_get(expmatreal,j,k);
+            imagp=gsl_matrix_get(expmatreal,j,dimx+k);
+            gsl_matrix_complex_set(eA,j,k,gsl_complex_rect(realp,imagp));
+        }
+    gsl_matrix_free(matreal);
+    gsl_matrix_free(expmatreal);
+}
+
+void WilsonLine::InitializeAsGslMatrix(gsl_matrix_complex* m)
+{
+    for (int i=0; i<3; i++)
+    {
+        for (int j=0; j<3; j++)
+        {
+            gsl_complex tmp;
+            tmp = gsl_matrix_complex_get(m, i, j);
+            std::complex<double> c(GSL_REAL(tmp),GSL_IMAG(tmp));
+            data[i][j] = c;
+        }
+    }
+}
+
+
+#endif  // gsl;
 
