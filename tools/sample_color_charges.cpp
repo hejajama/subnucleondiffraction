@@ -11,14 +11,20 @@
 #include <cmath>
 #include <gsl/gsl_roots.h>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
 #include "fftwpp/Array.h"
 #include "fftwpp/fftw++.h"
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_randist.h>
 gsl_rng* global_rng;
 
 using namespace std;
 using Array::array2;
+
+const double FMGEV = 5.067731;
 
 int main(int argc, char* argv[])
 {
@@ -34,12 +40,14 @@ int main(int argc, char* argv[])
     int nsamplers=50;
     for (int i=0; i<nsamplers; i++)
     {
-        Sampler s(50, &proton);
+        Sampler s(nsamplers, &proton);
         samplers.push_back(s);
         samplers[samplers.size()-1].FillColorCharges(0.01);
         samplers[samplers.size()-1].CalculateAplus();
+        cerr <<"# done " << i << "/" << nsamplers-1 << endl;
         
     }
+    cout << "# Initialized " << nsamplers << " color charge densities and calculated A^+(xt)" << endl;
     
     // Calculate Wislon lines and print them
     int points = samplers[0].GetNumOfCoordinatePoints();
@@ -59,8 +67,8 @@ int main(int argc, char* argv[])
                 v = v * exp;
             }
             
-            // Print matrix
-            cout << samplers[0].GetCoordinate(yind) << " " << samplers[0].GetCoordinate(xind) << " ";
+            // Print matrix, coordinates in fm
+            cout << samplers[0].GetCoordinate(yind)/FMGEV << " " << samplers[0].GetCoordinate(xind)/FMGEV << " ";
             for (int row=0; row<3; row++)
             {
                 for (int col=0; col<3; col++)
@@ -82,10 +90,44 @@ void Sampler::FillColorCharges(double xbj)
     // Fill coordinate grid
     rho.clear();
     coordinates.clear();
-    double maxr = 5;
-
+    double maxr = 6.8;
     
     double step = (2.0*maxr / xpoints);
+
+    // Read from file
+
+    std::ifstream f("data/RhoOne.txt");
+    for (int yind=0; yind<xpoints; yind++)
+    {
+        coordinates.push_back(yind);
+        std::vector< WilsonLine> rho_ta_row;
+        for (int xind=0; xind<xpoints; xind++)
+        {
+            string line;
+            getline(f, line);
+            stringstream ss(line);
+            int tmpx,tmpy;  // x and y indeces in the file
+            ss >> tmpy; ss>>tmpx;
+            WilsonLine tmp_rho_t;
+            for (int a=1; a<=8; a++)
+            {
+                WilsonLine ta;
+                ta.InitializeAsGenerator(a);
+                WilsonLine mat;
+                double rho; ss >> rho;
+                mat = ta*rho;
+                tmp_rho_t = tmp_rho_t + mat;
+            }
+            rho_ta_row.push_back(tmp_rho_t);
+            
+        }
+        rho_t.push_back(rho_ta_row);
+    }
+    
+    
+    // Sample randomly
+    /*
+    
     for (double y = -maxr; y<= maxr; y+=step)
     {
         coordinates.push_back(y);
@@ -106,12 +148,14 @@ void Sampler::FillColorCharges(double xbj)
             }
             rho_ta_row.push_back(tmp_rho_t);
             tmpvec.push_back(tmprho);
+            //cout << y << " " << x << " " << tmp_rho_t.Element(0, 0).real() << endl;
             //cout << "x: " << x << " y: " << y << " rho_a t_a: " << endl;
             //cout << tmp_rho_t << endl;
         }
         rho.push_back(tmpvec);
         rho_t.push_back(rho_ta_row);
     }
+    */
     
 
 
@@ -133,24 +177,18 @@ double Sampler::RandomColorCharge(double x, double y, double xbj)
     double gmusqr = qs*qs / ( K*K*4.0*M_PI*as);
     
     // Sample color charge from the ColorChargeDistribution
+    /*
     double rho;
     do{
         rho = gsl_rng_uniform(global_rng) ;
     } while (gsl_rng_uniform(global_rng) > ColorChargeDistribution(rho, gmusqr));
-
+     */
+    // Sample from Gaussian
+    // DO s in 1502.01331
+    double width = 2.0*qs*qs/Ny;
+    double rho = gsl_ran_gaussian(global_rng, width);
     return rho;
 }
-
-Sampler::Sampler(int ny, Ipsat_Proton* proton_)
-{
-    
-    Ny=ny;
-    as=0.2;
-    xpoints = 150;
-    proton = proton_;
-
-}
-
 
 /*
  * Color charge distribution is Gaussian and local in color and transverse coordinate
@@ -160,9 +198,24 @@ Sampler::Sampler(int ny, Ipsat_Proton* proton_)
 double Sampler::ColorChargeDistribution(double rho, double width)
 {
     width = width / Ny;
+    width = width*width;
     return std::exp(-rho*rho / (2.0 * width));    // Ok?
     
 }
+
+
+Sampler::Sampler(int ny, Ipsat_Proton* proton_)
+{
+    
+    Ny=ny;
+    as=0.2;
+    xpoints = 128;
+    proton = proton_;
+
+}
+
+
+
 
 /*
  * Fourier transfer to color charge density momentum space using FFTW
@@ -178,7 +231,9 @@ void Sampler::CalculateAplus()
     {
         cout << "#" <<   i << "-" << coordinates[i] << "  ";
     }
-    cout << endl;*/
+    cout << endl;
+    exit(1);*/
+    
 
     
     // Initialize grip of Wilson lines in x space
@@ -225,17 +280,6 @@ void Sampler::CalculateAplus()
             //cout << "Output: " << endl;
             //cout << data << endl;
             //exit(1);
-            for (int ty=0; ty < ny; ty++)
-            {
-                //for (int tx=0; tx<nx; tx++)
-                //{
-                //    std::complex<double> tm = data[ty][tx];
-                    //cout << ty << " " << tx << " " << tm.real() << endl;
-                
-                //}
-                std::complex<double> tm = data[ty][ty];
-               // cout << ty << " " << tm << endl;
-            }
             
             
             // Calculate A^+(xt) by calculating an inverse transform of g * rho(kt)/kt^2
@@ -245,7 +289,7 @@ void Sampler::CalculateAplus()
                 for (int xind=0; xind<nx; xind++)
                 {
                     // FFTW has exp(2pi k.x), so in practice it calculates the Fourier transfer at
-                    // momenta 2pi k. To get the physical momenta we divide the components by 2pi
+                    // momenta 2pi k.
                     
                     // Calculate momenta
                     double delta = coordinates[1] - coordinates[0];
@@ -261,37 +305,69 @@ void Sampler::CalculateAplus()
                     else    // At boundary goes to negative
                         k2 = -1.0/(2.0*delta) + 1.0/(xpoints*delta) * (yind - xpoints/2);
 
-                    // Test if we get a gaussian plot
-                    //std::complex<double> tmp = data[yind][xind];
-                    //cout << k1 << " " << k2 << " " << tmp.real() << " " << tmp.imag() <<endl;
                     
-
-                    //k1/=2.0*M_PI; k2/=2.0*M_PI; //TODO!
-                    double ktsqr = k1*k1 + k2*k2;
-                    if (ktsqr < 1e-4)
-                        ktsqr = 1e-4;
+                    /// TESTING with Bjoerns file:
                     g=1;
+                    k1 = 1.0/xpoints * (xind - xpoints/2);
+                    k2 = 1.0/xpoints * (yind - xpoints/2);
+                    double ktsqr;
+                    if (yind-xpoints/2==0 or xind-xpoints/2==0)
+                        ktsqr = 99999999999; // Do not include zero momentum mode
+                    else
+                        ktsqr = k1*k1 + k2*k2  ;
+
+                    ktsqr = ktsqr * (2.0*M_PI * 2.0*M_PI);
+                    
+                    //cout << k1 << " " << k2 << endl;
+                    
+                    
+                    
 
                     data(yind,xind) *= g/ktsqr;
                     
+                    if (isnan(data(yind,xind).real()) or isinf(data(yind,xind).real()))
+                    {
+                        cerr << "data is " << data(yind,xind) << " at yind=" << yind << " xind=" << xind << ", ktsqr = " << ktsqr << endl;
+                        exit(1);
+                    }
+                    
+                    //cout << k2 << " " << k1 << " " << data(yind,xind).real() << " " << data(yind,xind).imag() << endl;
+                    
                 }
+                //cout << endl;
             }
+            //exit(1);
             
             // Ft back to k space
             backward.fftNormalized(data);
+            
+            //cout << "final:" << endl;
+            //cout << data << endl;
             
             // Save
             for (int yind=0; yind<ny; yind++)
             {
                 for (int xind=0; xind<nx; xind++)
                 {
-                    Aplus[yind][xind].Set(mat_y, mat_x, data[yind][xind]);
+                    if (isnan(data(yind,xind).real()) or isinf(data(yind,xind).real()))
+                    {
+                        cerr << "After FFT back to x space data is " << data(yind,xind) << " at yind=" << yind << " xind=" << xind << endl;
+                        exit(1);
+                    }
+                    Aplus[yind][xind].Set(mat_y, mat_x, data(yind,xind));
                 }
             }
             
+            
         }
     }
-    
+    /*
+    cout << Aplus[10][10] << endl;
+    cout << endl;
+    cout << Aplus[255+10][255+10] << endl;
+    cout << Aplus[256+10][256+10] << endl;
+    exit(1);
+    */
     
    /* // Should be ready!
     for (int i = 0; i < xpoints; i++)
@@ -342,7 +418,7 @@ double Sampler::SaturationScale(double x, double y, double xbj)
     f.params = &par;
     const gsl_root_fsolver_type *T = gsl_root_fsolver_bisection;
     gsl_root_fsolver *s = gsl_root_fsolver_alloc(T);
-    gsl_root_fsolver_set(s, &f, 1e-5, 100);
+    gsl_root_fsolver_set(s, &f, 1e-6, 1000);
     int iter=0; int status; double min,max;
     do
     {

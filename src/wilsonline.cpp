@@ -296,6 +296,8 @@ void WilsonLine::InitializeAsGenerator(int a)
             row.push_back(0); row.push_back(0); row.push_back(-2.0/(2.0*std::sqrt(3)));
             data.push_back(row);
             break;
+        default:
+            std::cerr << "Incorrect a!" << std::endl;
     };
     
     

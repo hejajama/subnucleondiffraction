@@ -56,9 +56,9 @@ fig.suptitle(r"$Q^2=0, x=0.001$, $W \sim 100 \mathrm{GeV}$"   )
 
 
 files = [
-         ["gaussian/ipsat_miser_1e7_bp_3.0_bq_1.0", r"$B_p=3.0, B_q=1.0$", Linestyle(1),""],
-         ["gaussian/ipsat_miser_1e7_bp_2.0_bq_2.0", r"$B_p=2.0, B_q=2.0$", Linestyle(2),""],
-         ["gaussian/ipsat_miser_1e7_bp_1.0_bq_3.0", r"$B_p=1.0, B_q=3.0$", Linestyle(3),""],
+         ["gaussian/ipsat_miser_1e7_bp_1.0_bq_2.75", r"$B_p=1.0, B_q=2.75$", Linestyle(1),""],
+         ["gaussian/ipsat_miser_1e7_bp_1.5_bq_2.25", r"$B_p=1.5, B_q=2.25$", Linestyle(2),""],
+         ["gaussian/ipsat_miser_1e7_bp_2.0_bq_1.75", r"$B_p=2.0, B_q=1.75$", Linestyle(3),""],
          ]
 
 

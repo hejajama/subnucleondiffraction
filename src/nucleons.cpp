@@ -11,7 +11,7 @@
 #include <gsl/gsl_rng.h>
 #include <cmath>
 
-const double FMGEV = 5.08;
+const double FMGEV = 5.067731;
 
 using std::cout;
 using std::endl;

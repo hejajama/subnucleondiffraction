@@ -27,6 +27,14 @@ const int NC=3;
  */
 double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
 {
+    
+    // Out of grid? Return 0
+    if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
+        or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
+        or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
+        or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
+            return 0;
+    
     // First find corresponding grid indeces
     WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
     WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
@@ -46,10 +54,11 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
     std::complex<double > amp =  1.0 - 1.0/NC * prod.Trace();
     
     double result = amp.real();
-    if (result > 1)
+    /*if (result > 1)
         return 1;
     if (result < 0)
         return 0;
+     */
     return amp.real();
 }
 
@@ -106,8 +115,8 @@ IPGlasma::IPGlasma(std::string file)
         ss >> y;
         
         // Datafile is in fm, but we want to use GeVs in this code
-        //x*= FMGEV;
-        //y *= FMGEV;
+        x*= FMGEV;
+        y *= FMGEV;
         
         // Read rows and columns
         std::vector< std::vector< std::complex<double> > > matrix;
@@ -159,6 +168,16 @@ IPGlasma::IPGlasma(std::string file)
 
         
     
+}
+
+double IPGlasma::MinX()
+{
+    return xcoords[0];
+}
+
+double IPGlasma::MaxX()
+{
+    return xcoords[xcoords.size()-1];
 }
 
 

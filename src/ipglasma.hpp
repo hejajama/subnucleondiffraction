@@ -23,6 +23,9 @@ public:
     
     std::string InfoStr();
     
+    double MinX();
+    double MaxX();
+    
 
 private:
     WilsonLine& GetWilsonLine( double x, double y); // Find Wilson line that corresponds to the coordinate
