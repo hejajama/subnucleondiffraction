@@ -80,7 +80,7 @@ WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
         yind = ycoords.size()-1;
     //cout << "Coordinates " << x << ", "  << y << " indeces " << xind << ", " << yind << endl;
     
-    return wilsonlines[ xind*xcoords.size() + yind];
+    return wilsonlines[ yind*xcoords.size() + xind];
     
 }
 
@@ -181,6 +181,11 @@ double IPGlasma::MaxX()
 }
 
 
+double IPGlasma::XStep()
+{
+    return xcoords[1] - xcoords[0];
+}
+
 
 std::string IPGlasma::InfoStr()
 {
@@ -189,3 +194,7 @@ std::string IPGlasma::InfoStr()
     return ss.str();
 }
 
+std::vector<double> &IPGlasma::GetXCoordinates()
+{
+    return xcoords;
+}

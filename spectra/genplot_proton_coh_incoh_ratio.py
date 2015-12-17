@@ -111,7 +111,7 @@ yscale("log", nonposy='clip')
 axis([minx,maxx,miny,maxy])
 
 legfont = textsize-10
-leg=legend(prop=dict(size=legfont),labelspacing=0.001,ncol=2,numpoints=1, loc=1)
+leg=legend(prop=dict(size=legfont+4),labelspacing=0.001,ncol=2,numpoints=1, loc=1)
 leg.draw_frame(False)
 
 file = "./proton_cohincoh_ratio.pdf"

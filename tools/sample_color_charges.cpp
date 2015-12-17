@@ -28,6 +28,7 @@ const double FMGEV = 5.067731;
 
 int main(int argc, char* argv[])
 {
+    
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
     
@@ -37,7 +38,7 @@ int main(int argc, char* argv[])
     proton.SetQuarkWidth(4);
     proton.InitializeTarget();
     // Initialize N samplers, that is, discretize in longitudinal direction
-    int nsamplers=50;
+    int nsamplers=10;
     for (int i=0; i<nsamplers; i++)
     {
         Sampler s(nsamplers, &proton);
@@ -51,15 +52,16 @@ int main(int argc, char* argv[])
     
     // Calculate Wislon lines and print them
     int points = samplers[0].GetNumOfCoordinatePoints();
-    for (int yind=1; yind < points; yind++)
+    for (int yind=0; yind < points; yind++)
     {
-        for (int xind=1; xind < points; xind++)
+        for (int xind=0; xind < points; xind++)
         {
             // V = prod_k exp(-i A^+_k)
             WilsonLine v;
             v.InitializeAsIdentity();
             for (int k=0; k<nsamplers; k++)
             {
+                
                 WilsonLine tmp = samplers[k].GetAplus(xind,yind);
                 std::complex<double> im(0,1);
                 tmp = tmp*(-im);
@@ -68,6 +70,7 @@ int main(int argc, char* argv[])
             }
             
             // Print matrix, coordinates in fm
+           
             cout << samplers[0].GetCoordinate(yind)/FMGEV << " " << samplers[0].GetCoordinate(xind)/FMGEV << " ";
             for (int row=0; row<3; row++)
             {
@@ -95,7 +98,7 @@ void Sampler::FillColorCharges(double xbj)
     double step = (2.0*maxr / xpoints);
 
     // Read from file
-
+    
     std::ifstream f("data/RhoOne.txt");
     for (int yind=0; yind<xpoints; yind++)
     {
@@ -154,8 +157,8 @@ void Sampler::FillColorCharges(double xbj)
         }
         rho.push_back(tmpvec);
         rho_t.push_back(rho_ta_row);
-    }
-    */
+    }*/
+    
     
 
 
@@ -184,7 +187,7 @@ double Sampler::RandomColorCharge(double x, double y, double xbj)
     } while (gsl_rng_uniform(global_rng) > ColorChargeDistribution(rho, gmusqr));
      */
     // Sample from Gaussian
-    // DO s in 1502.01331
+    // Do as in 1502.01331
     double width = 2.0*qs*qs/Ny;
     double rho = gsl_ran_gaussian(global_rng, width);
     return rho;
@@ -209,7 +212,7 @@ Sampler::Sampler(int ny, Ipsat_Proton* proton_)
     
     Ny=ny;
     as=0.2;
-    xpoints = 128;
+    xpoints = 512;
     proton = proton_;
 
 }
@@ -304,32 +307,38 @@ void Sampler::CalculateAplus()
                         k2 = 1.0 / (xpoints * delta) * yind;
                     else    // At boundary goes to negative
                         k2 = -1.0/(2.0*delta) + 1.0/(xpoints*delta) * (yind - xpoints/2);
-
+                    
+                    
+                    
                     
                     /// TESTING with Bjoerns file:
-                    g=1;
-                    k1 = 1.0/xpoints * (xind - xpoints/2);
-                    k2 = 1.0/xpoints * (yind - xpoints/2);
-                    double ktsqr;
-                    if (yind-xpoints/2==0 or xind-xpoints/2==0)
+                    //g=1;
+                    
+                    
+                    //k1 = 1.0/xpoints * (xind - xpoints/2);
+                    //k2 = 1.0/xpoints * (yind - xpoints/2);
+                    //double ktsqr = k1*k1 + k2*k2;;
+                    
+                    /*if (yind-xpoints/2==0 and xind-xpoints/2==0)
                         ktsqr = 99999999999; // Do not include zero momentum mode
                     else
                         ktsqr = k1*k1 + k2*k2  ;
-
-                    ktsqr = ktsqr * (2.0*M_PI * 2.0*M_PI);
-                    
+                    */
                     //cout << k1 << " " << k2 << endl;
+                    k1 *= 2.0*M_PI; k2 *=2.0*M_PI;
+                    double ktsqr = k1*k1 + k2*k2;
                     
-                    
-                    
-
-                    data(yind,xind) *= g/ktsqr;
+                    if (abs(ktsqr)<0.001)
+                        data(yind, xind) = 0;
+                    else
+                        data(yind,xind) *= g/ktsqr;
                     
                     if (isnan(data(yind,xind).real()) or isinf(data(yind,xind).real()))
                     {
                         cerr << "data is " << data(yind,xind) << " at yind=" << yind << " xind=" << xind << ", ktsqr = " << ktsqr << endl;
                         exit(1);
                     }
+                    
                     
                     //cout << k2 << " " << k1 << " " << data(yind,xind).real() << " " << data(yind,xind).imag() << endl;
                     
@@ -361,13 +370,9 @@ void Sampler::CalculateAplus()
             
         }
     }
-    /*
-    cout << Aplus[10][10] << endl;
-    cout << endl;
-    cout << Aplus[255+10][255+10] << endl;
-    cout << Aplus[256+10][256+10] << endl;
-    exit(1);
-    */
+
+    
+    
     
    /* // Should be ready!
     for (int i = 0; i < xpoints; i++)

@@ -24,7 +24,7 @@ rc("xtick", labelsize=textsize)
 rc("ytick", labelsize=textsize)
 
 minx=0.0
-maxx=2
+maxx=5
 miny=0.01
 maxy=1e3
 
@@ -69,15 +69,15 @@ for f in files:
 
 # fname title style marker
 files = [
-         #["gaussian/ipsat_miser_1e7_bp_1.0_bq_2.75", r"$B_p=1.0, B_q=2.75$", Linestyle(1),""],
+         ["gaussian/ipsat_miser_1e7_bp_1.0_bq_2.75", r"$B_p=1.0, B_q=2.75$", Linestyle(1),""],
          #["gaussian/ipsat_miser_1e7_bp_1.0_bq_3.0", r"$B_p=1.0, B_q=3.0$", Linestyle(2),""],
          #["gaussian/ipsat_miser_1e7_bp_1.0_bq_3.25", r"$B_p=1.0, B_q=3.25$", Linestyle(3),""],
-         #["gaussian/ipsat_miser_1e7_bp_1.5_bq_2.25", r"$B_p=1.5, B_q=2.25$", Linestyle(1),""],
+         ["gaussian/ipsat_miser_1e7_bp_1.5_bq_2.25", r"$B_p=1.5, B_q=2.25$", Linestyle(2),""],
          #["gaussian/ipsat_miser_1e7_bp_1.5_bq_2.5", r"$B_p=1.5, B_q=2.5$", Linestyle(2),""],
          #["gaussian/ipsat_miser_1e7_bp_1.5_bq_2.75", r"$B_p=1.5, B_q=2.75$", Linestyle(3),""],
-         ["gaussian/ipsat_miser_1e7_bp_2.0_bq_1.75", r"$B_p=2.0, B_q=1.75$", Linestyle(1),""],
-         ["gaussian/ipsat_miser_1e7_bp_2.0_bq_2.0", r"$B_p=2.0, B_q=2.0$", Linestyle(2),""],
-         ["gaussian/ipsat_miser_1e7_bp_2.0_bq_2.25", r"$B_p=2.0, B_q=2.25$", Linestyle(3),""],
+         ["gaussian/ipsat_miser_1e7_bp_2.0_bq_1.75", r"$B_p=2.0, B_q=1.75$", Linestyle(3),""],
+         #["gaussian/ipsat_miser_1e7_bp_2.0_bq_2.0", r"$B_p=2.0, B_q=2.0$", Linestyle(2),""],
+         #["gaussian/ipsat_miser_1e7_bp_2.0_bq_2.25", r"$B_p=2.0, B_q=2.25$", Linestyle(3),""],
          #["exponential/ipsat_miser_1e7_a_1.3_bq_2.0", r"$a=1.3, B_q=2.0$", Linestyle(1),""],
          #["exponential/ipsat_miser_1e7_a_1.5_bq_1.5", r"$a=1.5, B_q=1.5$", Linestyle(2),""],
          #["exponential/ipsat_miser_1e7_a_1.1_bq_2.0", r"$a=1.1, B_q=2.0$", Linestyle(3),""],
@@ -154,27 +154,27 @@ expx=[]
 expy=[]
 pluserr=[]
 minuserr=[]
-#readfile_xyerrors("proton/incoherent/exp/zeus", expx, expy, pluserr, minuserr)
+readfile_xyerrors("proton/incoherent/exp/zeus_jpsi_w_100", expx, expy, pluserr, minuserr)
 # units
-scale_list(expy, 1000)
-scale_list(pluserr, 1000)
-scale_list(minuserr, 1000)
-#p1.errorbar(expx, expy, yerr=[minuserr,pluserr], marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=0.8, label=r"Incoh ZEUS $Q^2=0\mathrm{GeV}^2$")
+#scale_list(expy, 1000)
+#scale_list(pluserr, 1000)
+#scale_list(minuserr, 1000)
+p1.errorbar(expx, expy, yerr=[minuserr,pluserr], marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=0.8, label=r"incoh ZEUS 2002 $80 < W < 120 \mathrm{GeV}$")
 
 expx=[]
 expy=[]
 experr=[]
 tmp=[]
-#readfile_xy("proton/incoherent/exp/h1_thesis", expx, expy)
-#readfile_xy("proton/incoherent/exp/h1_thesis", tmp, experr, ycol=2)
-#p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=2.1, label=r"incoh H1 $Q^2 \le 2.5\mathrm{GeV}^2, 40 < W < 110 \mathrm{GeV}$")
+readfile_xy("proton/incoherent/exp/h1_jpsi_w_100", expx, expy)
+readfile_xy("proton/incoherent/exp/h1_jpsi_w_100", tmp, experr, ycol=2)
+p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=2.1, label=r"incoh H1  $50 < W < 150 \mathrm{GeV}$")
 
 yscale("log")
 #xscale("log")
 axis([minx,maxx,miny,maxy])
 
 legfont = textsize-10
-leg=legend(prop=dict(size=legfont),labelspacing=0.001,ncol=2,numpoints=1, loc=1)
+leg=legend(prop=dict(size=legfont+3),labelspacing=0.001,ncol=2,numpoints=1, loc=1)
 leg.draw_frame(False)
         
 file = "./proton_incoh_spectra.pdf"

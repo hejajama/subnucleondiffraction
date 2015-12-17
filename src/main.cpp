@@ -113,17 +113,23 @@ int main(int argc, char* argv[])
     //IPGlasma glasma("proton_samples/proton_tarkka");
     double origin[2]={0,0};
     
-    double d = ((IPGlasma*)amp)->MaxX();
-    for (double y=-d; y < d; y+=0.005)
+    double max = ((IPGlasma*)amp)->MaxX();
+    double min = ((IPGlasma*)amp)->MinX();
+    double step =((IPGlasma*)amp)->XStep();
+
+    for (double y=min+step/2; y < max-step/2; y+=step)
     //for (double y=-4.8; y < 4.8; y+=0.2)
     {
-        for (double x=-d; x < d; x+=0.005)
+        for (double x=min+step/2; x < max-step/2; x+=step)
         //for (double x=-4.8; x < 4.8; x+=0.2)
         {
+            //origin[0]=x; origin[1]=y;
             double p[2] = {x,y};
-            cout << y << " " << x << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << endl;
+            
+            cout << y << " " << x << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << endl;
         }
         cout << endl;
+       
         
     }
      

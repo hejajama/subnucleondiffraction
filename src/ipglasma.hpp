@@ -26,6 +26,10 @@ public:
     double MinX();
     double MaxX();
     
+    double XStep(); // Grid spacing in x
+    
+    std::vector<double> &GetXCoordinates();
+    
 
 private:
     WilsonLine& GetWilsonLine( double x, double y); // Find Wilson line that corresponds to the coordinate
