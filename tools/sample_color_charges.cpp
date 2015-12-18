@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     proton.SetQuarkWidth(4);
     proton.InitializeTarget();
     // Initialize N samplers, that is, discretize in longitudinal direction
-    int nsamplers=10;
+    int nsamplers=1;
     for (int i=0; i<nsamplers; i++)
     {
         Sampler s(nsamplers, &proton);
@@ -63,11 +63,13 @@ int main(int argc, char* argv[])
             {
                 
                 WilsonLine tmp = samplers[k].GetAplus(xind,yind);
+                //cout << tmp << endl;
                 std::complex<double> im(0,1);
                 tmp = tmp*(-im);
                 WilsonLine exp = tmp.Exp();
                 v = v * exp;
             }
+            
             
             // Print matrix, coordinates in fm
            
@@ -91,18 +93,21 @@ int main(int argc, char* argv[])
 void Sampler::FillColorCharges(double xbj)
 {
     // Fill coordinate grid
-    rho.clear();
+    //rho.clear();
+    rho_t.clear();
     coordinates.clear();
     double maxr = 6.8;
-    
     double step = (2.0*maxr / xpoints);
+    for (int i=0; i<xpoints; i++)
+        coordinates.push_back(i);
+        //coordinates.push_back(-maxr + step*i);
 
     // Read from file
     
     std::ifstream f("data/RhoOne.txt");
     for (int yind=0; yind<xpoints; yind++)
     {
-        coordinates.push_back(yind);
+        //coordinates.push_back(yind);
         std::vector< WilsonLine> rho_ta_row;
         for (int xind=0; xind<xpoints; xind++)
         {
@@ -130,19 +135,18 @@ void Sampler::FillColorCharges(double xbj)
     
     // Sample randomly
     /*
-    
-    for (double y = -maxr; y<= maxr; y+=step)
+    for (int yind=0; yind<xpoints; yind++)
     {
-        coordinates.push_back(y);
+        //coordinates.push_back(y);
         std::vector< std::vector < double > > tmpvec;
         std::vector< WilsonLine > rho_ta_row;
-        for (double x = -maxr; x<= maxr; x+= step)
+        for (int xind=0; xind<xpoints; xind++)
         {
             std::vector<double> tmprho;
             WilsonLine tmp_rho_t;
             for (int a=1; a<=8; a++)
             {
-                double rnd_charge =RandomColorCharge(x, y, xbj);
+                double rnd_charge =RandomColorCharge(coordinates[xind], coordinates[yind], xbj);
                 tmprho.push_back( rnd_charge  );
                 WilsonLine ta;
                 ta.InitializeAsGenerator(a);
@@ -157,10 +161,10 @@ void Sampler::FillColorCharges(double xbj)
         }
         rho.push_back(tmpvec);
         rho_t.push_back(rho_ta_row);
-    }*/
+    }
+    */
     
-    
-
+    //cout << rho_t[254][260] << endl;
 
     
 }
@@ -299,6 +303,8 @@ void Sampler::CalculateAplus()
                     // First half of the grid points have positive momenta, starting from zero
                     // Momenta step is 1.0/(points*delta_x)
                     double k1,k2;
+                    
+                    
                     if (xind <= xpoints/2)
                         k1 = 1.0 / (xpoints * delta) * xind;
                     else    // At boundary goes to negative
@@ -308,30 +314,25 @@ void Sampler::CalculateAplus()
                     else    // At boundary goes to negative
                         k2 = -1.0/(2.0*delta) + 1.0/(xpoints*delta) * (yind - xpoints/2);
                     
-                    
+                
                     
                     
                     /// TESTING with Bjoerns file:
-                    //g=1;
-                    
+                    g=1;
+                  
                     
                     //k1 = 1.0/xpoints * (xind - xpoints/2);
                     //k2 = 1.0/xpoints * (yind - xpoints/2);
-                    //double ktsqr = k1*k1 + k2*k2;;
-                    
-                    /*if (yind-xpoints/2==0 and xind-xpoints/2==0)
-                        ktsqr = 99999999999; // Do not include zero momentum mode
-                    else
-                        ktsqr = k1*k1 + k2*k2  ;
-                    */
-                    //cout << k1 << " " << k2 << endl;
+                    //k1 = -0.5 + (double)(xind)/xpoints;
+                    //k2 = -0.5 + (double)(yind)/xpoints;
                     k1 *= 2.0*M_PI; k2 *=2.0*M_PI;
-                    double ktsqr = k1*k1 + k2*k2;
+                    //double ktsqr = k1*k1 + k2*k2;
+                    double ktsqr = 4.0*( sin(k1/2.0)*sin(k1/2.0)+sin(k2/2.0)*sin(k2/2.0)); // lattice momentum
                     
-                    if (abs(ktsqr)<0.001)
-                        data(yind, xind) = 0;
-                    else
-                        data(yind,xind) *= g/ktsqr;
+                    //if (abs(ktsqr)<0.001)
+                    //    data(yind, xind) = 0;
+                    //else
+                        data(yind,xind) *= g/(ktsqr + 0.0023);
                     
                     if (isnan(data(yind,xind).real()) or isinf(data(yind,xind).real()))
                     {

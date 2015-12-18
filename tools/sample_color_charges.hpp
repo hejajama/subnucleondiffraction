@@ -46,7 +46,7 @@ private:
     
     // Grid
     std::vector<double> coordinates;    // maps index -> coordinate in GeV^-1
-    std::vector< std::vector< std::vector<double> > > rho;   // Grid of 8 component color vectors
+    //std::vector< std::vector< std::vector<double> > > rho;   // Grid of 8 component color vectors
     
     int xpoints; // Number of grid points
 
