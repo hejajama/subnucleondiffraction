@@ -116,6 +116,14 @@ int main(int argc, char* argv[])
     double max = ((IPGlasma*)amp)->MaxX();
     double min = ((IPGlasma*)amp)->MinX();
     double step =((IPGlasma*)amp)->XStep();
+    /*
+    for (double r=0; r<max; r+=step)
+    {
+        double p1[2] = {-r/2.0,0};
+        double p2[2] = {r/2.0,0};
+        cout << r << " " <<((IPGlasma*)amp)->Amplitude(0.01, p1, p2) << endl;
+    }
+    return 0;
 
     for (double y=min+step/2; y < max-step/2; y+=step)
     //for (double y=-4.8; y < 4.8; y+=0.2)
@@ -134,7 +142,7 @@ int main(int argc, char* argv[])
     }
      
      return 0;
-   
+   */
     
     // Initialize global random number generator
     gsl_rng_env_setup();

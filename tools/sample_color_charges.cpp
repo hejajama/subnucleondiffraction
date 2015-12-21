@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     proton.SetQuarkWidth(4);
     proton.InitializeTarget();
     // Initialize N samplers, that is, discretize in longitudinal direction
-    int nsamplers=1;
+    int nsamplers=50;
     for (int i=0; i<nsamplers; i++)
     {
         Sampler s(nsamplers, &proton);
@@ -99,11 +99,11 @@ void Sampler::FillColorCharges(double xbj)
     double maxr = 6.8;
     double step = (2.0*maxr / xpoints);
     for (int i=0; i<xpoints; i++)
-        coordinates.push_back(i);
-        //coordinates.push_back(-maxr + step*i);
+        //coordinates.push_back(i);
+        coordinates.push_back(-maxr + step*i);
 
     // Read from file
-    
+    /*
     std::ifstream f("data/RhoOne.txt");
     for (int yind=0; yind<xpoints; yind++)
     {
@@ -131,38 +131,33 @@ void Sampler::FillColorCharges(double xbj)
         }
         rho_t.push_back(rho_ta_row);
     }
-    
+    */
     
     // Sample randomly
-    /*
+    
     for (int yind=0; yind<xpoints; yind++)
     {
         //coordinates.push_back(y);
-        std::vector< std::vector < double > > tmpvec;
         std::vector< WilsonLine > rho_ta_row;
         for (int xind=0; xind<xpoints; xind++)
         {
-            std::vector<double> tmprho;
             WilsonLine tmp_rho_t;
             for (int a=1; a<=8; a++)
             {
                 double rnd_charge =RandomColorCharge(coordinates[xind], coordinates[yind], xbj);
-                tmprho.push_back( rnd_charge  );
                 WilsonLine ta;
                 ta.InitializeAsGenerator(a);
                 WilsonLine mat; mat = ta*rnd_charge;
                 tmp_rho_t = tmp_rho_t + mat;    // Calculate t_a rho_a
             }
             rho_ta_row.push_back(tmp_rho_t);
-            tmpvec.push_back(tmprho);
             //cout << y << " " << x << " " << tmp_rho_t.Element(0, 0).real() << endl;
             //cout << "x: " << x << " y: " << y << " rho_a t_a: " << endl;
             //cout << tmp_rho_t << endl;
         }
-        rho.push_back(tmpvec);
         rho_t.push_back(rho_ta_row);
     }
-    */
+    
     
     //cout << rho_t[254][260] << endl;
 
@@ -216,7 +211,7 @@ Sampler::Sampler(int ny, Ipsat_Proton* proton_)
     
     Ny=ny;
     as=0.2;
-    xpoints = 512;
+    xpoints = 256;
     proton = proton_;
 
 }
@@ -299,7 +294,7 @@ void Sampler::CalculateAplus()
                     // momenta 2pi k.
                     
                     // Calculate momenta
-                    double delta = coordinates[1] - coordinates[0];
+                    double delta = 1;//coordinates[1] - coordinates[0];
                     // First half of the grid points have positive momenta, starting from zero
                     // Momenta step is 1.0/(points*delta_x)
                     double k1,k2;
@@ -318,11 +313,8 @@ void Sampler::CalculateAplus()
                     
                     
                     /// TESTING with Bjoerns file:
-                    g=1;
+                    //g=1;
                   
-                    
-                    //k1 = 1.0/xpoints * (xind - xpoints/2);
-                    //k2 = 1.0/xpoints * (yind - xpoints/2);
                     //k1 = -0.5 + (double)(xind)/xpoints;
                     //k2 = -0.5 + (double)(yind)/xpoints;
                     k1 *= 2.0*M_PI; k2 *=2.0*M_PI;
