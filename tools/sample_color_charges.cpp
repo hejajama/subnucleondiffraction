@@ -99,11 +99,11 @@ void Sampler::FillColorCharges(double xbj)
     double maxr = 6.8;
     double step = (2.0*maxr / xpoints);
     for (int i=0; i<xpoints; i++)
-        coordinates.push_back(i);
-        //coordinates.push_back(-maxr + step*i);
+        //coordinates.push_back(i);
+        coordinates.push_back(-maxr + step*i);
 
     // Read from file
-    
+    /*
     std::ifstream f("data/RhoOne.txt");
     for (int yind=0; yind<xpoints; yind++)
     {
@@ -131,10 +131,10 @@ void Sampler::FillColorCharges(double xbj)
         }
         rho_t.push_back(rho_ta_row);
     }
-    
+    */
     
     // Sample randomly
-    /*
+    
     for (int yind=0; yind<xpoints; yind++)
     {
         //coordinates.push_back(y);
@@ -157,7 +157,7 @@ void Sampler::FillColorCharges(double xbj)
         }
         rho_t.push_back(rho_ta_row);
     }
-    */
+    
     
     //cout << rho_t[254][260] << endl;
 
@@ -165,12 +165,13 @@ void Sampler::FillColorCharges(double xbj)
 }
 
 
-
+ 
 /* 
  * Sample one random color charge at the given point in transverse space
  */
 double Sampler::RandomColorCharge(double x, double y, double xbj)
 {
+    x=0; y=0;   ///TMP
     double qs = SaturationScale(x, y, xbj);
     // Q_s = K g^2 mu, which gives
     // Qs^2 = K^2 (4pi as) g^2 mu^2
@@ -187,7 +188,7 @@ double Sampler::RandomColorCharge(double x, double y, double xbj)
      */
     // Sample from Gaussian
     // Do as in 1502.01331
-    double width = 2.0*qs*qs/Ny;
+    double width = 1.05*qs*qs/Ny;
     double rho = gsl_ran_gaussian(global_rng, width);
     return rho;
 }
@@ -211,8 +212,8 @@ Sampler::Sampler(int ny, Ipsat_Proton* proton_)
     
     Ny=ny;
     as=0.2;
-    //xpoints = 256;
-    xpoints = 512;
+    xpoints = 256;
+    //xpoints = 512;
     proton = proton_;
 
 }
@@ -313,7 +314,8 @@ void Sampler::CalculateAplus()
                 
                     // Note lattice units: one unit in k space is 2pi/L
                     // Bjoerns file: L = 24 fm
-                    double kstep = 2.0*M_PI / (24.0 * FMGEV );
+                    double lattice_l = coordinates[ coordinates.size() - 1 ] - coordinates[0];
+                    double kstep = 2.0*M_PI / (lattice_l );
                     double m_lattice_units = 0.2 / kstep * 2.0*M_PI / xpoints;
                     
                     /// TESTING with Bjoerns file:

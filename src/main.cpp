@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
                 amp = new Ipsat_Proton;
                 ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+2]));
                 ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+3]));
-                ((Ipsat_Proton*)amp)->SetShape(EXPONENTIAL);
+                ((Ipsat_Proton*)amp)->SetShape(GAUSSIAN);
                 
             }
             else if (string(argv[i+1])=="ipglasma")
@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
     if (p == COHERENT)
         cout << "# t    Re or Im A [GeV^2] " << endl;
     //for (t=0.0; t<=2.61; t+=0.150)
-    for (t=0; t<=0.1; t+=0.02)
+    for (t=0; t<=2; t+=0.1)
     {
         double res = 0;
         cout.precision(5);

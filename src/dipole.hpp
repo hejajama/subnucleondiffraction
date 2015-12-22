@@ -28,6 +28,14 @@ public:
     
     // Info string about the dipole
     virtual std::string InfoStr();
+    
+    // Calculate saturation scale
+    // Note that in this general case we actually do not have an unique way to define Q_s
+    // Here we define the saturation scale around point b via r_s such that
+    // N(b + 0.5 r_s, b - 0.5 r_s) = 1 - exp(-0.5), and
+    // r_s^2 = 2/Q_s^2
+    // That is, we choose the arbitrary direction to be along the x axis
+    double SaturationScale(double xpom, Vec b);
 };
 
 #endif

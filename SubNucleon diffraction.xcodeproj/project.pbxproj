@@ -15,6 +15,7 @@
 		12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EF91BE162F00045E7DD /* wilsonline.cpp */; };
 		12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */; };
 		1349C3F71C29CF1500B8EBA7 /* dipxs_intb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1349C3F51C29CF1500B8EBA7 /* dipxs_intb.cpp */; };
+		1349C3F91C29F38B00B8EBA7 /* satscale.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1349C3F81C29F38B00B8EBA7 /* satscale.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -52,7 +53,7 @@
 		12B5192A1BD976AB00230988 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = src/main.cpp; sourceTree = "<group>"; };
 		12B5192B1BD976AB00230988 /* wave_function.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = wave_function.cpp; path = src/wave_function.cpp; sourceTree = "<group>"; };
 		12B5192C1BD976AB00230988 /* wave_function.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = wave_function.hpp; path = src/wave_function.hpp; sourceTree = "<group>"; };
-		12B5192D1BD979D000230988 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		12B5192D1BD979D000230988 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; usesTabs = 1; };
 		12B5192E1BD9825400230988 /* tools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tools.cpp; path = ../amplitudelib_v2/tools/tools.cpp; sourceTree = "<group>"; };
 		12B5192F1BD9825400230988 /* tools.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = tools.hpp; path = ../amplitudelib_v2/tools/tools.hpp; sourceTree = "<group>"; };
 		12B519301BD982E700230988 /* tools */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = tools; path = ../amplitudelib_v2/tools; sourceTree = "<group>"; };
@@ -68,6 +69,7 @@
 		12F69EFD1BE16FE10045E7DD /* ipglasma.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ipglasma.hpp; path = src/ipglasma.hpp; sourceTree = "<group>"; };
 		1349C3F51C29CF1500B8EBA7 /* dipxs_intb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dipxs_intb.cpp; path = tools/dipxs_intb.cpp; sourceTree = "<group>"; };
 		1349C3F61C29CF1500B8EBA7 /* dipxs_intb.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dipxs_intb.hpp; path = tools/dipxs_intb.hpp; sourceTree = "<group>"; };
+		1349C3F81C29F38B00B8EBA7 /* satscale.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = satscale.cpp; path = tools/satscale.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +122,7 @@
 				124AC6961BE3A4940020E15E /* filelist.m */,
 				12B519261BD976AB00230988 /* dipole.cpp */,
 				12B519271BD976AB00230988 /* dipole.hpp */,
+				1349C3F81C29F38B00B8EBA7 /* satscale.cpp */,
 				12B519311BD98AB900230988 /* smooth_ws_nuke.cpp */,
 				12B519331BD98F8F00230988 /* diffraction.cpp */,
 				12B519341BD98F8F00230988 /* diffraction.hpp */,
@@ -222,6 +225,7 @@
 				120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */,
 				1349C3F71C29CF1500B8EBA7 /* dipxs_intb.cpp in Sources */,
 				12F504E61BECEFA3005540EF /* subnucleon_config.cpp in Sources */,
+				1349C3F91C29F38B00B8EBA7 /* satscale.cpp in Sources */,
 				12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */,
 				12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */,
 				123E8F881BFA76F700681374 /* ipsat_proton.cpp in Sources */,
