@@ -14,6 +14,7 @@
 		12F504E61BECEFA3005540EF /* subnucleon_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F504E51BECEFA3005540EF /* subnucleon_config.cpp */; };
 		12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EF91BE162F00045E7DD /* wilsonline.cpp */; };
 		12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */; };
+		1349C3F71C29CF1500B8EBA7 /* dipxs_intb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1349C3F51C29CF1500B8EBA7 /* dipxs_intb.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -65,6 +66,8 @@
 		12F69EFA1BE162F00045E7DD /* wilsonline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = wilsonline.hpp; path = src/wilsonline.hpp; sourceTree = "<group>"; };
 		12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipglasma.cpp; path = src/ipglasma.cpp; sourceTree = "<group>"; };
 		12F69EFD1BE16FE10045E7DD /* ipglasma.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ipglasma.hpp; path = src/ipglasma.hpp; sourceTree = "<group>"; };
+		1349C3F51C29CF1500B8EBA7 /* dipxs_intb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dipxs_intb.cpp; path = tools/dipxs_intb.cpp; sourceTree = "<group>"; };
+		1349C3F61C29CF1500B8EBA7 /* dipxs_intb.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dipxs_intb.hpp; path = tools/dipxs_intb.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +129,8 @@
 				12F69EFA1BE162F00045E7DD /* wilsonline.hpp */,
 				12B519291BD976AB00230988 /* gauss_boost.hpp */,
 				12B5192A1BD976AB00230988 /* main.cpp */,
+				1349C3F51C29CF1500B8EBA7 /* dipxs_intb.cpp */,
+				1349C3F61C29CF1500B8EBA7 /* dipxs_intb.hpp */,
 				12F64BC41BE01203007C4F02 /* subnucleon_config.hpp */,
 				12F504E51BECEFA3005540EF /* subnucleon_config.cpp */,
 				128186081BDE9AB60062FF52 /* average_spectra.py */,
@@ -215,6 +220,7 @@
 				1217F7851C11EA830008A90C /* sample_color_charges.cpp in Sources */,
 				1217F7821C0509E50008A90C /* nucleons.cpp in Sources */,
 				120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */,
+				1349C3F71C29CF1500B8EBA7 /* dipxs_intb.cpp in Sources */,
 				12F504E61BECEFA3005540EF /* subnucleon_config.cpp in Sources */,
 				12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */,
 				12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */,

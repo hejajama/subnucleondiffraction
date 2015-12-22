@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     proton.SetQuarkWidth(4);
     proton.InitializeTarget();
     // Initialize N samplers, that is, discretize in longitudinal direction
-    int nsamplers=50;
+    int nsamplers=1;
     for (int i=0; i<nsamplers; i++)
     {
         Sampler s(nsamplers, &proton);
@@ -99,11 +99,11 @@ void Sampler::FillColorCharges(double xbj)
     double maxr = 6.8;
     double step = (2.0*maxr / xpoints);
     for (int i=0; i<xpoints; i++)
-        //coordinates.push_back(i);
-        coordinates.push_back(-maxr + step*i);
+        coordinates.push_back(i);
+        //coordinates.push_back(-maxr + step*i);
 
     // Read from file
-    /*
+    
     std::ifstream f("data/RhoOne.txt");
     for (int yind=0; yind<xpoints; yind++)
     {
@@ -131,10 +131,10 @@ void Sampler::FillColorCharges(double xbj)
         }
         rho_t.push_back(rho_ta_row);
     }
-    */
+    
     
     // Sample randomly
-    
+    /*
     for (int yind=0; yind<xpoints; yind++)
     {
         //coordinates.push_back(y);
@@ -157,7 +157,7 @@ void Sampler::FillColorCharges(double xbj)
         }
         rho_t.push_back(rho_ta_row);
     }
-    
+    */
     
     //cout << rho_t[254][260] << endl;
 
@@ -211,7 +211,8 @@ Sampler::Sampler(int ny, Ipsat_Proton* proton_)
     
     Ny=ny;
     as=0.2;
-    xpoints = 256;
+    //xpoints = 256;
+    xpoints = 512;
     proton = proton_;
 
 }
@@ -310,10 +311,13 @@ void Sampler::CalculateAplus()
                         k2 = -1.0/(2.0*delta) + 1.0/(xpoints*delta) * (yind - xpoints/2);
                     
                 
-                    
+                    // Note lattice units: one unit in k space is 2pi/L
+                    // Bjoerns file: L = 24 fm
+                    double kstep = 2.0*M_PI / (24.0 * FMGEV );
+                    double m_lattice_units = 0.2 / kstep * 2.0*M_PI / xpoints;
                     
                     /// TESTING with Bjoerns file:
-                    //g=1;
+                    g=1;
                   
                     //k1 = -0.5 + (double)(xind)/xpoints;
                     //k2 = -0.5 + (double)(yind)/xpoints;
@@ -324,7 +328,7 @@ void Sampler::CalculateAplus()
                     //if (abs(ktsqr)<0.001)
                     //    data(yind, xind) = 0;
                     //else
-                        data(yind,xind) *= g/(ktsqr + 0.0023);
+                    data(yind,xind) *= g/(ktsqr + m_lattice_units*m_lattice_units);//0.0023);
                     
                     if (isnan(data(yind,xind).real()) or isinf(data(yind,xind).real()))
                     {

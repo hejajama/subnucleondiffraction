@@ -108,42 +108,6 @@ int main(int argc, char* argv[])
     
     
     
-    //
-    //IPGlasma glasma("data/V.dat");
-    //IPGlasma glasma("proton_samples/proton_tarkka");
-    double origin[2]={0,0};
-    
-    double max = ((IPGlasma*)amp)->MaxX();
-    double min = ((IPGlasma*)amp)->MinX();
-    double step =((IPGlasma*)amp)->XStep();
-    /*
-    for (double r=0; r<max; r+=step)
-    {
-        double p1[2] = {-r/2.0,0};
-        double p2[2] = {r/2.0,0};
-        cout << r << " " <<((IPGlasma*)amp)->Amplitude(0.01, p1, p2) << endl;
-    }
-    return 0;
-
-    for (double y=min+step/2; y < max-step/2; y+=step)
-    //for (double y=-4.8; y < 4.8; y+=0.2)
-    {
-        for (double x=min+step/2; x < max-step/2; x+=step)
-        //for (double x=-4.8; x < 4.8; x+=0.2)
-        {
-            //origin[0]=x; origin[1]=y;
-            double p[2] = {x,y};
-            
-            cout << y << " " << x << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << endl;
-        }
-        cout << endl;
-       
-        
-    }
-     
-     return 0;
-   */
-    
     // Initialize global random number generator
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
@@ -164,13 +128,32 @@ int main(int argc, char* argv[])
     
     if (print_nucleus)
     {
+        double origin[2]={0,0};
+        double max = ((IPGlasma*)amp)->MaxX();
+        double min = ((IPGlasma*)amp)->MinX();
+        double step =((IPGlasma*)amp)->XStep();
+        for (double y=min+step/2; y < max-step/2; y+=step)
+        {
+             for (double x=min+step/2; x < max-step/2; x+=step)
+            {
+                double p[2] = {x,y};
+             
+                cout << y << " " << x << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << endl;
+            }
+         cout << endl;
+        }
+         
+         
+        return 0;
+
+        
         // Print ipsat nucleus, todo: ipglasma
         
             std::vector<Vec> positions = ((Ipsat_Proton*)amp)->GetQuarks();
             for (int j=0; j<3; j++)
                 cout << positions[j].Len() << endl;
         
-        return 0;
+        
         //std::vector<Vec> positions = ((Ipsat_Proton*)amp)->GetQuarks();
         std::vector<double> radii =((Ipsat_Proton*)amp)->GetRadii();
         cout << "# x   y    radius   [GeV^-1]" << endl;
@@ -178,15 +161,6 @@ int main(int argc, char* argv[])
         {
             cout << positions[i].GetX() << " " << positions[i].GetY() << " " << radii[i] << endl;
         }
-
-        /*
-        std::vector<Vec> positions = ((Ipsat_Nucleons*)amp)->GetNucleons();
-        std::vector<double> Bps = ((Ipsat_Nucleons*)amp)->GetB_ps() ;
-        cout << "# x   y    radius   [GeV^-1]" << endl;
-        for (int i=0; i<positions.size(); i++)
-        {
-            cout << positions[i].GetX() << " " << positions[i].GetY() << " " << std::sqrt(2.0*Bps[i]) << endl;
-        }*/
         return 0;
         
     }
@@ -195,7 +169,8 @@ int main(int argc, char* argv[])
         cout << "# t    dsigma/dt [GeV^4] " << endl;
     if (p == COHERENT)
         cout << "# t    Re or Im A [GeV^2] " << endl;
-    for (t=0.0; t<=2.61; t+=0.150)
+    //for (t=0.0; t<=2.61; t+=0.150)
+    for (t=0; t<=0.1; t+=0.02)
     {
         double res = 0;
         cout.precision(5);

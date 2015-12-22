@@ -17,14 +17,14 @@ slides=False
 
 rc('text',usetex=True)
 rc('text.latex',  preamble='\usepackage{amsmath},\usepackage{amssymb},\usepackage{mathtools}')
-textsize=18
+textsize=19
 if slides:
     textsize=26
 rc("xtick", labelsize=textsize)
 rc("ytick", labelsize=textsize)
 
 minx=0.0
-maxx=5
+maxx=2
 miny=0.01
 maxy=1e3
 
@@ -46,9 +46,9 @@ files = [
 fig = figure()
 p1=fig.add_subplot(111)
 #xlabel(r"$r$ $[\mathrm{GeV}^{-1}]$ ", fontsize=textsize+2)
-xlabel(r"$t$", fontsize=textsize+2)
+xlabel(r"$t$ $[\mathrm{GeV}^2]$", fontsize=textsize+2)
 #xlabel(r"$rQ_s$")
-ylabel(r"$\mathrm{d}\sigma/\mathrm{d}t$ ", fontsize=textsize+2)
+ylabel(r"$\mathrm{d}\sigma/\mathrm{d}t$ $[\mathrm{nb}/\mathrm{GeV}^2]$ ", fontsize=textsize+2)
 
 col=-1
 for f in files:
@@ -65,17 +65,19 @@ for f in files:
     
 
     
-    fig.suptitle(r"$Q^2=0, x=0.001$, $W \sim 100 \mathrm{GeV}$"   )
+    fig.suptitle(r"$Q^2=0,  W = 100 \mathrm{GeV}$"   )
 
 # fname title style marker
 files = [
-         ["gaussian/ipsat_miser_1e7_bp_1.0_bq_2.75", r"$B_p=1.0, B_q=2.75$", Linestyle(1),""],
+         ["ipglasma/ipglasma_avg", r"IPglasma", Linestyle(1), ""],
+         #["ipglasma/ipglasma_avg_6", r"IPglasma", Linestyle(3), ""],
+         ##["gaussian/ipsat_miser_1e7_bp_1.0_bq_2.75", r"$B_p=1.0, B_q=2.75$", Linestyle(1),""],
          #["gaussian/ipsat_miser_1e7_bp_1.0_bq_3.0", r"$B_p=1.0, B_q=3.0$", Linestyle(2),""],
          #["gaussian/ipsat_miser_1e7_bp_1.0_bq_3.25", r"$B_p=1.0, B_q=3.25$", Linestyle(3),""],
          ["gaussian/ipsat_miser_1e7_bp_1.5_bq_2.25", r"$B_p=1.5, B_q=2.25$", Linestyle(2),""],
          #["gaussian/ipsat_miser_1e7_bp_1.5_bq_2.5", r"$B_p=1.5, B_q=2.5$", Linestyle(2),""],
          #["gaussian/ipsat_miser_1e7_bp_1.5_bq_2.75", r"$B_p=1.5, B_q=2.75$", Linestyle(3),""],
-         ["gaussian/ipsat_miser_1e7_bp_2.0_bq_1.75", r"$B_p=2.0, B_q=1.75$", Linestyle(3),""],
+         ##["gaussian/ipsat_miser_1e7_bp_2.0_bq_1.75", r"$B_p=2.0, B_q=1.75$", Linestyle(3),""],
          #["gaussian/ipsat_miser_1e7_bp_2.0_bq_2.0", r"$B_p=2.0, B_q=2.0$", Linestyle(2),""],
          #["gaussian/ipsat_miser_1e7_bp_2.0_bq_2.25", r"$B_p=2.0, B_q=2.25$", Linestyle(3),""],
          #["exponential/ipsat_miser_1e7_a_1.3_bq_2.0", r"$a=1.3, B_q=2.0$", Linestyle(1),""],
@@ -159,7 +161,7 @@ readfile_xyerrors("proton/incoherent/exp/zeus_jpsi_w_100", expx, expy, pluserr, 
 #scale_list(expy, 1000)
 #scale_list(pluserr, 1000)
 #scale_list(minuserr, 1000)
-p1.errorbar(expx, expy, yerr=[minuserr,pluserr], marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=0.8, label=r"incoh ZEUS 2002 $80 < W < 120 \mathrm{GeV}$")
+#p1.errorbar(expx, expy, yerr=[minuserr,pluserr], marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=0.8, label=r"incoh ZEUS 2002 $80 < W < 120 \mathrm{GeV}$")
 
 expx=[]
 expy=[]
@@ -167,7 +169,7 @@ experr=[]
 tmp=[]
 readfile_xy("proton/incoherent/exp/h1_jpsi_w_100", expx, expy)
 readfile_xy("proton/incoherent/exp/h1_jpsi_w_100", tmp, experr, ycol=2)
-p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=2.1, label=r"incoh H1  $50 < W < 150 \mathrm{GeV}$")
+#p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=2.1, label=r"incoh H1  $50 < W < 150 \mathrm{GeV}$")
 
 yscale("log")
 #xscale("log")
