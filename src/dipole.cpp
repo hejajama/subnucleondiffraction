@@ -60,7 +60,7 @@ double DipoleAmplitude::SaturationScale(double xpom, Vec b)
     f.params = &par;
     const gsl_root_fsolver_type *T = gsl_root_fsolver_bisection;
     gsl_root_fsolver *s = gsl_root_fsolver_alloc(T);
-    gsl_root_fsolver_set(s, &f, 1e-6, 4);
+    gsl_root_fsolver_set(s, &f, 1e-6, 1000);
     int iter=0; int status; double min,max;
     do
     {

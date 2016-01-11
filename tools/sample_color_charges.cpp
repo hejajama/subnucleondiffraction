@@ -171,8 +171,11 @@ void Sampler::FillColorCharges(double xbj)
  */
 double Sampler::RandomColorCharge(double x, double y, double xbj)
 {
-    x=0; y=0;   ///TMP
-    double qs = SaturationScale(x, y, xbj);
+    //x=0; y=0;   ///TMP
+    
+    Vec tmpcoord(x,y);
+    double qs = proton->SaturationScale(xbj,tmpcoord);
+    
     // Q_s = K g^2 mu, which gives
     // Qs^2 = K^2 (4pi as) g^2 mu^2
     // We need g^2mu^2, use alphas=0.2 here and N=0.6
@@ -188,7 +191,7 @@ double Sampler::RandomColorCharge(double x, double y, double xbj)
      */
     // Sample from Gaussian
     // Do as in 1502.01331
-    double width = 1.05*qs*qs/Ny;
+    double width = 1.00*qs*qs/Ny;
     double rho = gsl_ran_gaussian(global_rng, width);
     return rho;
 }
@@ -369,78 +372,9 @@ void Sampler::CalculateAplus()
             
         }
     }
-
-    
-    
-    
-   /* // Should be ready!
-    for (int i = 0; i < xpoints; i++)
-    {
-        for (int j=0; j<xpoints; j++)
-        {
-            cout << coordinates[i] << " " << coordinates[j] << " " << Aplus[i][j].Element(0,0).real() << endl;
-        }
-    }*/
-    //for (int i = 60; i<=100; i+=10)
-    //    cout << Aplus[i][i].Element(0,0) << endl;
-    
 }
 
 
-/*
- * Solve saturation scale defined as N(r^2=2/Qs^2) = 1 - exp(-1/2)
- */
-
-struct SatscaleHelper
-{
-    double xbj;
-    double x,y;
-    Ipsat_Proton* proton;
-};
-double SatscaleHelperf(double r, void* p)
-{
-    SatscaleHelper *helper = (SatscaleHelper*) p;
-    Vec q1(helper->x-0.5*r, helper->y);
-    Vec q2(helper->x+0.5*r, helper->y);
-    // Now |q1-q2|=r, 0.5(q1+q2)=b
-    double res =helper->proton->Amplitude(helper->xbj, q1, q2) - (1.0 - std::exp(-0.5));
-    return res;
-    
-}
-
-double Sampler::SaturationScale(double x, double y, double xbj)
-{
-    const int MAXITER = 100;
-    const double ACC = 0.0001;
-    gsl_function f;
-    f.function = &SatscaleHelperf;
-    SatscaleHelper par;
-    par.xbj = xbj;
-    par.x = x;
-    par.y=y;
-    par.proton = proton;
-    f.params = &par;
-    const gsl_root_fsolver_type *T = gsl_root_fsolver_bisection;
-    gsl_root_fsolver *s = gsl_root_fsolver_alloc(T);
-    gsl_root_fsolver_set(s, &f, 1e-6, 1000);
-    int iter=0; int status; double min,max;
-    do
-    {
-        iter++;
-        gsl_root_fsolver_iterate(s);
-        min = gsl_root_fsolver_x_lower(s);
-        max = gsl_root_fsolver_x_upper(s);
-        status = gsl_root_test_interval(min, max, 0, ACC);
-    } while (iter <= MAXITER and status == GSL_CONTINUE);
-    
-    double satr = gsl_root_fsolver_root(s);
-    
-    double qs = std::sqrt( 2.0) / satr;
-    
-    gsl_root_fsolver_free(s);
-    return qs;
-    
-}
 
 double Sampler::GetCoordinate(int ind)
 {
