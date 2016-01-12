@@ -38,6 +38,8 @@ double DipoleAmplitude::Amplitude(double xpom, Vec q1, Vec q2)
 /*
  * Solve saturation scale
  * see dipole.hpp for definition
+ *
+ * Returns -1 if no satscale can be found (e.g. too large b in ipsat)
  */
 struct SatscaleHelperDipole
 {
@@ -60,7 +62,29 @@ double DipoleAmplitude::SaturationScale(double xpom, Vec b)
     f.params = &par;
     const gsl_root_fsolver_type *T = gsl_root_fsolver_bisection;
     gsl_root_fsolver *s = gsl_root_fsolver_alloc(T);
-    gsl_root_fsolver_set(s, &f, 1e-6, 1000);
+    
+    // First find smallest r such that Q_s is between 0 and r
+    // Here need to find smallest, as due to fluctuations there might be multiple solutions
+    // to the equation
+    double step = 0.1;
+    double maxr = step;
+    bool error=true;
+    const double LIMITR = 1000;
+    for (maxr=step; maxr < LIMITR; maxr+=step)
+    {
+        if (SatscaleHelperfDipole(maxr, &par) > 0)
+        {
+            error=false;
+            break;
+        }
+    }
+    if (error)
+    {
+        //std::cerr << "Cant find saturation scale at b=" << b << ", SatscaleHelperfDipole(" << LIMITR <<")=" <<SatscaleHelperfDipole(LIMITR, &par) << std::endl;
+        return -1;
+    }
+    
+    gsl_root_fsolver_set(s, &f, 0, maxr);
     int iter=0; int status; double min,max;
     do
     {

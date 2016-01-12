@@ -25,9 +25,17 @@ using namespace std;
 using Array::array2;
 
 const double FMGEV = 5.067731;
+const double QS_COLOR_CHARGE_COEF = 0.34;   // S(b) = c Q_s^2
+const int GRIDPOINTS = 256;
+double MAXR = 13;
+double XPOM = 0.000959089;
+const int LONGITUDINAL_STEPS = 10;
 
 int main(int argc, char* argv[])
 {
+    cout << "# Sampling random color charges" << endl;
+    cout << "# Heikki Mäntysaari <mantysaari@bnl.gov>, 2015-2016" << endl;
+    cout << "# Params: S(b)=c Q_s^2 with c=" << QS_COLOR_CHARGE_COEF << ", gridpoints " << GRIDPOINTS << " grid size [-" << MAXR << ", " << MAXR << "], x=" << XPOM << ", longitudinal steps " << LONGITUDINAL_STEPS << endl;
     
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
@@ -38,12 +46,12 @@ int main(int argc, char* argv[])
     proton.SetQuarkWidth(4);
     proton.InitializeTarget();
     // Initialize N samplers, that is, discretize in longitudinal direction
-    int nsamplers=1;
+    int nsamplers=LONGITUDINAL_STEPS;
     for (int i=0; i<nsamplers; i++)
     {
         Sampler s(nsamplers, &proton);
         samplers.push_back(s);
-        samplers[samplers.size()-1].FillColorCharges(0.01);
+        samplers[samplers.size()-1].FillColorCharges(XPOM);
         samplers[samplers.size()-1].CalculateAplus();
         cerr <<"# done " << i << "/" << nsamplers-1 << endl;
         
@@ -93,10 +101,10 @@ int main(int argc, char* argv[])
 void Sampler::FillColorCharges(double xbj)
 {
     // Fill coordinate grid
-    //rho.clear();
+    //rho.clear(); 
     rho_t.clear();
     coordinates.clear();
-    double maxr = 6.8;
+    double maxr = MAXR;
     double step = (2.0*maxr / xpoints);
     for (int i=0; i<xpoints; i++)
         //coordinates.push_back(i);
@@ -171,16 +179,14 @@ void Sampler::FillColorCharges(double xbj)
  */
 double Sampler::RandomColorCharge(double x, double y, double xbj)
 {
-    //x=0; y=0;   ///TMP
-    
+    //x=0; y=0; //tmp
     Vec tmpcoord(x,y);
     double qs = proton->SaturationScale(xbj,tmpcoord);
     
-    // Q_s = K g^2 mu, which gives
-    // Qs^2 = K^2 (4pi as) g^2 mu^2
-    // We need g^2mu^2, use alphas=0.2 here and N=0.6
-    double K = 0.6;
-    double gmusqr = qs*qs / ( K*K*4.0*M_PI*as);
+    // Too small density to find Q_s, put color charge to 0
+    if (qs < 0)
+        return 0;
+    
     
     // Sample color charge from the ColorChargeDistribution
     /*
@@ -191,7 +197,7 @@ double Sampler::RandomColorCharge(double x, double y, double xbj)
      */
     // Sample from Gaussian
     // Do as in 1502.01331
-    double width = 1.00*qs*qs/Ny;
+    double width = QS_COLOR_CHARGE_COEF*qs*qs/Ny;   // 0.34 obtained by matching to ipsat
     double rho = gsl_ran_gaussian(global_rng, width);
     return rho;
 }
@@ -215,8 +221,7 @@ Sampler::Sampler(int ny, Ipsat_Proton* proton_)
     
     Ny=ny;
     as=0.2;
-    xpoints = 256;
-    //xpoints = 512;
+    xpoints = GRIDPOINTS;
     proton = proton_;
 
 }
@@ -319,7 +324,7 @@ void Sampler::CalculateAplus()
                     // Bjoerns file: L = 24 fm
                     double lattice_l = coordinates[ coordinates.size() - 1 ] - coordinates[0];
                     double kstep = 2.0*M_PI / (lattice_l );
-                    double m_lattice_units = 0.2 / kstep * 2.0*M_PI / xpoints;
+                    double m_lattice_units = 0.2 / kstep * 2.0*M_PI / xpoints; // 0.2 GeV
                     
                     /// TESTING with Bjoerns file:
                     g=1;

@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 {
     double Qsqr=0;
     double t=0.1;
-    double xpom=0.001;
+    double xpom=0.000959089;
     PROCESS p = COHERENT;
     bool print_nucleus = false;
     
@@ -128,6 +128,7 @@ int main(int argc, char* argv[])
     
     if (print_nucleus)
     {
+
         double origin[2]={0,0};
         double max = ((IPGlasma*)amp)->MaxX();
         double min = ((IPGlasma*)amp)->MinX();
@@ -145,13 +146,11 @@ int main(int argc, char* argv[])
          
          
         return 0;
-
+	
         
         // Print ipsat nucleus, todo: ipglasma
-        
+        /*
             std::vector<Vec> positions = ((Ipsat_Proton*)amp)->GetQuarks();
-            for (int j=0; j<3; j++)
-                cout << positions[j].Len() << endl;
         
         
         //std::vector<Vec> positions = ((Ipsat_Proton*)amp)->GetQuarks();
@@ -162,7 +161,7 @@ int main(int argc, char* argv[])
             cout << positions[i].GetX() << " " << positions[i].GetY() << " " << radii[i] << endl;
         }
         return 0;
-        
+        */
     }
     
     if (p == INCOHERENT)

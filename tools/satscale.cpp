@@ -18,20 +18,30 @@ int main(int argc, char* argv[])
     global_rng = gsl_rng_alloc(gsl_rng_default);
     
     IPGlasma dipole(argv[1]);
-    //Ipsat_Proton dipole;
-    //dipole.SetProtonWidth(0.0001);
-    //dipole.SetQuarkWidth(4);
-    //dipole.InitializeTarget();
+    
+    Ipsat_Proton dipole_ipsat;
+    dipole_ipsat.SetProtonWidth(0.0001);
+    dipole_ipsat.SetQuarkWidth(4);
+    dipole_ipsat.InitializeTarget();
+   
+    
     //cout << "initialized\n";
+    
+    double avgscale=0;
+    int points=0;
     
     for (double y=-6; y<6; y+=0.05)
     {
         for (double x=-6; x<6; x+=0.05)
         {
-            cout << dipole.SaturationScale(0.01, Vec(0,0)) << " ";
+            double qs = dipole.SaturationScale(0.01, Vec(x,y));
+            avgscale += qs; points++;
+            cout << y << " " << x << " " << qs << endl;
         }
         cout << endl;
     }
+    
+    cout << "#AVG satscale " << avgscale / points << endl;
     
     
     gsl_rng_free(global_rng);

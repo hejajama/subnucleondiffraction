@@ -32,8 +32,8 @@ fig=figure()
 
 p1=fig.add_subplot(111, aspect='equal')
 
-xlabel(r"$x$ $[\mathrm{fm}]$")
-ylabel(r"$x$ $[\mathrm{fm}]$")
+xlabel(r"$x$ $[\mathrm{fm}]$",fontsize=15)
+ylabel(r"$x$ $[\mathrm{fm}]$",fontsize=15)
 
 col=-1
 for (x,y,r) in zip(xcoords,ycoords,radius):

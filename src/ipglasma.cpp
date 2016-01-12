@@ -28,12 +28,12 @@ const int NC=3;
 double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
 {
     
-    // Out of grid? Return 0
+    // Out of grid? Return 1 (probably very large dipole)
     if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
         or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
         or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
         or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
-            return 0;
+            return 1;
     
     // First find corresponding grid indeces
     WilsonLine quark = GetWilsonLine(q1[0], q1[1]);

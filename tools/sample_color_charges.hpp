@@ -21,8 +21,6 @@ class Sampler
 {
 public:
     Sampler(int ny, Ipsat_Proton* proton_);
-    
-    double SaturationScale(double x, double y, double xbj); // Solve saturation sacle at coordinate (x,y) at given xbj
     double ColorChargeDistribution(double rho, double width);
     double RandomColorCharge(double x, double y, double xbj);
     
