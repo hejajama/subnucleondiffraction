@@ -20,6 +20,10 @@ public:
     
     virtual double Amplitude(double xpom, Vec q1, Vec q2);
     
+    virtual double AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] );
+    
+    double AmplitudeImaginaryPart(double xpom, Vec q1, Vec q2 );
+    
     
     // Setup the target. In practice sample nucleon positions / quark positions / whatver.
     // This is called before Amplitude() is evaluated. When averaging over nuclear configurations

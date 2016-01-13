@@ -121,3 +121,19 @@ double SatscaleHelperfDipole(double r, void* p)
     
 
 }
+
+
+/*
+ * If imaginary part of the amplitude is not implemented (e.g. ipsat), we set it to 0
+ */
+ double DipoleAmplitude::AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] )
+{
+    return 0;
+}
+
+double DipoleAmplitude::AmplitudeImaginaryPart(double xpom, Vec q1, Vec q2)
+{
+    double qq1[2] = {q1.GetX(), q1.GetY()};
+    double qq2[2] = {q2.GetX(), q2.GetY()};
+    return AmplitudeImaginaryPart(xpom, qq1, qq2);
+}

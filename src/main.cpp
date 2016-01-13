@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
     if (p == COHERENT)
         cout << "# t    Re or Im A [GeV^2] " << endl;
     //for (t=0.0; t<=2.61; t+=0.150)
-    for (t=0; t<=2; t+=0.1)
+    for (t=0; t<=2; t+=0.2)
     {
         double res = 0;
         cout.precision(5);

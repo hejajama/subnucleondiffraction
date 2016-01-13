@@ -69,7 +69,8 @@ for f in files:
 
 # fname title style marker
 files = [
-         ["ipglasma/ipglasma_avg", r"IPglasma", Linestyle(1), ""],
+         ["ipglasma/ipglasma_256_10_1", r"IPglasma, $N=256$, $N_y=1$, $R=10$", Linestyle(1), ""],
+         ["ipglasma/ipglasma_512_10_1", r"IPglasma, $N=512$, $N_y=1$, $R=10$", Linestyle(2), ""],
          #["ipglasma/ipglasma_avg_6", r"IPglasma", Linestyle(3), ""],
          ##["gaussian/ipsat_miser_1e7_bp_1.0_bq_2.75", r"$B_p=1.0, B_q=2.75$", Linestyle(1),""],
          #["gaussian/ipsat_miser_1e7_bp_1.0_bq_3.0", r"$B_p=1.0, B_q=3.0$", Linestyle(2),""],

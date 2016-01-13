@@ -12,7 +12,7 @@
 #include "subnucleon_config.hpp"
 
 
-
+#include <complex>
 
 
 Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
@@ -237,7 +237,6 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     //double tmpz = z;
     if (FACTORIZE_ZINT)
         z=0.5;      // Use b as geometric average, decouple zintegral
-    //z=0.5;
     
     double qx = bx + z*rx; double qy = by + z*ry;
     double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
@@ -248,6 +247,13 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     res = 2.0 * r * b;
     
     double delta = std::sqrt(t);
+    
+    double x1[2] = {qx,qy};
+    double x2[2] = {qbarx, qbary};
+    double amp_real = dipole->Amplitude(xpom, x1, x2 );
+    double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
+    std::complex<double> amp(amp_real, amp_imag);
+    
     
     if (FACTORIZE_ZINT)
     {
@@ -262,22 +268,18 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     {
         res *= wavef->PsiSqr_tot(Qsqr, r, z)/(4.0*M_PI); // Wavef
         // As this integrand is now not integrated over z
+        std::complex<double> imag(0,1);
+        std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r)  )  );
+        std::complex<double> prod = amp * exponent;
         if (REAL_PART)
-            res *=std::cos( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
+            res *= prod.real();
+            //res *=std::cos( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
         else
-            res *=-std::sin( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
+            res *= prod.imag();
+            //res *=-std::sin( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
     }
     
     
-    
-    // Real part cos, imaginary part -sin
-    //res *= std::cos( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
-
-    
-    double x1[2] = {qx,qy};
-    double x2[2] = {qbarx, qbary};
-    
-    res *= dipole->Amplitude(xpom, x1, x2 );
     
     return res;
     

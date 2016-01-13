@@ -28,12 +28,12 @@ const int NC=3;
 double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
 {
     
-    // Out of grid? Return 1 (probably very large dipole)
+    // Out of grid? Return 0 (probably very large dipole)
     if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
         or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
         or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
         or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
-            return 1;
+            return 0;
     
     // First find corresponding grid indeces
     WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
@@ -54,14 +54,51 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
     std::complex<double > amp =  1.0 - 1.0/NC * prod.Trace();
     
     double result = amp.real();
-    /*if (result > 1)
+    return result;
+    if (result > 1)
         return 1;
     if (result < 0)
         return 0;
-     */
-    return amp.real();
+     
+    return result;
 }
-
+// Stupid copypaste
+double IPGlasma::AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] )
+{
+    // Out of grid? Return 1 (probably very large dipole)
+    if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
+        or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
+        or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
+        or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
+        return 0;
+    
+    // First find corresponding grid indeces
+    WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
+    WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
+    antiquark = antiquark.HermitianConjugate();
+    
+    WilsonLine prod;
+    try {
+        prod =  quark*antiquark;
+    } catch (...) {
+        cerr << "Matrix multiplication failed!" << endl;
+        cout << "Quark: " << q1[0] << ", " << q1[1] << endl;
+        cout << quark << endl;
+        cout << "Antiquark: " << q2[0] << ", " << q2[1] << endl;
+        cout << antiquark << endl;
+        exit(1);
+    }
+    std::complex<double > amp =  1.0 - 1.0/NC * prod.Trace();
+    
+    double result = amp.imag();
+    return result;
+    if (result > 1)
+        return 1;
+    if (result < 0)
+        return 0;
+    
+    return result;
+}
 
 WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
 {
@@ -164,7 +201,7 @@ IPGlasma::IPGlasma(std::string file)
     // Of course this is symmetric and we could just as well swap xind and yind
 
     
-    std::cout <<"# Loaded " << wilsonlines.size() << " Wilson lines from file " << file << ", grid size " << xcoords.size() << " x " << ycoords.size() << std::endl;
+    std::cout <<"# Loaded " << wilsonlines.size() << " Wilson lines from file " << file << ", grid size " << xcoords.size() << " x " << ycoords.size() << " grid range [" << xcoords[0] << ", " << xcoords[xcoords.size()-1] << "]" << std::endl;
 
         
     
