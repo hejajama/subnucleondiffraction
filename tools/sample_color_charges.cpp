@@ -7,6 +7,7 @@
 #include "sample_color_charges.hpp"
 #include "../src/ipsat_proton.hpp"
 #include "../src/wilsonline.hpp"
+#include "tools/tools.hpp"
 #include <gsl/gsl_rng.h>
 #include <cmath>
 #include <gsl/gsl_roots.h>
@@ -25,14 +26,19 @@ using namespace std;
 using Array::array2;
 
 const double FMGEV = 5.067731;
-const double QS_COLOR_CHARGE_COEF = 0.34;   // S(b) = c Q_s^2
-const int GRIDPOINTS = 256;
-double MAXR = 13;
+double QS_COLOR_CHARGE_COEF = 0.34;   // S(b) = c Q_s^2
+int GRIDPOINTS = 512;
+double MAXR = 10;
 double XPOM = 0.000959089;
-const int LONGITUDINAL_STEPS = 10;
+const int LONGITUDINAL_STEPS = 1;
 
 int main(int argc, char* argv[])
 {
+    if (argc > 1)
+        GRIDPOINTS = StrToInt(argv[1]);
+    if (argc > 2)
+        QS_COLOR_CHARGE_COEF = StrToReal(argv[2]);
+    
     cout << "# Sampling random color charges" << endl;
     cout << "# Heikki Mäntysaari <mantysaari@bnl.gov>, 2015-2016" << endl;
     cout << "# Params: S(b)=c Q_s^2 with c=" << QS_COLOR_CHARGE_COEF << ", gridpoints " << GRIDPOINTS << " grid size [-" << MAXR << ", " << MAXR << "], x=" << XPOM << ", longitudinal steps " << LONGITUDINAL_STEPS << endl;
@@ -111,6 +117,8 @@ void Sampler::FillColorCharges(double xbj)
         coordinates.push_back(-maxr + step*i);
 
     // Read from file
+    // Note: when calculating fourier transforms we change the color charge density
+    // to the lattice units. Thus, the file should be in units [rho]=GeV
     /*
     std::ifstream f("data/RhoOne.txt");
     for (int yind=0; yind<xpoints; yind++)
@@ -159,10 +167,11 @@ void Sampler::FillColorCharges(double xbj)
                 tmp_rho_t = tmp_rho_t + mat;    // Calculate t_a rho_a
             }
             rho_ta_row.push_back(tmp_rho_t);
-            //cout << y << " " << x << " " << tmp_rho_t.Element(0, 0).real() << endl;
+            //cout << yind << " " << xind << " " << tmp_rho_t.Element(0, 0).real() << endl;
             //cout << "x: " << x << " y: " << y << " rho_a t_a: " << endl;
             //cout << tmp_rho_t << endl;
         }
+        //cout << endl;
         rho_t.push_back(rho_ta_row);
     }
     
@@ -209,6 +218,7 @@ double Sampler::RandomColorCharge(double x, double y, double xbj)
  */
 double Sampler::ColorChargeDistribution(double rho, double width)
 {
+    cerr << "dont use me!" << endl;
     width = width / Ny;
     width = width*width;
     return std::exp(-rho*rho / (2.0 * width));    // Ok?
@@ -282,8 +292,6 @@ void Sampler::CalculateAplus()
                     data(yind,xind) = rho_t[yind][xind].Element(mat_y, mat_x);
                 }
             }
-            //cout << "Color components " << mat_y << " , " << mat_x << ":  " << endl;
-            //cout << data << endl;
             
             // FFT
             //cout << "Input: " << endl;
@@ -304,7 +312,7 @@ void Sampler::CalculateAplus()
                     // momenta 2pi k.
                     
                     // Calculate momenta
-                    double delta = 1;//coordinates[1] - coordinates[0];
+                    double delta = 1; //coordinates[1] - coordinates[0];
                     // First half of the grid points have positive momenta, starting from zero
                     // Momenta step is 1.0/(points*delta_x)
                     double k1,k2;
@@ -324,8 +332,9 @@ void Sampler::CalculateAplus()
                     // Bjoerns file: L = 24 fm
                     double lattice_l = coordinates[ coordinates.size() - 1 ] - coordinates[0];
                     double kstep = 2.0*M_PI / (lattice_l );
-                    double m_lattice_units = 0.2 / kstep * 2.0*M_PI / xpoints; // 0.2 GeV
-                    
+                    //double m_lattice_units = 0.2 / kstep * 2.0*M_PI / xpoints; // 0.2 GeV
+                    double gev_to_lattice = lattice_l / xpoints;
+                    double m_lattice_units = 0.2*gev_to_lattice;
                     /// TESTING with Bjoerns file:
                     g=1;
                   
@@ -338,7 +347,10 @@ void Sampler::CalculateAplus()
                     //if (abs(ktsqr)<0.001)
                     //    data(yind, xind) = 0;
                     //else
-                    data(yind,xind) *= g/(ktsqr + m_lattice_units*m_lattice_units);//0.0023);
+                    data(yind,xind) *= g/(ktsqr + m_lattice_units*m_lattice_units);
+                    
+                    // lattice units. NOTE: I DO NOT UNDERSTAND WHY WE NEED ONE POWER OF GEV_TO_LATTICE!
+                    data(yind, xind) *= lattice_l*lattice_l/xpoints;    // For some reason we need 1/N dependence here? Naively I would expect gev_to_lattice^2 that is 1/N^2
                     
                     if (isnan(data(yind,xind).real()) or isinf(data(yind,xind).real()))
                     {

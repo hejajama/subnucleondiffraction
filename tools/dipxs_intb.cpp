@@ -37,6 +37,34 @@ int main(int argc, char* argv[])
     
     IPGlasma dipole(argv[1]);
     
+    DipoleAmplitude *amplitude = &dipole;
+    /*
+    double r=0.1;
+    Vec origin(0,0);
+    Vec o2(0,3);
+    for (r=0; r<5; r+=0.05)
+    {
+        Vec q2(r,0);
+        Vec q3(r,3);
+        double amp = amplitude->Amplitude(0.01, origin, q2);
+        double amp2 = amplitude->Amplitude(0.01, o2, q3);
+        cout << r << " " << amp << " " << amp2 << endl;
+    }
+
+    return 0;
+    
+     
+    for (double b=-5; b<5; b+=0.01)
+    {
+        Vec bb(b,0);
+        Vec halfr(r/2,0);
+        Vec q1 = bb+halfr;
+        Vec q2 = bb-halfr;
+        cout << b << " " << dipole.DipoleAmplitude::Amplitude(0.01, q1, q2) << endl;
+        
+    }
+    return 0;
+    */
     /*Ipsat_Proton proton;
     proton.SetProtonWidth(2);
     proton.SetQuarkWidth(2);
@@ -52,16 +80,16 @@ int main(int argc, char* argv[])
     par.theta_r = 0; // Dipole orientation
     
     double minb=0;
-    double maxb = 2;
+    double maxb = 10;
     
     gsl_function F;
     F.function = &inthelperf_b;
     F.params = &par;
     gsl_integration_workspace * w
-    = gsl_integration_workspace_alloc (1000);
+    = gsl_integration_workspace_alloc (10000);
     
     double result,err;
-    gsl_integration_qags( &F, minb, maxb, 0, 0.1, 1000, w, &result, &err );
+    gsl_integration_qags( &F, minb, maxb, 0, 0.01, 10000, w, &result, &err );
     
     gsl_integration_workspace_free(w);
     
@@ -81,10 +109,10 @@ double inthelperf_b(double b, void* p)
     F.function = &inthelperf_theta;
     F.params = par;
     gsl_integration_workspace * w
-    = gsl_integration_workspace_alloc (1000);
+    = gsl_integration_workspace_alloc (10000);
     
     double result,err;
-    gsl_integration_qags( &F, 0, 2.0*M_PI, 0, 0.1, 1000, w, &result, &err );
+    gsl_integration_qags( &F, 0, 2.0*M_PI, 0, 0.01, 10000, w, &result, &err );
     
     gsl_integration_workspace_free(w);
     
@@ -107,7 +135,7 @@ double inthelperf_theta(double theta, void* p)
     double amp = par->dipole->DipoleAmplitude::Amplitude(par->xbj, q1, q2);
     double imag =par->dipole->DipoleAmplitude::AmplitudeImaginaryPart(par->xbj, q1, q2);
     
-    if (std::abs(imag/amp) > 0.1)
+    if (std::abs(imag/amp) > 0.5)
         cerr << "Imag is important " << imag/amp << " at " << q1 << q2 << endl;
     
     return amp;

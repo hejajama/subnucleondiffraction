@@ -35,12 +35,18 @@ int main(int argc, char* argv[])
         for (double x=-6; x<6; x+=0.05)
         {
             double qs = dipole.SaturationScale(0.01, Vec(x,y));
+            if (qs < 0)
+            {
+                //cerr << "Cant solve satscale at point " << x << ", " << y << endl;
+                continue;
+            }
             avgscale += qs; points++;
-            cout << y << " " << x << " " << qs << endl;
+            //cout << y << " " << x << " " << qs << endl;
         }
-        cout << endl;
+        //cout << endl;
     }
-    
+    if (points < 100)
+        cerr << "NOTE: only " << points << " obtained" << endl;
     cout << "#AVG satscale " << avgscale / points << endl;
     
     

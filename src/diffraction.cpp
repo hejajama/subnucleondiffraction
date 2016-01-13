@@ -253,6 +253,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     double amp_real = dipole->Amplitude(xpom, x1, x2 );
     double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
     std::complex<double> amp(amp_real, amp_imag);
+    amp = amp.real();   // Disable possible imag part for now
     
     
     if (FACTORIZE_ZINT)
