@@ -173,6 +173,7 @@ IPGlasma::IPGlasma(std::string file)
         
         // Save Wilson line
         WilsonLine w(matrix);
+        w = w.Transpose();
         wilsonlines.push_back(w);
         
         if (w.Size() != 3)

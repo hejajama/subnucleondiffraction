@@ -27,8 +27,9 @@ using Array::array2;
 
 const double FMGEV = 5.067731;
 double QS_COLOR_CHARGE_COEF = 0.34;   // S(b) = c Q_s^2
-int GRIDPOINTS = 512;
-double MAXR = 10;
+int GRIDPOINTS = 256;
+//double MAXR = 12.0*FMGEV;
+double MAXR = 3.0*FMGEV;
 double XPOM = 0.000959089;
 const int LONGITUDINAL_STEPS = 1;
 
@@ -88,9 +89,11 @@ int main(int argc, char* argv[])
             // Print matrix, coordinates in fm
            
             cout << samplers[0].GetCoordinate(yind)/FMGEV << " " << samplers[0].GetCoordinate(xind)/FMGEV << " ";
-            for (int row=0; row<3; row++)
+            //for (int row=0; row<3; row++)
+            for (int col=0; col<3; col++)
             {
-                for (int col=0; col<3; col++)
+                //for (int col=0; col<3; col++)
+                for (int row=0; row<3; row++)
                 {
                     cout << v.Element(row,col).real() << " " << v.Element(row,col).imag() << " ";;
                 }
@@ -107,11 +110,10 @@ int main(int argc, char* argv[])
 void Sampler::FillColorCharges(double xbj)
 {
     // Fill coordinate grid
-    //rho.clear(); 
     rho_t.clear();
     coordinates.clear();
     double maxr = MAXR;
-    double step = (2.0*maxr / xpoints);
+    double step = (2.0*maxr / (xpoints-1));
     for (int i=0; i<xpoints; i++)
         //coordinates.push_back(i);
         coordinates.push_back(-maxr + step*i);
@@ -161,20 +163,28 @@ void Sampler::FillColorCharges(double xbj)
             for (int a=1; a<=8; a++)
             {
                 double rnd_charge =RandomColorCharge(coordinates[xind], coordinates[yind], xbj);
+                // charge density has a dimension 1/(GeV^-2), make it dimensionless
+                // charge/unit cell
+                //double lattice_l = coordinates[ coordinates.size() - 1 ] - coordinates[0];
+                //double gev_to_lattice = lattice_l / xpoints;
+                //rnd_charge *= gev_to_lattice;
+                
                 WilsonLine ta;
                 ta.InitializeAsGenerator(a);
                 WilsonLine mat; mat = ta*rnd_charge;
                 tmp_rho_t = tmp_rho_t + mat;    // Calculate t_a rho_a
+                //cout << rnd_charge << " ";
             }
+            //cout << endl;
             rho_ta_row.push_back(tmp_rho_t);
             //cout << yind << " " << xind << " " << tmp_rho_t.Element(0, 0).real() << endl;
             //cout << "x: " << x << " y: " << y << " rho_a t_a: " << endl;
             //cout << tmp_rho_t << endl;
         }
         //cout << endl;
+        //cout << endl;
         rho_t.push_back(rho_ta_row);
     }
-    
     
     //cout << rho_t[254][260] << endl;
 
@@ -287,6 +297,7 @@ void Sampler::CalculateAplus()
             {
                 for (int xind=0; xind<nx; xind++)
                 {
+                    
                     // Debug: use Gaussian exp(-x^2)exp(-y^2)
                     //data(yind,xind) = std::exp( - coordinates[xind]*coordinates[xind])*std::exp( - coordinates[yind]*coordinates[yind]);
                     data(yind,xind) = rho_t[yind][xind].Element(mat_y, mat_x);
@@ -331,7 +342,8 @@ void Sampler::CalculateAplus()
                     // Note lattice units: one unit in k space is 2pi/L
                     // Bjoerns file: L = 24 fm
                     double lattice_l = coordinates[ coordinates.size() - 1 ] - coordinates[0];
-                    double kstep = 2.0*M_PI / (lattice_l );
+                    double lattice_a = (coordinates[1] - coordinates[0])/GRIDPOINTS;
+                    //double kstep = 2.0*M_PI / (lattice_l );
                     //double m_lattice_units = 0.2 / kstep * 2.0*M_PI / xpoints; // 0.2 GeV
                     double gev_to_lattice = lattice_l / xpoints;
                     double m_lattice_units = 0.2*gev_to_lattice;
@@ -344,13 +356,14 @@ void Sampler::CalculateAplus()
                     //double ktsqr = k1*k1 + k2*k2;
                     double ktsqr = 4.0*( sin(k1/2.0)*sin(k1/2.0)+sin(k2/2.0)*sin(k2/2.0)); // lattice momentum
                     
-                    //if (abs(ktsqr)<0.001)
-                    //    data(yind, xind) = 0;
-                    //else
+                    
+                    // move to physical units
+                    //double ktsqr_physical = (k1*k1 + k2*k2) / (lattice_a*lattice_a);
+                    //data(yind, xind) *= g/(ktsqr_physical + 0.2*0.2);
+                    
                     data(yind,xind) *= g/(ktsqr + m_lattice_units*m_lattice_units);
                     
-                    // lattice units. NOTE: I DO NOT UNDERSTAND WHY WE NEED ONE POWER OF GEV_TO_LATTICE!
-                    data(yind, xind) *= lattice_l*lattice_l/xpoints;    // For some reason we need 1/N dependence here? Naively I would expect gev_to_lattice^2 that is 1/N^2
+                    
                     
                     if (isnan(data(yind,xind).real()) or isinf(data(yind,xind).real()))
                     {
