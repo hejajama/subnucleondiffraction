@@ -37,6 +37,7 @@ int main(int argc, char* argv[])
             double qs = dipole.SaturationScale(0.01, Vec(x,y));
             if (qs < 0)
             {
+                qs=0;
                 //cerr << "Cant solve satscale at point " << x << ", " << y << endl;
                 continue;
             }

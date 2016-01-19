@@ -216,7 +216,7 @@ double Sampler::RandomColorCharge(double x, double y, double xbj)
      */
     // Sample from Gaussian
     // Do as in 1502.01331
-    double width = QS_COLOR_CHARGE_COEF*qs*qs/Ny;   // 0.34 obtained by matching to ipsat
+    double width = QS_COLOR_CHARGE_COEF*qs/Ny;   
     double rho = gsl_ran_gaussian(global_rng, width);
     return rho;
 }
