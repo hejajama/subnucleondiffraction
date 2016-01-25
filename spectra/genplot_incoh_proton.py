@@ -10,6 +10,7 @@ import math
 from math import pow
 from matplotlibhelper import *
 import pylab
+import scipy.integrate
 
 #import scipy.integrate
 
@@ -62,15 +63,18 @@ for f in files:
         print "Error with file " + f[0]
         continue
     p1.plot(xdata, ydata, label=f[1], linestyle=f[3], linewidth=1, color=f[4])
-    
+
+    totxs = scipy.integrate.simps(np.array(ydata),np.array(xdata))
+    print f[1] + " totxs " + str(totxs)
 
     
     fig.suptitle(r"$Q^2=0,  W = 100 \mathrm{GeV}$"   )
 
 # fname title style marker
 files = [
-         #["ipsat/ipsat2006_nocorrections", r"IPsat 2006 nocor", Linestyle(1), ""],
+         ["ipsat/ipsat2006_skewamp", r"IPsat 2006 skew in amp", Linestyle(1), ""],
          ["ipsat/ipsat2006_corrections", r"IPsat 2006 cor", Linestyle(2), ""],
+         ["ipsat/ipsat2006_nocorrections", r"IPsat 2006 nocor", Linestyle(2), ""],
          #["ipglasma/ipglasma_256", r"IPglasma, $N=256$, $c=0.36$", Linestyle(1), ""],
          #["ipglasma/ipglasma_256_c_020", r"IPglasma, $N=256$, $c=0.2$", Linestyle(2), ""],
 ]
@@ -91,7 +95,8 @@ for f in files:
         print "Error with file " + fname
         continue
     p1.plot(xdata, ydata, linestyle=f[2], marker=f[3], color=Color(color), label=f[1], linewidth=1,markersize=5)
-
+    totxs = scipy.integrate.simps(np.array(ydata),np.array(xdata))
+    print f[1] + " totxs " + str(totxs)
 
 # incoh
 color = 0
@@ -125,6 +130,8 @@ for f in files:
         tdata.append(t)
 
     p1.plot(tdata, ydata_incoh, linestyle=f[2], marker=f[3], color=Color(color), label=r"", linewidth=0.5, markersize=2.5)
+
+
 
 # h1 data
 expx=[]

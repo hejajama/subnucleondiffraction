@@ -36,6 +36,8 @@ public:
     
     double Amplitude(double xpom, Vec q1, Vec q2);  // this is also in DipoleAmplitude, a bit overlap...
     
+    double xg(double x, double r);
+    double LogDerivative_xg(double x, double r); // d ln xg / d ln (1/x)
     
     // Setup the target. In practice sample nucleon positions from Woods Saxon
     void InitializeTarget();
@@ -77,6 +79,8 @@ private:
     Proton_shape shape;
     
     Ipsat_version ipsat;
+    
+    bool skewedness;    // Enable skewedness in dipole amplitude, multiplies xg
 };
 
 #endif /* ipsat_proton_hpp */

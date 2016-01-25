@@ -67,7 +67,7 @@ double Diffraction::Correction(double xpom, double Qsqr, double t)
     double lambda = LogDerivative(xpom, Qsqr, t);
     
     double beta = std::tan(lambda*M_PI/2.0);
-    double Rg = std::pow(2.0, 2.0*lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(lambda+5.0/2.0)/gsl_sf_gamma(lambda+4.0);
+    double Rg = 1;//std::pow(2.0, 2.0*lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(lambda+5.0/2.0)/gsl_sf_gamma(lambda+4.0);
     return (1.0+beta*beta)*Rg*Rg;
 }
 
@@ -302,7 +302,7 @@ double inthelperf_amplitude_rotationalsym_r(double r, void* p);
 double inthelperf_amplitude_rotationalsym_z(double z, void* p);
 double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t)
 {
-      gsl_set_error_handler_off();
+      //gsl_set_error_handler_off();
     
     Inthelper_amplitude par;
     par.diffraction = this;

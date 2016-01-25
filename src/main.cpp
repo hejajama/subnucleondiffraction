@@ -44,7 +44,8 @@ int main(int argc, char* argv[])
 {
     double Qsqr=0;
     double t=0.1;
-    double xpom=0.000959089;
+    //double xpom=0.000959089;
+    double w = 100;
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015" << endl;
     
@@ -130,6 +131,8 @@ int main(int argc, char* argv[])
     cout << "# " << InfoStr() << endl;
     cout << "# " << wavef << endl;
     
+    double mjpsi = 3.0969;
+    double mp = 0.938;
     
     if (mode == PRINT_NUCLEUS)
     {
@@ -172,12 +175,13 @@ int main(int argc, char* argv[])
         return 0;
         */
     }
+    
     else if (mode == AMPLITUDE_DT)
     {
         //for (t=0.0; t<=2.61; t+=0.150)
         for (t=0; t<=2; t+=0.2)
         {
-            double res = 0;
+            double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);            double res = 0;
             cout.precision(5);
             res = diff.ScatteringAmplitude(xpom, Qsqr, t);
             cout << t << " ";
@@ -190,6 +194,7 @@ int main(int argc, char* argv[])
     {
         for (t=0; t<=2; t+=0.2)
         {
+            double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
             double res = 0;
             cout.precision(5);
             res = diff.Correction(xpom, Qsqr, t);

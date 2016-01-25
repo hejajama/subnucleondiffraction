@@ -51,7 +51,7 @@ imagdir = dir + "/imag/"
 dir = dir + "/real/"
 
 include_imag = True
-if os.path.exists(imagdir):
+if not os.path.exists(imagdir):
     include_imag = False
 fnames=[]
 

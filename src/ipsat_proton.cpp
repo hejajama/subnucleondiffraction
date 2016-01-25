@@ -6,6 +6,8 @@
 
 #include "ipsat_proton.hpp"
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_deriv.h>
+#include <gsl/gsl_sf_gamma.h>
 #include <cmath>
 #include <string>
 #include <sstream>
@@ -15,6 +17,8 @@
 extern "C" {
        double dipole_amplitude_(double* xBj, double* r, double* b, int* param);
      };
+
+int IPSAT12_PAR = 2;    // m_c=1.4 GeV
 
 using std::cout; using std::endl;
 
@@ -81,7 +85,8 @@ Ipsat_Proton::Ipsat_Proton()
  
     gdist = new DGLAPDist();
     allocated_gdist = true;
-    ipsat = IPSAT06;
+    ipsat = IPSAT12;
+    skewedness=true;
 }
 Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
 {
@@ -93,6 +98,7 @@ Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
     gdist = gd;
     allocated_gdist = false;
     ipsat = IPSAT06;
+    skewedness=true;
 
 }
 
@@ -133,8 +139,15 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
     
     if (ipsat == IPSAT06)
         {
+            double skew=1.0;
+            if (skewedness)
+            {
+                double skew_lambda = LogDerivative_xg(xpom, r.Len());
+                skew = std::pow(2.0, 2.0*skew_lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(skew_lambda+5.0/2.0)/gsl_sf_gamma(skew_lambda+4.0);
+            }
+            //std::cout << "skew at r=" << r.Len() << " is " << skew << std::endl;
         if (saturation)
-            return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  );
+            return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * skew*gdist->Gluedist(xpom, r.LenSqr()) * tpsum  );
         else
             return r.LenSqr() * 1.0/quarks.size() * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  ;
         }
@@ -147,21 +160,86 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         }
         // dipole_amplitude(xBj, r, b, parameterSet) gives amplitude 2(1 - exp(c*T(p)))
         // We have to calculate "gluedist" as in case of ipsat06
-        double tmpb=0; int par=2; double tmpr = r.Len();
+        double tmpb=0;  double tmpr = r.Len();
         // par 1: m_c=1.27,   2: m_c=1.4
-        double n = dipole_amplitude_(&xpom, &tmpr, &tmpb, &par)/2.0;    // last number 1: m_c=1.27, 2: 1.4
+        double n = dipole_amplitude_(&xpom, &tmpr, &tmpb, &IPSAT12_PAR)/2.0;
+        
         double c = std::log(1.0-n);
         double tp = 1.0/(2.0*M_PI*4.0)*std::exp(- tmpb / (2.0*4.0));
         c /= tp;
-        return 1.0 - std::exp(c * 1.0/quarks.size()*tpsum);
+        
+        double skew=1.0; // now c contains xg that is modified by skewedness correction if enabled
+        if (skewedness)
+        {
+            double skew_lambda = LogDerivative_xg(xpom, r.Len());
+            skew = std::pow(2.0, 2.0*skew_lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(skew_lambda+5.0/2.0)/gsl_sf_gamma(skew_lambda+4.0);
+        }
+        
+        return 1.0 - std::exp(skew*c * 1.0/quarks.size()*tpsum);
     }
     else
     {
-        std::cerr << "UNKNOWN IPSAT VERSION!" << endl;
+        std::cerr << "UNKNOWN IPSAT VERSION!" << std::endl;
         exit(1);
     }
 
 }
+
+
+/* extract collinear factorization gluon distribution from ipsat
+ */
+double Ipsat_Proton::xg(double x, double r)
+{
+    if (ipsat == IPSAT06)
+    {
+        double gd = gdist->Gluedist(x, r*r);
+        double musqr = 4.0/(r*r)+1.17;
+        double as = 12.0*M_PI/( (33.0-2.0*3.0)*log(musqr/(0.2*0.2) ) );
+        
+        return 2.0*3.0/(M_PI*M_PI*as ) * gd;
+    }
+    else if (ipsat == IPSAT12)
+    {
+        double tmpb = 0;
+        
+        double n = dipole_amplitude_(&x, &r, &tmpb, &IPSAT12_PAR)/2.0;
+        double exp = std::log(1.0-n);
+        // exp is -pi^2 r^2/(2Nc) as xg T(0)
+        double musqr = 4.0/(r*r) + 1.428;   // 1.428 corresponds to m_c=1.4 GeV
+        double as = 12.0*M_PI / ( (33.0-2.0*3.0)*log(musqr/(0.156*0.156) ) );
+        
+        return -2.0*3.0/ (M_PI*M_PI * as* r*r * 1.0/(2.0*M_PI*4.0))*exp;
+        
+    }
+    
+}
+
+/*
+ * d ln xg / d ln (1/x)
+ */
+double dhelperf_xg(double y, void* p);
+struct dhelper_xg { Ipsat_Proton* proton; double r; };
+double Ipsat_Proton::LogDerivative_xg(double x, double r)
+{
+    gsl_function F;
+    F.function=&dhelperf_xg;
+    dhelper_xg par; par.proton=this; par.r=r;
+    F.params = &par;
+    double result,abserr;
+    double y = std::log(1.0/x);
+    gsl_deriv_central (&F, y, 0.1 , &result, &abserr);
+    
+    return result;
+
+}
+
+double dhelperf_xg(double y, void* p)
+{
+    dhelper_xg *par = (dhelper_xg*)p;
+    double x = std::exp(-y);
+    return std::log(par->proton->xg(x, par->r));
+}
+
 
 std::vector<Vec> &Ipsat_Proton::GetQuarks()
 {
@@ -228,6 +306,11 @@ std::string Ipsat_Proton::InfoStr()
         ss << "IPsat version: 2006 (KMW)";
     else if (ipsat == IPSAT12)
         ss << "IPsat version: 2012";
+    ss << ". Skewedness in dipole amplitude: ";
+    if (skewedness)
+        ss << " Enabled";
+    else
+        ss << "Disabled";
     return ss.str();
 }
 
