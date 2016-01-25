@@ -31,7 +31,9 @@ int GRIDPOINTS = 256;
 //double MAXR = 12.0*FMGEV;
 double MAXR = 3.0*FMGEV;
 double XPOM = 0.000959089;
-const int LONGITUDINAL_STEPS = 1;
+const int LONGITUDINAL_STEPS = 40;
+
+
 
 int main(int argc, char* argv[])
 {
@@ -200,7 +202,8 @@ double Sampler::RandomColorCharge(double x, double y, double xbj)
 {
     //x=0; y=0; //tmp
     Vec tmpcoord(x,y);
-    double qs = proton->SaturationScale(xbj,tmpcoord);
+    double qs = 0.5; //proton->SaturationScale(xbj,tmpcoord);
+
     
     // Too small density to find Q_s, put color charge to 0
     if (qs < 0)
@@ -216,8 +219,11 @@ double Sampler::RandomColorCharge(double x, double y, double xbj)
      */
     // Sample from Gaussian
     // Do as in 1502.01331
-    double width = QS_COLOR_CHARGE_COEF*qs/Ny;   
-    double rho = gsl_ran_gaussian(global_rng, width);
+    double variance = QS_COLOR_CHARGE_COEF*qs*qs/Ny;
+    // Note: variance is c*Q_s^2/N_y, variance = std deviation^2
+    // For the gsl_ran the 2nd argument is std deviation
+    double stdev = std::sqrt(variance);
+    double rho = gsl_ran_gaussian(global_rng, stdev);
     return rho;
 }
 

@@ -39,15 +39,15 @@ math: DAIVM_ML
 
 # Default rule how to make object files from Fortran files
 %.o: %.f
-	$(FC) -c  $(FFLAGS) $< -I$(HEADERS) -o $@
+	$(FC) -c -O2  $(FFLAGS) $< -I$(HEADERS) -o $@
 
 # Default rule how to make object files from C files
 %.o: %.c
-	$(CC) -c  $(CFLAGS) $< -I$(HEADERS) -o $@
+	$(CC) -c -O2  $(CFLAGS) $< -I$(HEADERS) -o $@
 
 # Default rule how to make object files from C++ files
 %.o: %.cpp
-	$(CXX) -c  $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) $< -I$(HEADERS) -o $@
+	$(CXX) -c -O2 $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) $< -I$(HEADERS) -o $@
 #__________________________________________________________________________________________________________
 
 

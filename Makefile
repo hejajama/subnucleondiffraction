@@ -1,5 +1,5 @@
 CXXFLAGS = `/opt/local/bin/gsl-config --cflags` -I ../amplitudelib_v2/ -O2
-LDFLAGS = `/opt/local/bin/gsl-config --libs`
+LDFLAGS = `/opt/local/bin/gsl-config --libs` libColorDipole/libraries/libColorDipole.a -lgfortran
 
 include filelist.m
 

@@ -11,6 +11,11 @@
 #include <sstream>
 #include "subnucleon_config.hpp"
 
+// IPsat 2012
+extern "C" {
+       double dipole_amplitude_(double* xBj, double* r, double* b, int* param);
+     };
+
 using std::cout; using std::endl;
 
 const double FMGEV = 5.06778;
@@ -34,10 +39,14 @@ void Ipsat_Proton::InitializeTarget()
         
         if (shape == GAUSSIAN)
         {
-            do{
-                radius = gsl_rng_uniform(global_rng) * maxr;
-            } while (gsl_rng_uniform(global_rng) > GaussianRadiusDistribution(radius));
-            
+            if (B_p < 1e-5)
+                radius=0;
+            else
+            {
+                do{
+                    radius = gsl_rng_uniform(global_rng) * maxr;
+                } while (gsl_rng_uniform(global_rng) > GaussianRadiusDistribution(radius));
+            }
             // Sample angle
             double angle = 2.0*M_PI*gsl_rng_uniform(global_rng);
             Vec tmpvec(radius*std::cos(angle), radius*std::sin(angle));
@@ -72,6 +81,7 @@ Ipsat_Proton::Ipsat_Proton()
  
     gdist = new DGLAPDist();
     allocated_gdist = true;
+    ipsat = IPSAT06;
 }
 Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
 {
@@ -82,6 +92,8 @@ Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
     
     gdist = gd;
     allocated_gdist = false;
+    ipsat = IPSAT06;
+
 }
 
 Ipsat_Proton::~Ipsat_Proton()
@@ -119,10 +131,35 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         tpsum = tpsum + QuarkThickness(deltab.Len(), i);
     }
     
-    if (saturation)
-        return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  );
+    if (ipsat == IPSAT06)
+        {
+        if (saturation)
+            return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  );
+        else
+            return r.LenSqr() * 1.0/quarks.size() * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  ;
+        }
+    else if (ipsat == IPSAT12)
+    {
+        if (!saturation)
+        {
+            std::cerr << "Nonsat is not defined for ipsat2012" << std::endl;
+            exit(1);
+        }
+        // dipole_amplitude(xBj, r, b, parameterSet) gives amplitude 2(1 - exp(c*T(p)))
+        // We have to calculate "gluedist" as in case of ipsat06
+        double tmpb=0; int par=2; double tmpr = r.Len();
+        // par 1: m_c=1.27,   2: m_c=1.4
+        double n = dipole_amplitude_(&xpom, &tmpr, &tmpb, &par)/2.0;    // last number 1: m_c=1.27, 2: 1.4
+        double c = std::log(1.0-n);
+        double tp = 1.0/(2.0*M_PI*4.0)*std::exp(- tmpb / (2.0*4.0));
+        c /= tp;
+        return 1.0 - std::exp(c * 1.0/quarks.size()*tpsum);
+    }
     else
-        return r.LenSqr() * 1.0/quarks.size() * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  ;
+    {
+        std::cerr << "UNKNOWN IPSAT VERSION!" << endl;
+        exit(1);
+    }
 
 }
 
@@ -181,6 +218,16 @@ std::string Ipsat_Proton::InfoStr()
         ss << "Gaussian shape";
     else if (shape == EXPONENTIAL)
         ss << "Exponential shape, a=B_p";
+    
+    ss << ". Saturation: ";
+    if (saturation)
+        ss << " enabled";
+    else ss << "disabled";
+    ss << ". ";
+    if (ipsat == IPSAT06)
+        ss << "IPsat version: 2006 (KMW)";
+    else if (ipsat == IPSAT12)
+        ss << "IPsat version: 2012";
     return ss.str();
 }
 

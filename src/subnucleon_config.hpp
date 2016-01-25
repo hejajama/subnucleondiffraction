@@ -19,8 +19,6 @@ extern int MCINTPOINTS ;
 
 extern bool REAL_PART;  // Calculate real part of the amplitude
 
-extern bool CORRECTIONS;    // Enable real part and skewedness corrections
-
 enum MCINTEGRAL
 {
     VEGAS,

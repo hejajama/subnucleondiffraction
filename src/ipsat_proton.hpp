@@ -21,6 +21,12 @@ enum Proton_shape
     EXPONENTIAL
 };
 
+enum Ipsat_version
+{
+    IPSAT06,    // KMW hep-ph/0606272
+    IPSAT12     // Rezaeian et al, 1212.2974
+};
+
 class Ipsat_Proton : public DipoleAmplitude
 {
 public:
@@ -69,6 +75,8 @@ private:
     bool allocated_gdist;   // True if we have allocated memory for gdist in here
     
     Proton_shape shape;
+    
+    Ipsat_version ipsat;
 };
 
 #endif /* ipsat_proton_hpp */

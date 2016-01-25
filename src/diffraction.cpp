@@ -8,7 +8,9 @@
 #include <gsl/gsl_monte_miser.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_monte_vegas.h>
+#include <gsl/gsl_deriv.h>
 #include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_sf_bessel.h>
 #include "subnucleon_config.hpp"
 
 
@@ -22,56 +24,53 @@ Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
     num_of_averages = 1;
 }
 
+
+
+
 /*
- * Calculate total diffractive cross section
- * Requires average over different nucleon configurations
- *
- * First take the square, then average
+ * Derivative of the ampltiude, only for rotationally symmetric amplitude
+ * Calculate d ln N / d y, y = ln 1/x
  */
-double Diffraction::TotalCrossSection(double xpom, double Qsqr, double t)
+struct AmplitudeDerHeler
 {
-    // Testing: only amplitude squared
-    double amp = ScatteringAmplitude(xpom, Qsqr, t);
-    return amp*amp/(16.0*M_PI);
+    Diffraction* diff;
+    double Qsqr;
+    double t;
+};
+
+double AmplitudeDerHelperf(double y, void* p)
+{
+    AmplitudeDerHeler* par = (AmplitudeDerHeler*)p;
+    double x = exp(-y);
+    double res = std::log(par->diff->ScatteringAmplitudeRotationalSymmetry(x, par->Qsqr, par->t));
+    return res;
 }
-
-/*
- * Calculate total diffractive cross section
- * Requires average over different nucleon configurations
- *
- * First average, then take the square
- *
- * This code only returns Im A, later used should average and take the square
- */
-double Diffraction::CoherentCrossSection(double xpom, double Qsqr, double t)
+double Diffraction::LogDerivative(double xpom, double Qsqr, double t)
 {
-    if (!CORRECTIONS)
-        return ScatteringAmplitude(xpom, Qsqr, t);
-
-    cerr << "Corrctions not implemented!" << endl;
-    return 0;
-    // Calculate also real part and skewedness
-    // Very crude lowest order approximation for the derivative
-    double amp = ScatteringAmplitude(xpom, Qsqr, t);
+    gsl_function F;
+    F.function=&AmplitudeDerHelperf;
+    AmplitudeDerHeler par; par.Qsqr=Qsqr; par.t=t;
+    par.diff  = this;
+    F.params = &par;
+    double result,abserr;
     double y = std::log(1.0/xpom);
-    double yp = y + DELTA_Y;
-    double amp2 = ScatteringAmplitude(std::exp(-yp), Qsqr, t);
+    gsl_deriv_central (&F, y, 0.1 , &result, &abserr);
     
-    double lambda = std::log(amp2/amp)/DELTA_Y;
-    // Skewedness, see e.g. 0712.2670
-    double rg = std::pow( 2.0, 2.0*lambda+3.0)/std::sqrt(M_PI);
-    rg *= gsl_sf_gamma(lambda + 5.0/2.0)/gsl_sf_gamma(lambda+4.0);
-    
-    // Real part
-    beta = std::tan( M_PI * lambda / 2.0);
-    
-    return amp;
+    //cout << "Der " << result << " err " << abserr << endl;
+    return result;
 }
 
-double Diffraction::GetBeta()
+/* Calculate total correction
+ */
+double Diffraction::Correction(double xpom, double Qsqr, double t)
 {
-    return beta;
+    double lambda = LogDerivative(xpom, Qsqr, t);
+    
+    double beta = std::tan(lambda*M_PI/2.0);
+    double Rg = std::pow(2.0, 2.0*lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(lambda+5.0/2.0)/gsl_sf_gamma(lambda+4.0);
+    return (1.0+beta*beta)*Rg*Rg;
 }
+
 
 /* 
  * Diffractive scattering amplitude
@@ -235,13 +234,17 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     // q and antiq positions
     //double tmpz = z;
+    //z=0.5;
     if (FACTORIZE_ZINT)
-        z=0.5;      // Use b as geometric average, decouple zintegral
+        std::cerr << "Check FACTORIZE_ZINT code!" << std::endl;
+        //z=0.5;      // Use b as geometric average, decouple zintegral
+    
     
     double qx = bx + z*rx; double qy = by + z*ry;
     double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
-
+    
     //z = tmpz;
+
     double res = 0;
     
     res = 2.0 * r * b;
@@ -271,6 +274,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         // As this integrand is now not integrated over z
         std::complex<double> imag(0,1);
         std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r)  )  );
+        //std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b)  )  );
         std::complex<double> prod = amp * exponent;
         if (REAL_PART)
             res *= prod.real();
@@ -287,7 +291,114 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
 
 }
 
+/*
+ * Calculate scattering amplitude assuming that dipole amplitude does not depend on any angles
+ * this is true if we have no constituent quarks in the ipsat model
+ * No need to do mc integral, so this is numerically more accurate
+ */
+const int INTPOINTS_ROTSYM=2000;
+double inthelperf_amplitude_rotationalsym_b(double b, void* p);
+double inthelperf_amplitude_rotationalsym_r(double r, void* p);
+double inthelperf_amplitude_rotationalsym_z(double z, void* p);
+double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t)
+{
+      gsl_set_error_handler_off();
+    
+    Inthelper_amplitude par;
+    par.diffraction = this;
+    par.xpom=xpom; par.Qsqr = Qsqr; par.t=t;
+    
+    gsl_function f;
+    f.params = &par;
+    f.function = inthelperf_amplitude_rotationalsym_b;
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
+    double result,error;
+    int status = gsl_integration_qag(&f, 0, 100, 0, 0.01, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
+    
+    if (status)
+        cerr << "#bint failed, result " << result << " relerror " << error << " t " <<t << endl;
+    
+    gsl_integration_workspace_free(w);
+    
+    
+    return result;
+}
 
+double Diffraction::ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z)
+{
+    // Set quark and antiquark on x axis around impact parameter
+    // As amplitude does not depend on angle, this is ok here.
+    Vec q1(b+r/2.0,0);
+    Vec q2(b-r/2.0, 0);
+    double amp = 2.0*dipole->Amplitude(xpom, q1, q2);
+    double overlap =wavef->PsiSqr_tot(Qsqr, r, z)/(4.0*M_PI);
+    // Bessel integrals INCLUDING jacobian
+    double delta = std::sqrt(t);
+    double bessel = 2.0*M_PI*b*gsl_sf_bessel_J0(b*delta)*2.0*M_PI*r*gsl_sf_bessel_J0((1.0-z)*r*delta);
+    
+    
+    return amp*overlap*bessel;
+}
+
+double inthelperf_amplitude_rotationalsym_b(double b, void* p)
+{
+    Inthelper_amplitude *par = (Inthelper_amplitude*)p;
+    par->b = b;
+    gsl_function f;
+    f.params = par;
+    f.function = inthelperf_amplitude_rotationalsym_r;
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
+    double result,error;
+    int status = gsl_integration_qag(&f, 0, 100, 0, 0.01, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
+    
+    if (status)
+        cerr << "#Rint failed, result " << result << " relerror " << error << " b " << b << " t " << par->t << endl;
+    
+    gsl_integration_workspace_free(w);
+    
+    //cout << "rint at b=" << b << ": " << result << " pm " << error << endl;
+    
+    return result;
+}
+
+
+double inthelperf_amplitude_rotationalsym_r(double r, void* p)
+{
+    Inthelper_amplitude *par = (Inthelper_amplitude*)p;
+    par->r = r;
+    gsl_function f;
+    f.params = par;
+    f.function = inthelperf_amplitude_rotationalsym_z;
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
+    double result,error;
+    int status = gsl_integration_qags(&f, 0, 1.0, 0, 0.01, INTPOINTS_ROTSYM, w, &result, &error);
+    
+    
+    if (status)
+    {
+        if (!(std::isnan(result)))
+            cerr << "#zint failed, result " << result << " relerror " << error << " b " << par->b << " t " <<par->t << endl;
+        if (std::isnan(result) and par->b < 30)
+            cerr << " Nan also at b=" << par->b << endl;
+        result=0;
+    }
+    
+    
+    gsl_integration_workspace_free(w);
+    
+    //cout << "zint at r=" << r << ", b=" << par->b << ": " << result << " pm " << error << endl;
+    
+    return result;
+    
+}
+
+double inthelperf_amplitude_rotationalsym_z(double z, void* p)
+{
+    Inthelper_amplitude *par = (Inthelper_amplitude*)p;
+    
+    // Note: no jacobian here, it is included in ScatteringAmplitudeRotationalSymmetryIntegrand
+    return par->diffraction->ScatteringAmplitudeRotationalSymmetryIntegrand(par->xpom, par->Qsqr, par->t, par->r, par->b, z);
+}
 
 // Helpers
 

@@ -38,7 +38,7 @@ nconf="1000"
 
 # filename title normalization style
 files = [
-         [ "old_code/ipsat_nofactor_proton_w_100", "IPsat", 1, Linestyle(0), Color(0)],
+         [ "old_code/proton_ipsat_corrected", "IPsat", 1, Linestyle(0), Color(0)],
          
          ]
 
@@ -69,22 +69,10 @@ for f in files:
 
 # fname title style marker
 files = [
-         ["ipglasma/ipglasma_256_10_1", r"IPglasma, $N=256$, $N_y=1$, $R=10$", Linestyle(1), ""],
-         ["ipglasma/ipglasma_256_10_1_tarkka", r"IPglasma, $N=256$, $N_y=1$, $R=10$ tarkka", Linestyle(3), ""],
-         ["ipglasma/ipglasma_128_10_1", r"IPglasma, $N=128$, $N_y=1$, $R=10$", Linestyle(2), ""],
-         #["ipglasma/ipglasma_avg_6", r"IPglasma", Linestyle(3), ""],
-         ##["gaussian/ipsat_miser_1e7_bp_1.0_bq_2.75", r"$B_p=1.0, B_q=2.75$", Linestyle(1),""],
-         #["gaussian/ipsat_miser_1e7_bp_1.0_bq_3.0", r"$B_p=1.0, B_q=3.0$", Linestyle(2),""],
-         #["gaussian/ipsat_miser_1e7_bp_1.0_bq_3.25", r"$B_p=1.0, B_q=3.25$", Linestyle(3),""],
-         ["gaussian/ipsat_miser_1e7_bp_1.5_bq_2.25", r"$B_p=1.5, B_q=2.25$", Linestyle(2),""],
-         #["gaussian/ipsat_miser_1e7_bp_1.5_bq_2.5", r"$B_p=1.5, B_q=2.5$", Linestyle(2),""],
-         #["gaussian/ipsat_miser_1e7_bp_1.5_bq_2.75", r"$B_p=1.5, B_q=2.75$", Linestyle(3),""],
-         ##["gaussian/ipsat_miser_1e7_bp_2.0_bq_1.75", r"$B_p=2.0, B_q=1.75$", Linestyle(3),""],
-         #["gaussian/ipsat_miser_1e7_bp_2.0_bq_2.0", r"$B_p=2.0, B_q=2.0$", Linestyle(2),""],
-         #["gaussian/ipsat_miser_1e7_bp_2.0_bq_2.25", r"$B_p=2.0, B_q=2.25$", Linestyle(3),""],
-         #["exponential/ipsat_miser_1e7_a_1.3_bq_2.0", r"$a=1.3, B_q=2.0$", Linestyle(1),""],
-         #["exponential/ipsat_miser_1e7_a_1.5_bq_1.5", r"$a=1.5, B_q=1.5$", Linestyle(2),""],
-         #["exponential/ipsat_miser_1e7_a_1.1_bq_2.0", r"$a=1.1, B_q=2.0$", Linestyle(3),""],
+         #["ipsat/ipsat2006_nocorrections", r"IPsat 2006 nocor", Linestyle(1), ""],
+         ["ipsat/ipsat2006_corrections", r"IPsat 2006 cor", Linestyle(2), ""],
+         #["ipglasma/ipglasma_256", r"IPglasma, $N=256$, $c=0.36$", Linestyle(1), ""],
+         #["ipglasma/ipglasma_256_c_020", r"IPglasma, $N=256$, $c=0.2$", Linestyle(2), ""],
 ]
 
 style=0
@@ -101,6 +89,7 @@ for f in files:
         scale_list(ydata, GEVSQRTONB)
     except:
         print "Error with file " + fname
+        continue
     p1.plot(xdata, ydata, linestyle=f[2], marker=f[3], color=Color(color), label=f[1], linewidth=1,markersize=5)
 
 

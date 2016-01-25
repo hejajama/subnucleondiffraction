@@ -33,13 +33,18 @@ DipoleAmplitude *amp;
 
 gsl_rng* global_rng;
 
+enum MODE
+{
+    AMPLITUDE_DT,   // Calculate amplitude as a function of t, real/imag part set by other cli argument
+    CORRECTIONS ,    // Caluclate corrections, require dipole amplitude with rotational symmetry
+    PRINT_NUCLEUS,
+};
+
 int main(int argc, char* argv[])
 {
     double Qsqr=0;
     double t=0.1;
     double xpom=0.000959089;
-    PROCESS p = COHERENT;
-    bool print_nucleus = false;
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015" << endl;
     
@@ -47,18 +52,16 @@ int main(int argc, char* argv[])
     {
         cout << "-real, -imag: set real/imaginary part" << endl;
         cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton,nucleons] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width]" << endl;
+        cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points" << endl;
         return 0;
     }
-        
+    
+    MODE mode = AMPLITUDE_DT;
     
     for (int i=1; i<argc; i++)
     {
-        if (string(argv[i])=="-coherent")
-            p = COHERENT;
-        else if (string(argv[i])=="-incoherent")
-            p = INCOHERENT;
-        else if (string(argv[i])=="-mcintpoints")
+        if (string(argv[i])=="-mcintpoints")
             MCINTPOINTS = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-real")
             REAL_PART = true;
@@ -100,8 +103,10 @@ int main(int argc, char* argv[])
         }
         else if (string(argv[i])=="-print_nucleus")
         {
-            print_nucleus = true;
+            mode = PRINT_NUCLEUS;
         }
+        else if (string(argv[i])=="-corrections")
+            mode = CORRECTIONS;
     }
     
     
@@ -126,20 +131,24 @@ int main(int argc, char* argv[])
     cout << "# " << wavef << endl;
     
     
-    if (print_nucleus)
+    if (mode == PRINT_NUCLEUS)
     {
 
         double origin[2]={0,0};
         double max = ((IPGlasma*)amp)->MaxX();
         double min = ((IPGlasma*)amp)->MinX();
         double step =((IPGlasma*)amp)->XStep();
+        cout << "# 1/Nc(1-Tr[V(0)V(x,y)])  1/Nc(1-Tr[V(x,y)V(x,y)])  1/Nc(Tr[1-V(x,y)])  " << endl;
         for (double y=min+step/2; y < max-step/2; y+=step)
         {
              for (double x=min+step/2; x < max-step/2; x+=step)
             {
                 double p[2] = {x,y};
+                
+                WilsonLine &wl =((IPGlasma*)amp)->GetWilsonLine(x,y);
+                double tr = wl.Trace().real();
              
-                cout << y << " " << x << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << endl;
+                cout << y << " " << x << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << " " << 1.0 - tr/3.0 <<endl;
             }
          cout << endl;
         }
@@ -163,24 +172,32 @@ int main(int argc, char* argv[])
         return 0;
         */
     }
-    
-    if (p == INCOHERENT)
-        cout << "# t    dsigma/dt [GeV^4] " << endl;
-    if (p == COHERENT)
-        cout << "# t    Re or Im A [GeV^2] " << endl;
-    //for (t=0.0; t<=2.61; t+=0.150)
-    for (t=0; t<=2; t+=0.2)
+    else if (mode == AMPLITUDE_DT)
     {
-        double res = 0;
-        cout.precision(5);
-        if (p == INCOHERENT)
-            res =diff.TotalCrossSection(xpom, Qsqr, t);
-        else if (p == COHERENT)
-            res = diff.CoherentCrossSection(xpom, Qsqr, t);
-        cout << t << " ";
-        cout.precision(10);
-        cout << res  << endl;
+        //for (t=0.0; t<=2.61; t+=0.150)
+        for (t=0; t<=2; t+=0.2)
+        {
+            double res = 0;
+            cout.precision(5);
+            res = diff.ScatteringAmplitude(xpom, Qsqr, t);
+            cout << t << " ";
+            cout.precision(10);
+            cout << res  << endl;
 
+        }
+    }
+    else if (mode == CORRECTIONS)
+    {
+        for (t=0; t<=2; t+=0.2)
+        {
+            double res = 0;
+            cout.precision(5);
+            res = diff.Correction(xpom, Qsqr, t);
+            cout << t << " ";
+            cout.precision(10);
+            cout << res   << endl;
+            
+        }
     }
     
     

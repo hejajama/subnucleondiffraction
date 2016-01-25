@@ -69,7 +69,7 @@ double DipoleAmplitude::SaturationScale(double xpom, Vec b)
     double step = 0.1;
     double maxr = step;
     bool error=true;
-    const double LIMITR = 1000;
+    const double LIMITR = 100;
     for (maxr=step; maxr < LIMITR; maxr+=step)
     {
         if (SatscaleHelperfDipole(maxr, &par) > 0)

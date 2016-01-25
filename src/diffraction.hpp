@@ -19,11 +19,13 @@ public:
     double ScatteringAmplitude(double xpom, double Qsqr, double t);
     double ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z);
     
-    double GetBeta();   // Get correction beta assosiated with previously calculated amplitude
-    //NOTE! Currently calculated in CoherentCrossSection() only!
+    // Calculate scattering amplitude in case of cylinderical cymmetry (e.g. ipsat with no constituent quarks)
+    double ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t);
+    double ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z);
     
-    double CoherentCrossSection(double xpom, double Qsqr, double t);
-    double TotalCrossSection(double xpom, double Qsqr, double t);
+    
+    double LogDerivative(double xpom, double Qsqr, double t);   // der ln A / der y
+    double Correction(double xpom, double Qsqr, double t);
     
     void SetNumOfAverages(int n);
     
