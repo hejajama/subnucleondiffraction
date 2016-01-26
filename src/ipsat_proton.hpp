@@ -57,9 +57,12 @@ public:
     
     std::string InfoStr();
     
+    void SetSkewedness(bool s);     // Set whether we include skewedness when calculating amplitude
+    
        
     
 private:
+    double Skewedness(double lambda);
     DGLAPDist *gdist;    // DGLAP evolved xg
     // gdist.Gluedist() returns Pi^2/(2*Nc) * Alphas(x,mu(r)^2) * xg(x,r)
     std::vector<Vec> quarks;    // Quark positions

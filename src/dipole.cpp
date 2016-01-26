@@ -137,3 +137,8 @@ double DipoleAmplitude::AmplitudeImaginaryPart(double xpom, Vec q1, Vec q2)
     double qq2[2] = {q2.GetX(), q2.GetY()};
     return AmplitudeImaginaryPart(xpom, qq1, qq2);
 }
+
+void DipoleAmplitude::SetSkewedness(bool s)
+{
+    std::cerr << "DipoleAmplitude does not have SetSkewedness implemented, ignoring..." << std::endl;
+}

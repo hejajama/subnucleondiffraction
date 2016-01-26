@@ -86,7 +86,7 @@ Ipsat_Proton::Ipsat_Proton()
     gdist = new DGLAPDist();
     allocated_gdist = true;
     ipsat = IPSAT12;
-    skewedness=true;
+    skewedness=false;
 }
 Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
 {
@@ -98,7 +98,7 @@ Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
     gdist = gd;
     allocated_gdist = false;
     ipsat = IPSAT06;
-    skewedness=true;
+    skewedness=false;
 
 }
 
@@ -143,7 +143,7 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
             if (skewedness)
             {
                 double skew_lambda = LogDerivative_xg(xpom, r.Len());
-                skew = std::pow(2.0, 2.0*skew_lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(skew_lambda+5.0/2.0)/gsl_sf_gamma(skew_lambda+4.0);
+                skew = Skewedness(skew_lambda);
             }
             //std::cout << "skew at r=" << r.Len() << " is " << skew << std::endl;
         if (saturation)
@@ -172,7 +172,13 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         if (skewedness)
         {
             double skew_lambda = LogDerivative_xg(xpom, r.Len());
-            skew = std::pow(2.0, 2.0*skew_lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(skew_lambda+5.0/2.0)/gsl_sf_gamma(skew_lambda+4.0);
+            if (std::isnan(skew_lambda))
+            {
+                std::cerr << "skew nan at xpom=" << xpom << " r = " << r.Len() << std::endl;
+                skew=1.0;
+            }
+            else
+                skew = Skewedness(skew_lambda);
         }
         
         return 1.0 - std::exp(skew*c * 1.0/quarks.size()*tpsum);
@@ -335,4 +341,19 @@ double Ipsat_Proton::Amplitude(double xpom, Vec q1, Vec q2)
     double quark[2] = {q1.GetX(), q1.GetY() };
     double antiquark[2] = {q2.GetX(), q2.GetY() };
     return Amplitude(xpom, quark, antiquark);
+}
+
+double Ipsat_Proton::Skewedness(double lambda)
+{
+    if (lambda+4.0 > GSL_SF_GAMMA_XMAX or 2.0*lambda+3 > GSL_SF_GAMMA_XMAX)
+    {
+        std::cerr << "Cant calculate skewedness, overflow, lambda=" << lambda << std::endl;
+        return 1.0;
+    }
+    return std::pow(2.0, 2.0*lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(lambda+5.0/2.0)/gsl_sf_gamma(lambda+4.0);
+}
+
+void Ipsat_Proton::SetSkewedness(bool s)
+{
+    skewedness = s;
 }

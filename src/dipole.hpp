@@ -24,6 +24,7 @@ public:
     
     double AmplitudeImaginaryPart(double xpom, Vec q1, Vec q2 );
     
+    virtual void SetSkewedness(bool s); // Enalbe/disable skewedness, only used by ipsat
     
     // Setup the target. In practice sample nucleon positions / quark positions / whatver.
     // This is called before Amplitude() is evaluated. When averaging over nuclear configurations

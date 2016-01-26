@@ -46,8 +46,9 @@ int main(int argc, char* argv[])
     double t=0.1;
     //double xpom=0.000959089;
     double w = 100;
+    bool skewedness = false;
     
-    cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015" << endl;
+    cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2016" << endl;
     
     if (string(argv[1])=="-help")
     {
@@ -55,6 +56,7 @@ int main(int argc, char* argv[])
         cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton,nucleons] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width]" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points" << endl;
+        cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
         return 0;
     }
     
@@ -106,6 +108,8 @@ int main(int argc, char* argv[])
         {
             mode = PRINT_NUCLEUS;
         }
+        else if (string(argv[i])=="-skewedness")
+            skewedness = true;
         else if (string(argv[i])=="-corrections")
             mode = CORRECTIONS;
     }
@@ -123,6 +127,7 @@ int main(int argc, char* argv[])
     BoostedGauss wavef("gauss-boosted.dat");
     
     amp->InitializeTarget();
+    amp->SetSkewedness(skewedness);
     
 
     Diffraction diff(*amp, wavef);
@@ -178,15 +183,20 @@ int main(int argc, char* argv[])
     
     else if (mode == AMPLITUDE_DT)
     {
+        cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
         //for (t=0.0; t<=2.61; t+=0.150)
         for (t=0; t<=2; t+=0.2)
         {
-            double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);            double res = 0;
+            double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
             cout.precision(5);
-            res = diff.ScatteringAmplitude(xpom, Qsqr, t);
+            double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, TRANSVERSE);
+            double lng = 0;
+            if (Qsqr > 0)
+                double lng = diff.ScatteringAmplitude(xpom, Qsqr, t, LONGITUDINAL);
+
             cout << t << " ";
             cout.precision(10);
-            cout << res  << endl;
+            cout << trans  << " " << lng << endl;
 
         }
     }

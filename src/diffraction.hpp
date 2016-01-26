@@ -10,14 +10,20 @@
 #include "dipole.hpp"
 #include "wave_function.hpp"
 
+enum Polarization
+{
+    TRANSVERSE,
+    LONGITUDINAL
+};
+
 class Diffraction
 {
 public:
     Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_);
     
     // Calculate amplitude A, this will later be averaged and squared
-    double ScatteringAmplitude(double xpom, double Qsqr, double t);
-    double ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z);
+    double ScatteringAmplitude(double xpom, double Qsqr, double t,Polarization pol=TRANSVERSE );
+    double ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol=TRANSVERSE);
     
     // Calculate scattering amplitude in case of cylinderical cymmetry (e.g. ipsat with no constituent quarks)
     double ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t);

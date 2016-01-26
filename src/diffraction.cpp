@@ -1,7 +1,7 @@
 /*
  * Diffraction at sub-nucleon scale
  * Calculate diffractive cross sections
- * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015
+ * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015-2016
  */
 #include "diffraction.hpp"
 #include <gsl/gsl_monte.h>
@@ -92,17 +92,19 @@ struct Inthelper_amplitude
     double b;
     double theta_b;
     double z;
+    Polarization polarization;
 };
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par);
 
-double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t)
+double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Polarization pol)
 {
     Inthelper_amplitude helper;
     helper.diffraction = this;
     helper.xpom = xpom;
     helper.Qsqr = Qsqr;
     helper.t = t;
+    helper.polarization=pol;
 
     // Do MC integral over impact parameters and dipole sizes
     
@@ -187,7 +189,7 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
     if (!FACTORIZE_ZINT)
         z = vec[4];
         
-    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z);
+    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z, helper->polarization);
     
     /*
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(ZINT_INTERVALS);
@@ -215,7 +217,7 @@ double Inthelperf_amplitude_z(double z, void* p)
     return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z);
 }
 
-double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z)
+double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol)
 { 
     
     if (Qsqr>0)
@@ -270,7 +272,10 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     }
     else
     {
-        res *= wavef->PsiSqr_tot(Qsqr, r, z)/(4.0*M_PI); // Wavef
+        if (pol == TRANSVERSE)
+            res *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
+        else
+            res *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
         // As this integrand is now not integrated over z
         std::complex<double> imag(0,1);
         std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r)  )  );
@@ -300,9 +305,10 @@ const int INTPOINTS_ROTSYM=2000;
 double inthelperf_amplitude_rotationalsym_b(double b, void* p);
 double inthelperf_amplitude_rotationalsym_r(double r, void* p);
 double inthelperf_amplitude_rotationalsym_z(double z, void* p);
+
 double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t)
 {
-      //gsl_set_error_handler_off();
+    gsl_set_error_handler(&ErrHandler);
     
     Inthelper_amplitude par;
     par.diffraction = this;
@@ -313,13 +319,17 @@ double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qs
     f.function = inthelperf_amplitude_rotationalsym_b;
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
     double result,error;
-    int status = gsl_integration_qag(&f, 0, 100, 0, 0.01, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
+    int status = gsl_integration_qag(&f, 0, 20, 0, 0.01, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
     
     if (status)
         cerr << "#bint failed, result " << result << " relerror " << error << " t " <<t << endl;
     
     gsl_integration_workspace_free(w);
     
+    if (std::isnan(result))
+    {
+        cerr<< "Diffraction::ScatteringAmplitudeRotationalSymmetry result is NaN, xpom=" << xpom << " t=" << t << endl;
+    }
     
     return result;
 }
@@ -349,7 +359,7 @@ double inthelperf_amplitude_rotationalsym_b(double b, void* p)
     f.function = inthelperf_amplitude_rotationalsym_r;
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
     double result,error;
-    int status = gsl_integration_qag(&f, 0, 100, 0, 0.01, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
+    int status = gsl_integration_qag(&f, 0, 20, 0, 0.01, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
     
     if (status)
         cerr << "#Rint failed, result " << result << " relerror " << error << " b " << b << " t " << par->t << endl;
@@ -371,12 +381,13 @@ double inthelperf_amplitude_rotationalsym_r(double r, void* p)
     f.function = inthelperf_amplitude_rotationalsym_z;
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
     double result,error;
-    int status = gsl_integration_qags(&f, 0, 1.0, 0, 0.01, INTPOINTS_ROTSYM, w, &result, &error);
+    double eps=1e-4;
+    int status = gsl_integration_qags(&f, 0+eps, 1.0-eps, 0, 0.01, INTPOINTS_ROTSYM, w, &result, &error);
     
     
     if (status)
     {
-        if (!(std::isnan(result)))
+        if (!(std::isnan(result)) and std::abs(result)>1e-20)
             cerr << "#zint failed, result " << result << " relerror " << error << " b " << par->b << " t " <<par->t << endl;
         if (std::isnan(result) and par->b < 30)
             cerr << " Nan also at b=" << par->b << endl;
