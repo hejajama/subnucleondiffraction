@@ -350,7 +350,16 @@ double Ipsat_Proton::Skewedness(double lambda)
         std::cerr << "Cant calculate skewedness, overflow, lambda=" << lambda << std::endl;
         return 1.0;
     }
-    return std::pow(2.0, 2.0*lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(lambda+5.0/2.0)/gsl_sf_gamma(lambda+4.0);
+    gsl_sf_result gamma_lambda_52;
+    int status1 =gsl_sf_gamma_e(lambda+5.0/2.0, &gamma_lambda_52);
+    gsl_sf_result gamma_lambda_4;
+    int status2 =gsl_sf_gamma_e(lambda+4.0, &gamma_lambda_4);
+    if (status1 or status2)
+    {
+        std::cerr << "Gamma function evaluation failed, Gamma(" <<lambda+5.0/2.0 << ")=" << gamma_lambda_52.val <<", Gamma(" << lambda+4.0 << ")=" << gamma_lambda_4.val << ", lambda=" << lambda << std::endl;
+        return 1.0;
+    }
+    return std::pow(2.0, 2.0*lambda+3.0)/std::sqrt(M_PI) * gamma_lambda_52.val/gamma_lambda_4.val;
 }
 
 void Ipsat_Proton::SetSkewedness(bool s)
