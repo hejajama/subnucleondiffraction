@@ -26,12 +26,12 @@ public:
     double ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol=TRANSVERSE);
     
     // Calculate scattering amplitude in case of cylinderical cymmetry (e.g. ipsat with no constituent quarks)
-    double ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t);
-    double ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z);
+    double ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t, Polarization pol=TRANSVERSE);
+    double ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z, Polarization pol=TRANSVERSE);
     
     
-    double LogDerivative(double xpom, double Qsqr, double t);   // der ln A / der y
-    double Correction(double xpom, double Qsqr, double t);
+    double LogDerivative(double xpom, double Qsqr, double t, Polarization pol=TRANSVERSE);   // der ln A / der y
+    double Correction(double xpom, double Qsqr, double t, Polarization pol=TRANSVERSE);
     
     void SetNumOfAverages(int n);
     

@@ -80,7 +80,7 @@ for f in files:
         if int(parse[-1]) > maxnconfs:
             continue
     except ValueError:
-            print "WTF file " + fname
+            print "WTF file " + fname_real 
             continue
 
     try:
@@ -95,7 +95,7 @@ for f in files:
 
 
 
-    # If we calculate incoherent scattering, we average the squared amplitude
+    # If we calculate total cross section, we average the squared amplitude
     if coherent == False:
         for i in range(len(tmpydata)):
             tmpydata[i] = tmpydata[i]*tmpydata[i]
@@ -158,7 +158,7 @@ for i in range(len(tmpydatas[0])):
         
         if coherent:    # Coherent scattering: now we have averated, then we squared
             avg = (avg*avg + avg_imag*avg_imag) / (16.0*pi)
-        else:   # Incoherent
+        else:   # total cross section
             avg = (avg + avg_imag) / (16.0*pi)
 
         tdata.append(t)

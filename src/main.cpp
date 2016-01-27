@@ -49,9 +49,14 @@ int main(int argc, char* argv[])
     bool skewedness = false;
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2016" << endl;
+    cout << "# Command: ";
+    for (int i=1; i<argc; i++)
+        cout << argv[i] << " ";
+    cout << endl;
     
     if (string(argv[1])=="-help")
     {
+        cout << "-Q2, -W: set kinematics" << endl;
         cout << "-real, -imag: set real/imaginary part" << endl;
         cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton,nucleons] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width]" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
@@ -66,6 +71,10 @@ int main(int argc, char* argv[])
     {
         if (string(argv[i])=="-mcintpoints")
             MCINTPOINTS = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-Q2")
+            Qsqr = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-W")
+            w=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-real")
             REAL_PART = true;
         else if (string(argv[i])=="-imag")
@@ -183,16 +192,17 @@ int main(int argc, char* argv[])
     
     else if (mode == AMPLITUDE_DT)
     {
+        cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
         //for (t=0.0; t<=2.61; t+=0.150)
-        for (t=0; t<=2; t+=0.2)
+        for (t=0.0; t<=2; t+=0.2)
         {
             double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
             cout.precision(5);
             double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, TRANSVERSE);
             double lng = 0;
             if (Qsqr > 0)
-                double lng = diff.ScatteringAmplitude(xpom, Qsqr, t, LONGITUDINAL);
+                lng = diff.ScatteringAmplitude(xpom, Qsqr, t, LONGITUDINAL);
 
             cout << t << " ";
             cout.precision(10);
@@ -202,15 +212,21 @@ int main(int argc, char* argv[])
     }
     else if (mode == CORRECTIONS)
     {
+        cout << "# Real part correction" << endl;
+        cout << "# t  transverse  longitudinal" << endl;
+        
         for (t=0; t<=2; t+=0.2)
         {
             double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
-            double res = 0;
+            
             cout.precision(5);
-            res = diff.Correction(xpom, Qsqr, t);
+            double res_t = diff.Correction(xpom, Qsqr, t, TRANSVERSE);
+            double res_l=0;
+            if (Qsqr > 0)
+                res_l= diff.Correction(xpom, Qsqr, t, LONGITUDINAL);
             cout << t << " ";
             cout.precision(10);
-            cout << res   << endl;
+            cout << res_t << " " << res_l   << endl;
             
         }
     }

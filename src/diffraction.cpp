@@ -34,6 +34,7 @@ Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
 struct AmplitudeDerHeler
 {
     Diffraction* diff;
+    Polarization pol;
     double Qsqr;
     double t;
 };
@@ -42,14 +43,14 @@ double AmplitudeDerHelperf(double y, void* p)
 {
     AmplitudeDerHeler* par = (AmplitudeDerHeler*)p;
     double x = exp(-y);
-    double res = std::log(par->diff->ScatteringAmplitudeRotationalSymmetry(x, par->Qsqr, par->t));
+    double res = std::log(par->diff->ScatteringAmplitudeRotationalSymmetry(x, par->Qsqr, par->t, par->pol));
     return res;
 }
-double Diffraction::LogDerivative(double xpom, double Qsqr, double t)
+double Diffraction::LogDerivative(double xpom, double Qsqr, double t, Polarization pol)
 {
     gsl_function F;
     F.function=&AmplitudeDerHelperf;
-    AmplitudeDerHeler par; par.Qsqr=Qsqr; par.t=t;
+    AmplitudeDerHeler par; par.Qsqr=Qsqr; par.t=t; par.pol=pol;
     par.diff  = this;
     F.params = &par;
     double result,abserr;
@@ -62,9 +63,9 @@ double Diffraction::LogDerivative(double xpom, double Qsqr, double t)
 
 /* Calculate total correction
  */
-double Diffraction::Correction(double xpom, double Qsqr, double t)
+double Diffraction::Correction(double xpom, double Qsqr, double t, Polarization pol)
 {
-    double lambda = LogDerivative(xpom, Qsqr, t);
+    double lambda = LogDerivative(xpom, Qsqr, t, pol);
     
     double beta = std::tan(lambda*M_PI/2.0);
     double Rg = 1;//std::pow(2.0, 2.0*lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(lambda+5.0/2.0)/gsl_sf_gamma(lambda+4.0);
@@ -220,9 +221,7 @@ double Inthelperf_amplitude_z(double z, void* p)
 double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol)
 { 
     
-    if (Qsqr>0)
-        cerr <<"Check that Q^2>0 works (different polarizations)s!" << endl;
-    
+        
     // Recall quark and gluon positions:
     // Quark: b + zr
     // Antiquark: b - (1-z) r
@@ -306,13 +305,14 @@ double inthelperf_amplitude_rotationalsym_b(double b, void* p);
 double inthelperf_amplitude_rotationalsym_r(double r, void* p);
 double inthelperf_amplitude_rotationalsym_z(double z, void* p);
 
-double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t)
+double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t, Polarization pol)
 {
     gsl_set_error_handler(&ErrHandler);
     
     Inthelper_amplitude par;
     par.diffraction = this;
     par.xpom=xpom; par.Qsqr = Qsqr; par.t=t;
+    par.polarization= pol;
     
     gsl_function f;
     f.params = &par;
@@ -334,7 +334,7 @@ double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qs
     return result;
 }
 
-double Diffraction::ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z)
+double Diffraction::ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z, Polarization pol)
 {
     // Set quark and antiquark on x axis around impact parameter
     // As amplitude does not depend on angle, this is ok here.
@@ -408,7 +408,7 @@ double inthelperf_amplitude_rotationalsym_z(double z, void* p)
     Inthelper_amplitude *par = (Inthelper_amplitude*)p;
     
     // Note: no jacobian here, it is included in ScatteringAmplitudeRotationalSymmetryIntegrand
-    return par->diffraction->ScatteringAmplitudeRotationalSymmetryIntegrand(par->xpom, par->Qsqr, par->t, par->r, par->b, z);
+    return par->diffraction->ScatteringAmplitudeRotationalSymmetryIntegrand(par->xpom, par->Qsqr, par->t, par->r, par->b, z, par->polarization);
 }
 
 // Helpers

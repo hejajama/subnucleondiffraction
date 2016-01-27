@@ -70,6 +70,7 @@
 		1349C3F51C29CF1500B8EBA7 /* dipxs_intb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dipxs_intb.cpp; path = tools/dipxs_intb.cpp; sourceTree = "<group>"; };
 		1349C3F61C29CF1500B8EBA7 /* dipxs_intb.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dipxs_intb.hpp; path = tools/dipxs_intb.hpp; sourceTree = "<group>"; };
 		1349C3F81C29F38B00B8EBA7 /* satscale.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = satscale.cpp; path = tools/satscale.cpp; sourceTree = "<group>"; };
+		1380AA6A1C57CAF000F8E9C8 /* spectra.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = spectra.py; path = tools/spectra.py; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +138,7 @@
 				12F64BC41BE01203007C4F02 /* subnucleon_config.hpp */,
 				12F504E51BECEFA3005540EF /* subnucleon_config.cpp */,
 				128186081BDE9AB60062FF52 /* average_spectra.py */,
+				1380AA6A1C57CAF000F8E9C8 /* spectra.py */,
 				12B5192B1BD976AB00230988 /* wave_function.cpp */,
 				12B5192C1BD976AB00230988 /* wave_function.hpp */,
 				1201701A1BDA883A00A440E4 /* SubNucleonDiffraction */,
