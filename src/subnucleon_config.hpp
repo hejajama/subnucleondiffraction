@@ -11,6 +11,7 @@ const double MCINTACCURACY = 0.2;
 
 const double DELTA_Y = 0.1; // delta y (y=ln 1/x) used to calculate corrections
 
+const double JPSI_MASS = 3.0969;
 
 extern bool FACTORIZE_ZINT;   // if true, we neglect exp[(1-z)r.Delta] coupling and
     // the only z dependence is in the wave function 

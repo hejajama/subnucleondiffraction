@@ -47,6 +47,7 @@ int main(int argc, char* argv[])
     //double xpom=0.000959089;
     double w = 100;
     bool skewedness = false;
+    double qsfluct_sigma=0;
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2016" << endl;
     cout << "# Command: ";
@@ -62,6 +63,7 @@ int main(int argc, char* argv[])
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
+        cout << "-qsfluct sigma: set width of Q_s fluctuations (0: disable); only for ipsatproton!" << endl;
         return 0;
     }
     
@@ -121,6 +123,8 @@ int main(int argc, char* argv[])
             skewedness = true;
         else if (string(argv[i])=="-corrections")
             mode = CORRECTIONS;
+        else if (string(argv[i])=="-qsfluct")
+            qsfluct_sigma = StrToReal(argv[i+1]);
     }
     
     
@@ -137,6 +141,8 @@ int main(int argc, char* argv[])
     
     amp->InitializeTarget();
     amp->SetSkewedness(skewedness);
+    if (qsfluct_sigma > 0)
+        ((Ipsat_Proton*)amp)->SetQsFluctuation(qsfluct_sigma);
     
 
     Diffraction diff(*amp, wavef);
@@ -145,8 +151,9 @@ int main(int argc, char* argv[])
     cout << "# " << InfoStr() << endl;
     cout << "# " << wavef << endl;
     
-    double mjpsi = 3.0969;
+    double mjpsi = JPSI_MASS;
     double mp = 0.938;
+    
     
     if (mode == PRINT_NUCLEUS)
     {
@@ -198,6 +205,12 @@ int main(int argc, char* argv[])
         for (t=0.0; t<=2; t+=0.2)
         {
             double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
+            if (xpom > 0.01)
+            {
+                cerr << "xpom = " << xpom << ", can't do this!" << endl;
+                continue;
+            }
+            
             cout.precision(5);
             double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, TRANSVERSE);
             double lng = 0;
@@ -218,6 +231,11 @@ int main(int argc, char* argv[])
         for (t=0; t<=2; t+=0.2)
         {
             double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
+            if (xpom > 0.01)
+            {
+                cerr << "xpom = " << xpom << ", can't do this!" << endl;
+                continue;
+            }
             
             cout.precision(5);
             double res_t = diff.Correction(xpom, Qsqr, t, TRANSVERSE);

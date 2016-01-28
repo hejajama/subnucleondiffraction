@@ -8,6 +8,8 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_sf_gamma.h>
+#include <tools/tools.hpp>
+#include <gsl/gsl_randist.h>
 #include <cmath>
 #include <string>
 #include <sstream>
@@ -71,9 +73,63 @@ void Ipsat_Proton::InitializeTarget()
             quark_bp.push_back(B_q);
         }
     }
-    //exit(1);
+    
+    SampleQsFluctuations();
+}
+
+/* 
+ * Sample Q_s fluctuations at each point in transverse plane
+ */
+void Ipsat_Proton::SampleQsFluctuations()
+{
+    double size = 8;
+    int points = 500;    // x*x grid
+    double step = (2.0*size)/(points-1);
+    for (double x=-size; x<=size; x+=step)
+        qs_fluctuation_coordinates.push_back(x);
     
     
+    double fluct=gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
+    for (int yind=0; yind<points; yind++)
+    {
+        std::vector<double> row;
+        for (int xind=0; xind<points; xind++)
+        {
+            double f;
+            if (Qs_fluctuation_sigma > 0)
+                //f = fluct;  // no b dependence
+                f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
+            else
+                f=0;
+            row.push_back(f);
+            
+        }
+        qs_fluctuation.push_back(row);
+    }
+    
+}
+
+
+double Ipsat_Proton::GetQsFluctuation(double x, double y)
+{
+    int xind;
+    if (x < qs_fluctuation_coordinates[0] or x > qs_fluctuation_coordinates[qs_fluctuation_coordinates.size()-1])
+        return 1.0;
+    else
+        xind = FindIndex(x, qs_fluctuation_coordinates);
+    int yind;
+    if (y < qs_fluctuation_coordinates[0] or y > qs_fluctuation_coordinates[qs_fluctuation_coordinates.size()-1])
+        return 1.0;
+    else
+        yind = FindIndex(y, qs_fluctuation_coordinates);
+    
+    return std::exp(qs_fluctuation[yind][xind]);
+    
+}
+
+void Ipsat_Proton::SetQsFluctuation(double s)
+{
+    Qs_fluctuation_sigma = s;
 }
 
 Ipsat_Proton::Ipsat_Proton()
@@ -87,6 +143,7 @@ Ipsat_Proton::Ipsat_Proton()
     allocated_gdist = true;
     ipsat = IPSAT12;
     skewedness=false;
+    Qs_fluctuation_sigma=0;
 }
 Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
 {
@@ -99,6 +156,7 @@ Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
     allocated_gdist = false;
     ipsat = IPSAT06;
     skewedness=false;
+    Qs_fluctuation_sigma=0;
 
 }
 
@@ -147,9 +205,9 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
             }
             //std::cout << "skew at r=" << r.Len() << " is " << skew << std::endl;
         if (saturation)
-            return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * skew*gdist->Gluedist(xpom, r.LenSqr()) * tpsum  );
+            return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew*gdist->Gluedist(xpom, r.LenSqr()) * tpsum  );
         else
-            return r.LenSqr() * 1.0/quarks.size() * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  ;
+            return r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  ;
         }
     else if (ipsat == IPSAT12)
     {
@@ -181,7 +239,7 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
                 skew = Skewedness(skew_lambda);
         }
         
-        return 1.0 - std::exp(skew*c * 1.0/quarks.size()*tpsum);
+        return 1.0 - std::exp( GetQsFluctuation(b.GetX(),b.GetY())*skew*c * 1.0/quarks.size()*tpsum);
     }
     else
     {
@@ -317,6 +375,7 @@ std::string Ipsat_Proton::InfoStr()
         ss << " Enabled";
     else
         ss << "Disabled";
+    ss << ". ln Q_s^2 fluctuation width: " << Qs_fluctuation_sigma;
     return ss.str();
 }
 
