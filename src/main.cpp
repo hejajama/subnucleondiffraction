@@ -38,6 +38,7 @@ enum MODE
     AMPLITUDE_DT,   // Calculate amplitude as a function of t, real/imag part set by other cli argument
     CORRECTIONS ,    // Caluclate corrections, require dipole amplitude with rotational symmetry
     PRINT_NUCLEUS,
+    SATURATION_SCALE    // Print saturation scale on a g gripd
 };
 
 int main(int argc, char* argv[])
@@ -64,6 +65,7 @@ int main(int argc, char* argv[])
         cout << "-mcintpoints points" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
         cout << "-qsfluct sigma: set width of Q_s fluctuations (0: disable); only for ipsatproton!" << endl;
+        cout << "-satscale: print saturation scale" << endl;
         return 0;
     }
     
@@ -125,6 +127,13 @@ int main(int argc, char* argv[])
             mode = CORRECTIONS;
         else if (string(argv[i])=="-qsfluct")
             qsfluct_sigma = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-satscale")
+            mode = SATURATION_SCALE;
+        else if (string(argv[i]).substr(0,1)=="-")
+        {
+            cerr << "Unknown parameter " << argv[i] << endl;
+            exit(1);
+        }
     }
     
     
@@ -140,6 +149,7 @@ int main(int argc, char* argv[])
     BoostedGauss wavef("gauss-boosted.dat");
     
     amp->InitializeTarget();
+    
     amp->SetSkewedness(skewedness);
     if (qsfluct_sigma > 0)
         ((Ipsat_Proton*)amp)->SetQsFluctuation(qsfluct_sigma);
@@ -179,22 +189,20 @@ int main(int argc, char* argv[])
          
          
         return 0;
-	
-        
-        // Print ipsat nucleus, todo: ipglasma
-        /*
-            std::vector<Vec> positions = ((Ipsat_Proton*)amp)->GetQuarks();
-        
-        
-        //std::vector<Vec> positions = ((Ipsat_Proton*)amp)->GetQuarks();
-        std::vector<double> radii =((Ipsat_Proton*)amp)->GetRadii();
-        cout << "# x   y    radius   [GeV^-1]" << endl;
-        for (int i=0; i<positions.size(); i++)
+    }
+    
+    else if (mode == SATURATION_SCALE)
+    {
+        double max=5; int points = 100;
+        for (double y=-max; y<=max; y+=2.0*max/(points-1.0))
         {
-            cout << positions[i].GetX() << " " << positions[i].GetY() << " " << radii[i] << endl;
+            for (double x=-max; x<=max; x+=2.0*max/(points-1.0))
+            {
+                cout << y << " " << x << " " << amp->SaturationScale(0.001, Vec(x,y)) << endl;
+            }
+            cout << endl;
         }
         return 0;
-        */
     }
     
     else if (mode == AMPLITUDE_DT)

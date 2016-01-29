@@ -82,6 +82,9 @@ void Ipsat_Proton::InitializeTarget()
  */
 void Ipsat_Proton::SampleQsFluctuations()
 {
+    qs_fluctuation_coordinates.clear();
+    qs_fluctuation.clear();
+    
     double size = 8;
     int points = 500;    // x*x grid
     double step = (2.0*size)/(points-1);
@@ -90,6 +93,7 @@ void Ipsat_Proton::SampleQsFluctuations()
     
     
     double fluct=gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
+    double fluct_coef_sum=0; int pts=0; double stdev = 0;
     for (int yind=0; yind<points; yind++)
     {
         std::vector<double> row;
@@ -97,8 +101,11 @@ void Ipsat_Proton::SampleQsFluctuations()
         {
             double f;
             if (Qs_fluctuation_sigma > 0)
+            {
                 //f = fluct;  // no b dependence
                 f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
+                fluct_coef_sum += std::exp(f); pts++; stdev += std::pow(1.0-std::exp(f),2.0);
+            }
             else
                 f=0;
             row.push_back(f);
@@ -106,6 +113,8 @@ void Ipsat_Proton::SampleQsFluctuations()
         }
         qs_fluctuation.push_back(row);
     }
+    
+    cout << "# Sampled fluctuations, width " << Qs_fluctuation_sigma << ", average Q_s^2 modification " << fluct_coef_sum/pts << ", average dev: sqrt(<(modification-1)^2>) = " << std::sqrt(stdev/pts) << endl;
     
 }
 
@@ -123,6 +132,8 @@ double Ipsat_Proton::GetQsFluctuation(double x, double y)
     else
         yind = FindIndex(y, qs_fluctuation_coordinates);
     
+    //cout << x << " " << y << " " <<std::exp(qs_fluctuation[yind][xind]) << endl;
+    
     return std::exp(qs_fluctuation[yind][xind]);
     
 }
@@ -130,6 +141,7 @@ double Ipsat_Proton::GetQsFluctuation(double x, double y)
 void Ipsat_Proton::SetQsFluctuation(double s)
 {
     Qs_fluctuation_sigma = s;
+    SampleQsFluctuations();
 }
 
 Ipsat_Proton::Ipsat_Proton()
