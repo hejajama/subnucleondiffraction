@@ -49,6 +49,8 @@ int main(int argc, char* argv[])
     double w = 100;
     bool skewedness = false;
     double qsfluct_sigma=0;
+    Fluctuation_shape fluctshape = LOCAL_FLUCTUATIONS;
+    
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2016" << endl;
     cout << "# Command: ";
@@ -65,6 +67,7 @@ int main(int argc, char* argv[])
         cout << "-mcintpoints points" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
         cout << "-qsfluct sigma: set width of Q_s fluctuations (0: disable); only for ipsatproton!" << endl;
+        cout << "-qsfluctshape [local,quarks]: set Q_s^2 to fluctuate at each point / for each quark" << endl;
         cout << "-satscale: print saturation scale" << endl;
         return 0;
     }
@@ -127,6 +130,18 @@ int main(int argc, char* argv[])
             mode = CORRECTIONS;
         else if (string(argv[i])=="-qsfluct")
             qsfluct_sigma = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-qsfluctshape")
+        {
+            if (string(argv[i+1])=="local")
+                fluctshape = LOCAL_FLUCTUATIONS;
+            else if (string(argv[i+1])=="quarks")
+                fluctshape = FLUCTUATE_QUARKS;
+            else
+            {
+                cerr << "Unknown fluctuation type " << argv[i+1] << endl;
+                exit(1);
+            }
+        }
         else if (string(argv[i])=="-satscale")
             mode = SATURATION_SCALE;
         else if (string(argv[i]).substr(0,1)=="-")
@@ -148,11 +163,16 @@ int main(int argc, char* argv[])
     
     BoostedGauss wavef("gauss-boosted.dat");
     
-    amp->InitializeTarget();
+    
     
     amp->SetSkewedness(skewedness);
     if (qsfluct_sigma > 0)
+    {
         ((Ipsat_Proton*)amp)->SetQsFluctuation(qsfluct_sigma);
+        ((Ipsat_Proton*)amp)->SetFluctuationShape(fluctshape);
+    }
+    
+    amp->InitializeTarget();
     
 
     Diffraction diff(*amp, wavef);

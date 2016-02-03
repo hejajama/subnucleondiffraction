@@ -27,6 +27,12 @@ enum Ipsat_version
     IPSAT12     // Rezaeian et al, 1212.2974
 };
 
+enum Fluctuation_shape
+{
+    FLUCTUATE_QUARKS,
+    LOCAL_FLUCTUATIONS
+};
+
 class Ipsat_Proton : public DipoleAmplitude
 {
 public:
@@ -64,7 +70,12 @@ public:
     double GetQsFluctuation(double x, double y);   // return Exp(f(x,y)) that multiplies xg
     void SetQsFluctuation(double s);    // Set sigma for ln Q_s fluctuation
     
+    void SetFluctuationShape(Fluctuation_shape s);
+    Fluctuation_shape GetFluctuationShape();
+    
 private:
+    void Init();
+    
     double Skewedness(double lambda);
     DGLAPDist *gdist;    // DGLAP evolved xg
     // gdist.Gluedist() returns Pi^2/(2*Nc) * Alphas(x,mu(r)^2) * xg(x,r)
@@ -73,11 +84,9 @@ private:
     double maxr;
     double B_p;     // Central value for the proton gaussian width
     double B_q;     // Central value for the quark gaussian width
-    double Qs_fluctuation_sigma;        // Width of the ln Q_s/<Q_s> distribution
     bool saturation;
     
-    std::vector< std::vector< double > > qs_fluctuation;    // Grid of Q_s fluctuations
-    std::vector< double > qs_fluctuation_coordinates;       // Grid points for Q_s fluctuation
+    
     
     double QuarkThickness(double r, int i); // Quark density profile for quark i, distance r from its origin
     
@@ -87,6 +96,14 @@ private:
     bool allocated_gdist;   // True if we have allocated memory for gdist in here
     
     Proton_shape shape;
+    
+    // Q_s luctuations
+    Fluctuation_shape fluctuation_shape;
+    double Qs_fluctuation_sigma;        // Width of the ln Q_s^2/<Q_s^2> distribution
+    std::vector< std::vector< double > > qs_fluctuation;    // Grid of Q_s fluctuations
+    std::vector< double > qs_fluctuation_coordinates;       // Grid points for Q_s^2 fluctuation
+    std::vector< double > qs_fluctuations_quarks;           // Q_s^2 fluctuations for each quark
+    
     
     Ipsat_version ipsat;
     

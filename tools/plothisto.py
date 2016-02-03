@@ -28,6 +28,8 @@ if len(sys.argv) != 3:
 fname=sys.argv[1]
 nbins=int(sys.argv[2])
 
+ycol=1
+
 f = open(fname)
 lines = f.readlines()
 data=[]
@@ -45,7 +47,7 @@ plt.grid(True)
 
 
 # Compare with a test function
-t = np.arange( min(data), max(data), (max(data)-min(data))/(nbins*10))
-plot(t, ComparisonFunction(t), label='Distribution')
+#t = np.arange( min(data), max(data), (max(data)-min(data))/(nbins*10))
+#plot(t, ComparisonFunction(t), label='Distribution')
 
 plt.show()

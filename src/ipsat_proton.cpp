@@ -84,43 +84,73 @@ void Ipsat_Proton::SampleQsFluctuations()
 {
     qs_fluctuation_coordinates.clear();
     qs_fluctuation.clear();
+    qs_fluctuations_quarks.clear();
     
-    double size = 8;
-    int points = 500;    // x*x grid
-    double step = (2.0*size)/(points-1);
-    for (double x=-size; x<=size; x+=step)
-        qs_fluctuation_coordinates.push_back(x);
-    
-    
-    double fluct=gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
-    double fluct_coef_sum=0; int pts=0; double stdev = 0;
-    for (int yind=0; yind<points; yind++)
+    if (fluctuation_shape == FLUCTUATE_QUARKS)
     {
-        std::vector<double> row;
-        for (int xind=0; xind<points; xind++)
+        // Saturation scale of each quark fluctuates from a Gaussian distribution
+        // Note that as Q_s^2 ~ xg * T_q, and we get ln Q_s^2 fluctuations from
+        // a Gaussian distribution, this same distribution can be used to describe
+        // the normalization fluctuations of quarks
+        int nq  = quarks.size();
+        double sum=0;
+        for (int i=0; i<nq; i++)
         {
-            double f;
-            if (Qs_fluctuation_sigma > 0)
-            {
-                //f = fluct;  // no b dependence
-                f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
-                fluct_coef_sum += std::exp(f); pts++; stdev += std::pow(1.0-std::exp(f),2.0);
-            }
-            else
-                f=0;
-            row.push_back(f);
-            
+            double f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
+            qs_fluctuations_quarks.push_back(std::exp(f));
+            sum+=std::exp(f);
         }
-        qs_fluctuation.push_back(row);
+        cout << "# Sampled " << nq << " quark fluctuations ";
+        for (int i=0; i<nq; i++) cout << qs_fluctuations_quarks[i] << " ";
+        cout << " average Q_s^2 fluctuation " << sum/nq << endl;
     }
-    
-    cout << "# Sampled fluctuations, width " << Qs_fluctuation_sigma << ", average Q_s^2 modification " << fluct_coef_sum/pts << ", average dev: sqrt(<(modification-1)^2>) = " << std::sqrt(stdev/pts) << endl;
+    else if (fluctuation_shape == LOCAL_FLUCTUATIONS)
+    {
+        double size = 8;
+        int points = 500;    // x*x grid
+        double step = (2.0*size)/(points-1);
+        for (double x=-size; x<=size; x+=step)
+            qs_fluctuation_coordinates.push_back(x);
+        
+        
+        double fluct=gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
+        double fluct_coef_sum=0; int pts=0; double stdev = 0;
+        for (int yind=0; yind<points; yind++)
+        {
+            std::vector<double> row;
+            for (int xind=0; xind<points; xind++)
+            {
+                double f;
+                if (Qs_fluctuation_sigma > 0)
+                {
+                    //f = fluct;  // no b dependence
+                    f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
+                    fluct_coef_sum += std::exp(f); pts++; stdev += std::pow(1.0-std::exp(f),2.0);
+                }
+                else
+                    f=0;
+                row.push_back(f);
+                
+            }
+            qs_fluctuation.push_back(row);
+        }
+        
+        cout << "# Sampled local Q_s^2 fluctuations, width " << Qs_fluctuation_sigma << ", average Q_s^2 modification " << fluct_coef_sum/pts << ", average dev: sqrt(<(modification-1)^2>) = " << std::sqrt(stdev/pts) << endl;
+    }
+    else
+    {
+        cerr << "Unknown fluctuatio type set!" << endl;
+        exit(1);
+    }
     
 }
 
 
 double Ipsat_Proton::GetQsFluctuation(double x, double y)
 {
+    if (fluctuation_shape != LOCAL_FLUCTUATIONS)
+        return 1.0;
+    
     int xind;
     if (x < qs_fluctuation_coordinates[0] or x > qs_fluctuation_coordinates[qs_fluctuation_coordinates.size()-1])
         return 1.0;
@@ -141,35 +171,33 @@ double Ipsat_Proton::GetQsFluctuation(double x, double y)
 void Ipsat_Proton::SetQsFluctuation(double s)
 {
     Qs_fluctuation_sigma = s;
-    SampleQsFluctuations();
 }
 
-Ipsat_Proton::Ipsat_Proton()
+void Ipsat_Proton::Init()
 {
     saturation=true;
-    B_p = 4.0; // GeV^-2
-    B_q = B_p/3.0;
+    B_p = 0.0; // GeV^-2
+    B_q = 4.0;
     shape = GAUSSIAN;
- 
+    skewedness=false;
+    Qs_fluctuation_sigma=0;
+    fluctuation_shape = LOCAL_FLUCTUATIONS;
+}
+Ipsat_Proton::Ipsat_Proton()
+{
     gdist = new DGLAPDist();
     allocated_gdist = true;
     ipsat = IPSAT12;
-    skewedness=false;
-    Qs_fluctuation_sigma=0;
+    Init();
+    
 }
 Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
 {
-    saturation=true;
-    B_p = 4.0; // GeV^-2
-    B_q = B_p/3.0;
-    shape = GAUSSIAN;
-    
     gdist = gd;
     allocated_gdist = false;
     ipsat = IPSAT06;
-    skewedness=false;
-    Qs_fluctuation_sigma=0;
 
+    Init();
 }
 
 Ipsat_Proton::~Ipsat_Proton()
@@ -333,7 +361,12 @@ std::vector<double> Ipsat_Proton::GetRadii()
 double Ipsat_Proton::QuarkThickness(double r, int i)
 {
     double bp = quark_bp[i];
-    return 1.0/(2.0*M_PI*bp)*std::exp(- r*r / (2.0*bp));
+    double fluct = 1.0;
+    if (fluctuation_shape == FLUCTUATE_QUARKS)
+    {
+        fluct = qs_fluctuations_quarks[i];
+    }
+    return fluct/(2.0*M_PI*bp)*std::exp(- r*r / (2.0*bp));
 }
 
 /*
@@ -405,6 +438,16 @@ void Ipsat_Proton::SetQuarkWidth(double bq)
 void Ipsat_Proton::SetShape(Proton_shape s)
 {
     shape = s;
+}
+
+void Ipsat_Proton::SetFluctuationShape(Fluctuation_shape s)
+{
+    fluctuation_shape = s;
+}
+
+Fluctuation_shape Ipsat_Proton::GetFluctuationShape()
+{
+    return fluctuation_shape;
 }
 
 double Ipsat_Proton::Amplitude(double xpom, Vec q1, Vec q2)
