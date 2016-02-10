@@ -12,7 +12,7 @@
 #include <gsl/gsl_rng.h>
 
 #include <tools/tools.hpp>
-
+#include <gsl/gsl_errno.h>
 
 #include "dipole.hpp"
 #include "smooth_ws_nuke.hpp"
@@ -41,8 +41,14 @@ enum MODE
     SATURATION_SCALE    // Print saturation scale on a g gripd
 };
 
+int MCpoints(double t);  // Automatic mc points
+
+
 int main(int argc, char* argv[])
 {
+    gsl_set_error_handler(&ErrHandler); // Do not let code to crash if an error occurs, we should
+    // have error handling everywhere!
+    
     double Qsqr=0;
     double t=0.1;
     //double xpom=0.000959089;
@@ -50,6 +56,7 @@ int main(int argc, char* argv[])
     bool skewedness = false;
     double qsfluct_sigma=0;
     Fluctuation_shape fluctshape = LOCAL_FLUCTUATIONS;
+    bool auto_mcintpoints = false;
     
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2016" << endl;
@@ -64,7 +71,7 @@ int main(int argc, char* argv[])
         cout << "-real, -imag: set real/imaginary part" << endl;
         cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton,nucleons] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width]" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
-        cout << "-mcintpoints points" << endl;
+        cout << "-mcintpoints points/auto" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
         cout << "-qsfluct sigma: set width of Q_s fluctuations (0: disable); only for ipsatproton!" << endl;
         cout << "-qsfluctshape [local,quarks]: set Q_s^2 to fluctuate at each point / for each quark" << endl;
@@ -77,7 +84,15 @@ int main(int argc, char* argv[])
     for (int i=1; i<argc; i++)
     {
         if (string(argv[i])=="-mcintpoints")
-            MCINTPOINTS = StrToReal(argv[i+1]);
+        {
+            if (argc > i+1)
+            {
+                if (string(argv[i+1])=="auto")
+                    auto_mcintpoints = true;
+            }
+            if (!auto_mcintpoints)
+                MCINTPOINTS = StrToReal(argv[i+1]);
+        }
         else if (string(argv[i])=="-Q2")
             Qsqr = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-W")
@@ -229,8 +244,8 @@ int main(int argc, char* argv[])
     {
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
-        //for (t=0.0; t<=2.61; t+=0.150)
-        for (t=0.0; t<=2; t+=0.2)
+        double tstep = 0.05;
+        for (t=0.0; t<=3; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.01)
@@ -238,6 +253,7 @@ int main(int argc, char* argv[])
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
                 continue;
             }
+            MCINTPOINTS = MCpoints(t);
             
             cout.precision(5);
             double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, TRANSVERSE);
@@ -248,6 +264,9 @@ int main(int argc, char* argv[])
             cout << t << " ";
             cout.precision(10);
             cout << trans  << " " << lng << endl;
+            
+            if (t > 0.5)
+                tstep = 0.1;
 
         }
     }
@@ -255,8 +274,8 @@ int main(int argc, char* argv[])
     {
         cout << "# Real part correction" << endl;
         cout << "# t  transverse  longitudinal" << endl;
-        
-        for (t=0; t<=2; t+=0.2)
+        double tstep=0.05;
+        for (t=0; t<=3; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.01)
@@ -273,7 +292,8 @@ int main(int argc, char* argv[])
             cout << t << " ";
             cout.precision(10);
             cout << res_t << " " << res_l   << endl;
-            
+            if (t>0.2)
+                tstep=0.1;
         }
     }
     
@@ -316,4 +336,14 @@ string InfoStr()
     
     return info.str();
 
+}
+
+int MCpoints(double t)
+{
+    if (t<1)
+        return 1e7;
+    else if (t<2)
+        return 5e7;
+    else
+        return 1e8;
 }

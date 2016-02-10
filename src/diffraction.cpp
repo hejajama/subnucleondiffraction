@@ -307,7 +307,6 @@ double inthelperf_amplitude_rotationalsym_z(double z, void* p);
 
 double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t, Polarization pol)
 {
-    gsl_set_error_handler(&ErrHandler);
     
     Inthelper_amplitude par;
     par.diffraction = this;

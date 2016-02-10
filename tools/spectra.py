@@ -51,6 +51,8 @@ tmpydatas=[]
 tmpxdatas_imag=[]
 tmpydatas_imag=[]
 
+fnames=[]
+
 imagdir = dir + "/imag/"
 dir = dir + "/real/"
 
@@ -122,6 +124,8 @@ for f in files:
     realparts.append(tmp_realparts)
     imagparts.append(tmp_imagparts)
 
+    fnames.append(fname_real)
+
 print "# Read " + str(len(realparts)) + " amplitudes"
 
 
@@ -145,7 +149,7 @@ if coherent:
         for conf in range(len(realparts)):
             # check if the calculations is done at high t
             if len(realparts[conf]) <= t or len(imagparts[conf])<=t:
-                print "# Skip file " + str(conf) + " at t " + str(tvals[t])
+                print "# Skip file " + fnames[conf] + " at t " + str(tvals[t])
                 continue
             try:
                 sum_real_t += realparts[conf][t][0]
