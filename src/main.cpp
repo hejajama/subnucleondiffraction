@@ -253,7 +253,9 @@ int main(int argc, char* argv[])
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
                 continue;
             }
-            MCINTPOINTS = MCpoints(t);
+            
+            if(auto_mcintpoints)
+                MCINTPOINTS = MCpoints(t);
             
             cout.precision(5);
             double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, TRANSVERSE);
