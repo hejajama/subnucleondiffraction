@@ -233,7 +233,8 @@ int main(int argc, char* argv[])
         {
             for (double x=-max; x<=max; x+=2.0*max/(points-1.0))
             {
-                cout << y << " " << x << " " << amp->SaturationScale(0.001, Vec(x,y)) << endl;
+                //if (x*x + y*y < 0.5*0.5*5.068*5.068) // Limit maxr
+                    cout << y << " " << x << "  " << amp->SaturationScale(0.001, Vec(x,y)) << endl;
             }
             cout << endl;
         }
@@ -244,7 +245,7 @@ int main(int argc, char* argv[])
     {
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
-        double tstep = 0.05;
+        double tstep = 0.025;
         for (t=0.0; t<=3; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
@@ -268,7 +269,7 @@ int main(int argc, char* argv[])
             cout << trans  << " " << lng << endl;
             
             if (t > 0.5)
-                tstep = 0.1;
+                tstep = 0.05;
 
         }
     }
@@ -343,7 +344,7 @@ string InfoStr()
 int MCpoints(double t)
 {
     if (t<1)
-        return 1e7;
+        return 2e7;
     else if (t<2)
         return 5e7;
     else

@@ -110,7 +110,7 @@ void Ipsat_Proton::SampleQsFluctuations()
         // seeking from the coordinates lists the index for which coordinates[i]<x<coordinates[i+1]
         // Thus, in practice having points=3 corresponds to 2x2 grid, as the leftmost values are never used
         double size = 5;
-        int points = 500;    // x*x grid
+        int points = 10;    // x*x grid
         double step = (2.0*size)/(points-1);
         for (double x=-size; x<=size; x+=step)
             qs_fluctuation_coordinates.push_back(x);
@@ -138,7 +138,7 @@ void Ipsat_Proton::SampleQsFluctuations()
             qs_fluctuation.push_back(row);
         }
         
-        cout << "# Sampled local Q_s^2 fluctuations, grid " << size << "x" << size << ", width " << Qs_fluctuation_sigma << ", average Q_s^2 modification " << fluct_coef_sum/pts << ", average dev: sqrt(<(modification-1)^2>) = " << std::sqrt(stdev/pts) << endl;
+        cout << "# Sampled local Q_s^2 fluctuations, grid " << size << "x" << size << ", cell size " << 2.0*size/(points-1) / FMGEV << " fm, fluctuation width " << Qs_fluctuation_sigma << ", average Q_s^2 modification " << fluct_coef_sum/pts << ", average dev: sqrt(<(modification-1)^2>) = " << std::sqrt(stdev/pts) << endl;
     }
     else
     {
