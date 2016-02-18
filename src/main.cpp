@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
         double max = ((IPGlasma*)amp)->MaxX();
         double min = ((IPGlasma*)amp)->MinX();
         double step =((IPGlasma*)amp)->XStep();
-        cout << "# 1/Nc(1-Tr[V(0)V(x,y)])  1/Nc(1-Tr[V(x,y)V(x,y)])  1/Nc(Tr[1-V(x,y)])  " << endl;
+        cout << "# 1/Nc(1-Tr[V(0)V(x,y)]) (re im)  1/Nc(1-Tr[V(x,y)V(x,y)])  1/Nc(Tr[1-V(x,y)])  " << endl;
         for (double y=min+step/2; y < max-step/2; y+=step)
         {
              for (double x=min+step/2; x < max-step/2; x+=step)
@@ -217,7 +217,7 @@ int main(int argc, char* argv[])
                 WilsonLine &wl =((IPGlasma*)amp)->GetWilsonLine(x,y);
                 double tr = wl.Trace().real();
              
-                cout << y << " " << x << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << " " << 1.0 - tr/3.0 <<endl;
+                cout << y << " " << x << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->AmplitudeImaginaryPart(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << " " << 1.0 - tr/3.0 <<endl;
             }
          cout << endl;
         }
@@ -245,8 +245,8 @@ int main(int argc, char* argv[])
     {
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
-        double tstep = 0.025;
-        for (t=0.0; t<=3; t+=tstep)
+        double tstep = 0.05;
+        for (t=0; t<=3; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.01)
@@ -269,7 +269,7 @@ int main(int argc, char* argv[])
             cout << trans  << " " << lng << endl;
             
             if (t > 0.5)
-                tstep = 0.05;
+                tstep = 0.1;
 
         }
     }
@@ -295,7 +295,7 @@ int main(int argc, char* argv[])
             cout << t << " ";
             cout.precision(10);
             cout << res_t << " " << res_l   << endl;
-            if (t>0.2)
+            if (t>0.5)
                 tstep=0.1;
         }
     }

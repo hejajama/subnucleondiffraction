@@ -125,7 +125,7 @@ IPGlasma::IPGlasma(std::string file)
 {
     // Load data
     datafile = file;
-    // Syntax: x y [fm] matrix elements Re Im for elements (0,0), (0,1), (0,2), (1,0), ...
+    // Syntax: x y [fm/indeces] matrix elements Re Im for elements (0,0), (0,1), (0,2), (1,0), ...
     std::ifstream f(file.c_str());
     
     if (!f.is_open())
@@ -152,8 +152,14 @@ IPGlasma::IPGlasma(std::string file)
         ss >> y;
         
         // Datafile is in fm, but we want to use GeVs in this code
-        x*= FMGEV;
-        y *= FMGEV;
+        //x*= FMGEV;
+        //y *= FMGEV;
+        // Datafile step is 0.02 fm
+        // Once we have load all points, we will sift all coordinates such that 0 is at the center
+        double step = 0.02;
+        x = step*x*FMGEV;
+        y = step*y*FMGEV;
+        
         
         // Read rows and columns
         std::vector< std::vector< std::complex<double> > > matrix;
@@ -191,6 +197,13 @@ IPGlasma::IPGlasma(std::string file)
         
     }
     
+    // Shift coordinates s.t. 0 fm is at the center
+    double center = xcoords[xcoords.size()/2];
+    for (int i=0; i<xcoords.size(); i++)
+    {
+        xcoords[i] -= center;
+        ycoords[i] -= center;
+    }
     f.close();
     
 

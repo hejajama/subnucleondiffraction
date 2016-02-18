@@ -36,11 +36,6 @@ GEVSQRTONB = 1.0e7/(5.068*5.068)
 mc="1e6"
 nconf="1000"
 
-# filename title normalization style
-files = [
-         [ "old_code/proton_ipsat", "IPsat", 1, Linestyle(0), Color(0)],
-         
-         ]
 
 
 fig = figure()
@@ -56,9 +51,9 @@ fig.suptitle(r"$Q^2=0, x=0.001$, $W \sim 100 \mathrm{GeV}$"   )
 
 
 files = [
-         ["gaussian/ipsat_miser_1e7_bp_1.0_bq_2.75", r"$B_p=1.0, B_q=2.75$", Linestyle(1),""],
-         ["gaussian/ipsat_miser_1e7_bp_1.5_bq_2.25", r"$B_p=1.5, B_q=2.25$", Linestyle(2),""],
-         ["gaussian/ipsat_miser_1e7_bp_2.0_bq_1.75", r"$B_p=2.0, B_q=1.75$", Linestyle(3),""],
+         ["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0", r"$B_p=3.5, B_q=1.0$", Linestyle(0),""],
+         ["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_gridfluct_05", r"$B_p=3.5, B_q=1.0, a=0.5\,\mathrm{fm}$", Linestyle(1),""],
+         ["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_quarkfluct_0.5", r"$B_p=3.5, B_q=1.0, \sigma=0.5$", Linestyle(1),""],
          ]
 
 
