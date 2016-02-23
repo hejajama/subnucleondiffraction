@@ -16,6 +16,7 @@
 		12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */; };
 		1349C3F71C29CF1500B8EBA7 /* dipxs_intb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1349C3F51C29CF1500B8EBA7 /* dipxs_intb.cpp */; };
 		1349C3F91C29F38B00B8EBA7 /* satscale.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1349C3F81C29F38B00B8EBA7 /* satscale.cpp */; };
+		138FE4A71C7BC85F0078E11F /* average_amplitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 138FE4A61C7BC85F0078E11F /* average_amplitude.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -71,6 +72,7 @@
 		1349C3F61C29CF1500B8EBA7 /* dipxs_intb.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dipxs_intb.hpp; path = tools/dipxs_intb.hpp; sourceTree = "<group>"; };
 		1349C3F81C29F38B00B8EBA7 /* satscale.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = satscale.cpp; path = tools/satscale.cpp; sourceTree = "<group>"; };
 		1380AA6A1C57CAF000F8E9C8 /* spectra.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = spectra.py; path = tools/spectra.py; sourceTree = "<group>"; };
+		138FE4A61C7BC85F0078E11F /* average_amplitude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = average_amplitude.cpp; path = tools/average_amplitude.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +104,7 @@
 		12B5191B1BD9765200230988 = {
 			isa = PBXGroup;
 			children = (
+				138FE4A61C7BC85F0078E11F /* average_amplitude.cpp */,
 				12117B6B1BDE537700D2BF9A /* vector.cpp */,
 				12117B6C1BDE537700D2BF9A /* vector.hpp */,
 				120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */,
@@ -227,6 +230,7 @@
 				120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */,
 				1349C3F71C29CF1500B8EBA7 /* dipxs_intb.cpp in Sources */,
 				12F504E61BECEFA3005540EF /* subnucleon_config.cpp in Sources */,
+				138FE4A71C7BC85F0078E11F /* average_amplitude.cpp in Sources */,
 				1349C3F91C29F38B00B8EBA7 /* satscale.cpp in Sources */,
 				12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */,
 				12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */,

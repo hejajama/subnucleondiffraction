@@ -36,6 +36,21 @@ void Ipsat_Proton::InitializeTarget()
     quarks.clear();
     quark_bp.clear();
     
+    // TEMP
+    /*
+    Vec tmpvec1(-0.131538*FMGEV, 0.0746443*FMGEV);
+    Vec tmpvec2(-0.178239*FMGEV, -0.180608*FMGEV);
+    Vec tmpvec3(-0.309777*FMGEV, 0.105963*FMGEV);
+    quarks.push_back(tmpvec1);
+    quarks.push_back(tmpvec2);
+    quarks.push_back(tmpvec3);
+    quark_bp.push_back(1.0);
+    quark_bp.push_back(1.0);
+    quark_bp.push_back(1.0);
+    SampleQsFluctuations();
+    return;
+     */
+    
     // Sample 3 quarks
     for (int i=0; i<3; i++)
     {

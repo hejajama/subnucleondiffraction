@@ -117,7 +117,7 @@ WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
         yind = ycoords.size()-1;
     //cout << "Coordinates " << x << ", "  << y << " indeces " << xind << ", " << yind << endl;
     
-    return wilsonlines[ yind*xcoords.size() + xind];
+    return wilsonlines[ xind*xcoords.size() + yind];
     
 }
 
@@ -215,7 +215,7 @@ IPGlasma::IPGlasma(std::string file)
     // Of course this is symmetric and we could just as well swap xind and yind
 
     
-    std::cout <<"# Loaded " << wilsonlines.size() << " Wilson lines from file " << file << ", grid size " << xcoords.size() << " x " << ycoords.size() << " grid range [" << xcoords[0] << ", " << xcoords[xcoords.size()-1] << "]" << std::endl;
+    std::cout <<"# Loaded " << wilsonlines.size() << " Wilson lines from file " << file << ", grid size " << xcoords.size() << " x " << ycoords.size() << " grid range [" << xcoords[0] << ", " << xcoords[xcoords.size()-1] << "]" << " step size " << xcoords[1]-xcoords[0] << " GeV^-1" << std::endl;
 
         
     

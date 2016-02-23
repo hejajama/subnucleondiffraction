@@ -15,6 +15,7 @@ sys.path.append("/nashome2/hejajama/lib/")
 from matplotlibhelper import *
 import numpy as np
 
+
 dir = ""
 imagdir = ""
 corrections_file=""  # if set, read corrections from separated file
@@ -109,7 +110,7 @@ for f in files:
     if tvals == []:
         tvals = tvals_real
     
-    # Save ampltiude values as a function of t
+    # Save amplitude values as a function of t
     tmp_realparts = []
     tmp_imagparts=[]
     for t,l in zip(transverse_real, longitudinal_real):
@@ -126,16 +127,28 @@ for f in files:
 
     fnames.append(fname_real)
 
-print "# Read " + str(len(realparts)) + " amplitudes"
+if len(realparts) != len(imagparts):
+    print "ERROR! different number of real and imaginary parts!"
+    sys.exit(-1)
+
+print "# Read " + str(len(realparts)) + " amplitudes from dir " + dir
 
 
 # Read corrections
 corrections_t = []
 corrections_l = []
 tmp=[]
+tvals_corrections=[]
 if corrections_file != "":
-    readfile_xy(corrections_file, tmp, corrections_t)
+    readfile_xy(corrections_file, tvals_corrections, corrections_t)
     readfile_xy(corrections_file, tmp, corrections_l)
+    # Check that tvals match
+    for i in range(len(tvals_corrections)):
+        if tvals_corrections[i] != tvals[i]:
+            print "tvals do not agree at index " + str(i) + ", priting tvals and tvals_corrections"
+            print str(tvals)
+            print str(tvals_corrections)
+            sys.exit(-1)
 
 # Ok, calculate coheret xs
 if coherent:
@@ -146,24 +159,38 @@ if coherent:
         sum_imag_t=0
         sum_imag_l=0
         nconfs=0
+        amp_t_real = []    # to calculate stdev
+        amp_t_imag = []
+        amp_l_real = []
+        amp_l_imag = []
+        xs_t=[]   # cross sections from individual files
+        xs_l=[]
         for conf in range(len(realparts)):
             # check if the calculations is done at high t
             if len(realparts[conf]) <= t or len(imagparts[conf])<=t:
                 print "# Skip file " + fnames[conf] + " at t " + str(tvals[t])
                 continue
             try:
-                sum_real_t += realparts[conf][t][0]
-                sum_real_l += realparts[conf][t][1]
-                sum_imag_t += imagparts[conf][t][0]
-                sum_imag_l += imagparts[conf][t][1]
+                #sum_real_t += realparts[conf][t][0]
+                #sum_real_l += realparts[conf][t][1]
+                #sum_imag_t += imagparts[conf][t][0]
+                #sum_imag_l += imagparts[conf][t][1]
+                amp_t_real.append(realparts[conf][t][0])
+                amp_t_imag.append(imagparts[conf][t][0])
+                amp_l_real.append(realparts[conf][t][1])
+                amp_l_imag.append(imagparts[conf][t][1])
+                xs_t.append(sqr(amp_t_real[-1]) + sqr(amp_t_imag[-1]))
+                xs_l.append(sqr(amp_l_real[-1])+ sqr(amp_l_imag[-1]))
             #print conf,t,realparts[conf][t][0], sum_real_t
             except IndexError:  # Some calculation was not done at high enough t, skip
                 print "# WHY INDEX ERROR at " + str(conf) + " at t " + str(tvals[t])
                 continue
             nconfs += 1
-
-        transverse = sqr(sum_real_t/nconfs) + sqr(sum_imag_t/nconfs)
-        longitudinal = sqr(sum_real_l/nconfs) + sqr(sum_imag_l/nconfs)
+        
+        transverse =  sqr(mean(amp_t_real)) + sqr(mean(amp_t_imag))
+        longitudinal =sqr(mean(amp_l_real)) + sqr(mean(amp_l_imag))
+        
+        
 
         # Get correction
         correction_t=1.0
@@ -175,8 +202,26 @@ if coherent:
             else:
                 correction_t = corrections_t[t]
                 correction_l = corrections_l[t]
+        
+        # staterr
+        staterr_t = sqr(correction_t*np.std( amp_t_real ) / sqrt(len(amp_t_real))) + sqr(np.std( amp_t_imag ) / sqrt(len(amp_t_imag)))
+        staterr_l =sqr(correction_l*np.std( amp_l_real ) / sqrt(len(amp_l_real))) + sqr(np.std( amp_l_imag ) / sqrt(len(amp_l_imag)))
+        
+        # err = max/min
+        max_xs_t =correction_t*(max(xs_t))
+        max_xs_l =correction_l*(max(xs_l))
+        min_xs_t =correction_t*(min(xs_t))
+        min_xs_l =correction_l*(min(xs_l))
+        
+        max_xs = (max_xs_t + max_xs_l)/(16.0*pi)
+        min_xs = (min_xs_t + min_xs_l)/(16.0*pi)
+        
+        xs =(correction_t*transverse+correction_l*longitudinal)/(16.0*pi)
+        
+        #staterr = 2.0*transverse*staterr_t + 2.0*longitudinal*staterr_l
+        staterr= staterr_t + staterr_l
 
-        print tvals[t], (correction_t*transverse+correction_l*longitudinal)/(16.0*pi)
+        print tvals[t], xs, max_xs, min_xs, staterr
 
 
 

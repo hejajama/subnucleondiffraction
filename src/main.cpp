@@ -203,6 +203,7 @@ int main(int argc, char* argv[])
     if (mode == PRINT_NUCLEUS)
     {
 
+        /*
         double origin[2]={0,0};
         double max = ((IPGlasma*)amp)->MaxX();
         double min = ((IPGlasma*)amp)->MinX();
@@ -221,6 +222,25 @@ int main(int argc, char* argv[])
             }
          cout << endl;
         }
+         */
+         
+        
+        double origin[2]={0,0};
+        double max = 12;
+        double min = -12;
+        double step = 0.1;
+        cout << "# x y N(0,(x,y))  " << endl;
+        for (double y=min+step/2; y < max-step/2; y+=step)
+        {
+            for (double x=min+step/2; x < max-step/2; x+=step)
+            {
+                double p[2] = {x,y};
+                
+                cout << y << " " << x << " " << amp->Amplitude(0.001, origin, p) << endl;
+            }
+            cout << endl;
+        }
+         
          
          
         return 0;
