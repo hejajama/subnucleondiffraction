@@ -24,8 +24,8 @@ struct bhelper
     double b;
 };
 
-const int INTPOINTS = 10000;
-const double INTACCURACY = 0.05;
+const int INTPOINTS = 3000;
+const double INTACCURACY = 0.2;
 double rhelperf(double theta_r, void* p); // average over dipole orientation
 double bhelperf(double theta_b, void* p); // average over b angle
 
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 {
     // Arguments: ipglasma filename  b
     string fname = argv[1];
-    double b= StrToReal(argv[2]);
+    //double b= StrToReal(argv[2]);
     
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
     IPGlasma glasma(fname);
     bhelper helper;
     helper.glasma = &glasma;
-    helper.b=b;
+    //helper.b=b;
     
     Ipsat_Proton ipsat;
     ipsat.SetProtonWidth(0);
@@ -52,14 +52,16 @@ int main(int argc, char* argv[])
     f.function = &bhelperf;  // do a circle around the proton
     f.params = &helper;
     
-    for (double r=1e-2; r<10; r*=1.2)
+    for (double b=1e-3; b<50; b*=1.2)
     {
+        helper.b=b;
+        double r = 0.5;
         helper.r=r;
     
          
         gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS);
         double result,error;
-        int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 0, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
+        int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 1e-5, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
         
         if (status)
             cerr << "#btheta_b int failed, result  " << result << " relerror " << error << " r " <<r  << endl;
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
         Vec q1(b+0.5*r,0); Vec q2(b-0.5*r,0);
         double ipsat_n = ipsat.DipoleAmplitude::Amplitude(1e-3, q1, q2);
         
-        cout << r << " " << result << " " << ipsat_n << endl;
+        cout << b << " " << result << " " << ipsat_n << endl;
     }
     
     
@@ -94,7 +96,7 @@ double bhelperf(double theta_b, void* p)
     
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS);
     double result,error;
-    int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 0, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
+    int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 1e-5, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
     
     if (status)
         cerr << "#btheta_r int failed, result  " << result << " relerror " << error << " theta_b " <<theta_b << endl;

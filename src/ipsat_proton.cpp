@@ -124,8 +124,8 @@ void Ipsat_Proton::SampleQsFluctuations()
         // Note for small grids: The saturation scale at point (x,y) is found by
         // seeking from the coordinates lists the index for which coordinates[i]<x<coordinates[i+1]
         // Thus, in practice having points=3 corresponds to 2x2 grid, as the leftmost values are never used
-        double size = 5;
-        int points = 10;    // x*x grid
+        double size = 10;
+        int points = 11;    // x*x grid
         double step = (2.0*size)/(points-1);
         for (double x=-size; x<=size; x+=step)
             qs_fluctuation_coordinates.push_back(x);

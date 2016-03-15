@@ -156,7 +156,9 @@ IPGlasma::IPGlasma(std::string file)
         //y *= FMGEV;
         // Datafile step is 0.02 fm
         // Once we have load all points, we will sift all coordinates such that 0 is at the center
+        
         double step = 0.02;
+        //double step = 0.007;
         x = step*x*FMGEV;
         y = step*y*FMGEV;
         

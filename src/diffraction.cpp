@@ -68,7 +68,7 @@ double Diffraction::Correction(double xpom, double Qsqr, double t, Polarization 
     double lambda = LogDerivative(xpom, Qsqr, t, pol);
     
     double beta = std::tan(lambda*M_PI/2.0);
-    double Rg = 1;//std::pow(2.0, 2.0*lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(lambda+5.0/2.0)/gsl_sf_gamma(lambda+4.0);
+    double Rg = 1.0; //std::pow(2.0, 2.0*lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(lambda+5.0/2.0)/gsl_sf_gamma(lambda+4.0);
     return (1.0+beta*beta)*Rg*Rg;
 }
 
@@ -128,9 +128,9 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     }
     
     lower[0]=lower[1]=lower[2]=lower[3]=0;
-    upper[0] = 100; // Max b
+    upper[0] = 50; //1*5.068; //100; // Max b
     upper[1] = 2.0*M_PI;
-    upper[2] = 10;  // Max r
+    upper[2] = 20; //0.5*5.068;  // Max r
     upper[3] = 2.0*M_PI;
     
     gsl_monte_function F;
@@ -255,9 +255,9 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     double x1[2] = {qx,qy};
     double x2[2] = {qbarx, qbary};
     double amp_real = dipole->Amplitude(xpom, x1, x2 );
-    double amp_imag = 0;// dipole->AmplitudeImaginaryPart(xpom, x1, x2);
+    double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
     std::complex<double> amp(amp_real, amp_imag);
-    amp = amp.real();   // Disable possible imag part for now
+    //amp = amp.real();   // Disable possible imag part for now
     
     
     if (FACTORIZE_ZINT)

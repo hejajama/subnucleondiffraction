@@ -204,8 +204,19 @@ if coherent:
                 correction_l = corrections_l[t]
         
         # staterr
-        staterr_t = sqr(correction_t*np.std( amp_t_real ) / sqrt(len(amp_t_real))) + sqr(np.std( amp_t_imag ) / sqrt(len(amp_t_imag)))
-        staterr_l =sqr(correction_l*np.std( amp_l_real ) / sqrt(len(amp_l_real))) + sqr(np.std( amp_l_imag ) / sqrt(len(amp_l_imag)))
+        #staterr_t = sqr(np.std( amp_t_real ) / sqrt(len(amp_t_real))) + sqr(np.std( amp_t_imag ) / sqrt(len(amp_t_imag)))
+        #staterr_t *= correction_t
+        #staterr_l =sqr(np.std( amp_l_real ) / sqrt(len(amp_l_real))) + sqr(np.std( amp_l_imag ) / sqrt(len(amp_l_imag)))
+        #staterr_l *= correction_l
+        
+        #staterr_t = correction_t * np.std(xs_t)/sqrt(len(xs_t))
+        # staterr_l =correction_l * np.std(xs_l)/sqrt(len(xs_l))
+
+        staterr_t = correction_t*sqrt( sqr(2.0*mean(amp_t_real)*np.std(amp_t_real)/sqrt(len(amp_t_real)) ) + sqr(2.0*mean(amp_t_imag)*np.std(amp_t_imag)/sqrt(len(amp_t_imag)) ) )
+        staterr_l = correction_l*sqrt( sqr(2.0*mean(amp_l_real)*np.std(amp_l_real)/sqrt(len(amp_l_real)) ) + sqr(2.0*mean(amp_l_imag)*np.std(amp_l_imag)/sqrt(len(amp_l_imag)) ) )
+
+#print "old, new staterr: ", staterr_t, err_t
+        
         
         # err = max/min
         max_xs_t =correction_t*(max(xs_t))
@@ -221,7 +232,7 @@ if coherent:
         #staterr = 2.0*transverse*staterr_t + 2.0*longitudinal*staterr_l
         staterr= staterr_t + staterr_l
 
-        print tvals[t], xs, max_xs, min_xs, staterr
+        print tvals[t], xs, max_xs, min_xs, staterr/(16.0*pi)
 
 
 
@@ -251,9 +262,55 @@ if coherent == False:
         var_imag_t = np.var(imag_t)
         var_imag_l = np.var(imag_l)
 
-        xs_t = (var_real_t + var_real_l)/(16.0*pi)
-        xs_l = ( var_imag_t + var_imag_l)/(16.0*pi)
+        xs_t = (var_real_t + var_imag_t)/(16.0*pi)
+        xs_l = ( var_real_l + var_imag_l)/(16.0*pi)
         
+        # Jackknife resampling to get error estimates
+        jackknife_xs_t_real=[]
+        jackknife_xs_t_imag=[]
+        jackknife_xs_l_real=[]
+        jackknife_xs_l_imag=[]
+        for skip_i in range(len(realparts)):
+            i=0
+            tmplist_t_r = []
+            tmplist_t_i = []
+            tmplist_l_r = []
+            tmplist_l_i = []
+            for rc,ic in zip(realparts, imagparts):
+                if i != skip_i:
+                    tmplist_t_r.append(rc[t][0])
+                    tmplist_t_i.append(ic[t][0])
+                    tmplist_l_r.append(rc[t][1])
+                    tmplist_l_i.append(ic[t][1])
+                i=i+1
+            
+            jackknife_xs_t_real.append( np.var(tmplist_t_r))
+            jackknife_xs_t_imag.append( np.var(tmplist_t_i))
+            jackknife_xs_l_real.append( np.var(tmplist_l_r))
+            jackknife_xs_l_imag.append( np.var(tmplist_l_i))
+            
+        # Error estimate
+        #err_t = np.std(jackknife_xs_t)/sqrt(len(jackknife_xs_t))/(16.0*pi)
+        #err_l = np.std(jackknife_xs_l)/sqrt(len(jackknife_xs_l))/(16.0*pi)
+        
+        # properly
+        var_t_real=0
+        var_t_imag=0
+        var_l_real=0
+        var_l_imag=0
+        for i in range(len(jackknife_xs_t_real)):
+            var_t_real += sqr( jackknife_xs_t_real[i] - var_real_t)
+            var_t_imag += sqr( jackknife_xs_t_imag[i] - var_imag_t)
+            var_l_real += sqr( jackknife_xs_l_real[i] - var_real_l)
+            var_l_imag += sqr( jackknife_xs_l_imag[i] - var_imag_l)
+
+        
+
+
+        coef = (len(jackknife_xs_t_real)-1.0)/len(jackknife_xs_t_real)
+        var_t =  coef * var_t_real + coef * var_t_imag
+        var_l = coef * var_l_real + coef * var_l_imag
+
         # Get correction
         correction_t=1.0
         correction_l=1.0
@@ -265,5 +322,9 @@ if coherent == False:
                 correction_t = corrections_t[t]
                 correction_l = corrections_l[t]
 
-        print tvals[t], correction_t * xs_t + correction_l*xs_l
+# TODO: ASSUMING NOW ONLY TRANSVERSE!!!!
+        #err = correction_t * sqrt( var_t / len(jackknife_xs_t_real)) / (16.0*pi)
+        err = (correction_t * sqrt(var_t_real/len(jackknife_xs_t_real)) + correction_t*sqrt(var_t_imag/len(jackknife_xs_t_real)))/(16.0*pi)
+
+        print tvals[t], correction_t * xs_t + correction_l*xs_l, err
 
