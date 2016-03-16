@@ -82,6 +82,10 @@ public:
     
     double FluxTubeThickness(Vec b); // Density in the flux tube model
     
+    double QuarkThickness(double r, int i); // Quark density profile for quark i, distance r from its origin
+    
+    void SetFluxTubeNormalization(double n);
+    
 private:
     void Init();
     
@@ -89,6 +93,7 @@ private:
     DGLAPDist *gdist;    // DGLAP evolved xg
     // gdist.Gluedist() returns Pi^2/(2*Nc) * Alphas(x,mu(r)^2) * xg(x,r)
     std::vector<Vec> quarks;    // Quark positions
+    std::vector<Vec> quarks3d;  // Quark positions including z coordinate
     std::vector<double> quark_bp;
     double maxr;
     double B_p;     // Central value for the proton gaussian width
@@ -100,7 +105,7 @@ private:
     void NormalizeFluxTubeThickness();  // Calculate normalization factor, do this after quark positions
     // are sampled
     
-    double QuarkThickness(double r, int i); // Quark density profile for quark i, distance r from its origin
+    
     
     double GaussianRadiusDistribution(double r);    // Used to sample Gaussian radius
     double ExponentialDistribution(double x, double y, double z);   // Exponential distribution for a vector

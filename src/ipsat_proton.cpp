@@ -62,18 +62,31 @@ void Ipsat_Proton::InitializeTarget()
         
         if (shape == GAUSSIAN)
         {
+            double x,y,z;
             if (B_p < 1e-5)
-                radius=0;
+            {
+                x=y=z=0;
+                //radius=0;
+            }
+            
             else
             {
+                x=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
+                y=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
+                z=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
+                /*
                 do{
                     radius = gsl_rng_uniform(global_rng) * maxr;
                 } while (gsl_rng_uniform(global_rng) > GaussianRadiusDistribution(radius));
+                 */
             }
             // Sample angle
-            double angle = 2.0*M_PI*gsl_rng_uniform(global_rng);
-            Vec tmpvec(radius*std::cos(angle), radius*std::sin(angle));
+            //double angle = 2.0*M_PI*gsl_rng_uniform(global_rng);
+            //Vec tmpvec(radius*std::cos(angle), radius*std::sin(angle));
+            Vec tmpvec(x,y,0);
+            Vec tmpvec3d(x,y,z);
             quarks.push_back(tmpvec);
+            quarks3d.push_back(tmpvec3d);
             quark_bp.push_back(B_q);
         }
         else if (shape == EXPONENTIAL)
@@ -260,6 +273,18 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         tpsum = FluxTubeThickness(b);
         tpsum *= quarks.size(); // Because this sum is later normalized by 1/N_q
         
+        //for (double y=-8; y<8; y+=0.1)
+        //{
+        //    for (double x=-8; x<8; x+=0.1)
+        //    {
+        //        Vec tmp(x,y);
+        //        cout << y << " " << x << " "; // << FluxTubeThickness(tmp) << endl;
+        //        FluxTubeThickness(tmp);
+        //    }
+        //    cout << endl;
+       // }
+        
+        
     }
     
     if (ipsat == IPSAT06)
@@ -424,6 +449,9 @@ double Ipsat_Proton::ExponentialDistribution(double x, double y, double z)
     
 }
 
+struct inthelper_fluxtube_z{ Ipsat_Proton* proton; Vec b;  std::vector<Vec> quarks; Vec center;};
+double inthelperf_fluxtube_z(double z, void* p);
+
 double Ipsat_Proton::FluxTubeThickness(Vec b)
 {
     // Connect quarks with flux tubes that merge at the center
@@ -434,21 +462,32 @@ double Ipsat_Proton::FluxTubeThickness(Vec b)
     // The tube density is then assumed to be a Gaussian function of the distance from a line
     // connecting the center and a quark. As there are in general 3 distances, the smallest distance is chosen
     
+    // First we project the tubes to z=0 and find which tube is closest. Then, integrate
+    // that tube over z coordinate
+    
     // Check that we are normalized
     if (fluxtube_normalization < 0)
         NormalizeFluxTubeThickness();
     
     // Calculate first the center of the triangle (center of mass)
     Vec center;
+    Vec center3d;
     for (unsigned int i=0; i < quarks.size(); i++)
+    {
         center = center + quarks[i];
+        center3d = center3d + quarks3d[i];
+    }
+    
+    center*=1.0/quarks.size();
+    center3d*=1.0/quarks.size();
 
     double dist = 99999999;
-    // Calculate disntances from every line
+    int min_index=-1;
+    // Calculate distances from every line
     for (unsigned int i=0; i<quarks.size(); i++)
     {
         Vec line = center-quarks[i];
-        Vec point = b - quarks[i];  // Move origin to quarks[i]
+        Vec point = b - quarks[i];  // From quark to point b = origin moved to quark i
         
         // If point is further away from the quark or the center point than the distance between the quark and the center, then
         // we are at the edge of the tube and make it decay as a Gaussian
@@ -460,12 +499,13 @@ double Ipsat_Proton::FluxTubeThickness(Vec b)
             double mind = std::min(point.Len(), point_c.Len());
             
             if (mind < dist)
+            {
                 dist=mind;
-            
+                min_index = i;
+            }
             continue;
         }
-        
-        
+
         double proj = line*point;
         double norm = line*line;
         Vec projvec = line;
@@ -476,32 +516,118 @@ double Ipsat_Proton::FluxTubeThickness(Vec b)
         //cout << "Distance of point " << b << " from line " << i << " is " << distvec.Len() << endl;
         
         if (distvec.Len() < dist)
+        {
             dist = distvec.Len();
-    }
-    return fluxtube_normalization * QuarkThickness(dist, 0);
+            min_index=i;
+        }
+    } */
+    
+    // Closest tube is between quarks[min_index] and center.
+    // That we integrate over z at point b
+    inthelper_fluxtube_z par; par.b=b;
+    par.proton=this;
+    par.center = center3d;
+    par.quarks = quarks3d;
+    gsl_function f; f.params=&par;
+    f.function = &inthelperf_fluxtube_z;
+    double result,error;
+    gsl_integration_workspace * w =  gsl_integration_workspace_alloc (10);
+    gsl_integration_qag (&f, -99, 99, 0, 1e-2, 10, GSL_INTEG_GAUSS15,
+                          w, &result, &error);
+    gsl_integration_workspace_free(w);
+    
+    //cout << QuarkThickness(dist, 0) << " " << result << endl;
+    
+    return fluxtube_normalization*result;
+    
+    //return fluxtube_normalization * QuarkThickness(dist, 0);
     //cout << y<< " " << x << " " << tpsum << endl;
+}
+
+double inthelperf_fluxtube_z(double z, void* p)
+{
+    inthelper_fluxtube_z* par = (inthelper_fluxtube_z*)p;
+    
+    Vec b3d(par->b.GetX(), par->b.GetY(), z);
+    
+    /*cout << "Quarks: " << endl;
+    cout << par->quarks[0] << endl << par->quarks[1] << endl << par->quarks[2] << endl;
+    cout << "center " << par->center << endl;
+    cout << "b " << b3d << endl;
+    */
+    double mindist=999999999999;
+    for (unsigned int i=0; i<par->quarks.size(); i++)
+    {
+    
+        // Move origin to center
+        Vec quark_to_b = b3d - par->quarks[i];
+        Vec quark_to_center = par->center - par->quarks[i];
+        Vec center_to_b = b3d - par->center;
+        
+        
+        
+        // If we are "outside" the line, then density decreases as a Gaussian
+        // from the quark/center
+        if (quark_to_b.LenSqr() > quark_to_center.LenSqr() or center_to_b.LenSqr() > quark_to_center.LenSqr())
+        {
+            //cout << "distance from quark "<< i << ": " << quark_to_b.Len() << "   quark_to_center dist " << quark_to_center.Len() << endl;
+            double dist = std::min( quark_to_b.Len(), center_to_b.Len());
+            if (dist < mindist)
+            {
+                mindist=dist;
+            }
+            continue;
+            //return par->proton->QuarkThickness(dist, 0);
+        }
+        
+        // Calculate distance from the tube
+        double projection_dotprod = quark_to_b * quark_to_center;
+        double scaling = projection_dotprod / quark_to_center.LenSqr();
+        Vec projection = quark_to_center;
+        projection*= scaling;
+        
+        Vec dist = quark_to_b - projection;
+        
+
+        if (dist.Len() < mindist)
+            mindist = dist.Len();
+        
+    }
+    
+    //cout << "mindist " << mindist << " b " << par->b << endl;
+
+    return par->proton->QuarkThickness(mindist, 0);
+    
+    
 }
 
 struct inthelper_fluxtube { Ipsat_Proton* proton; double y; };
 double inthelperf_fluxtube_y(double y, void* p);
 void Ipsat_Proton::NormalizeFluxTubeThickness()
 {
+    //fluxtube_normalization = 1.0;
+    //return;
+    
+    /// NOTE: not used, as we acutally want total energy to depend on noramlization
     // FluxTubeThicknes should be normalized to unity, so calculate
     // \int dx dy FluxTubeThickness(x,y)
     // set normalization factor to 1 for this calculation
+    
     fluxtube_normalization = 1.0;
     gsl_function f;
     inthelper_fluxtube par; par.proton = this;
     f.params = &par;
     f.function = &inthelperf_fluxtube_y;
     double result,error;
-    gsl_integration_workspace * w =  gsl_integration_workspace_alloc (100);
-    gsl_integration_qags (&f, -99, 99, 0, 1e-4, 100,
+    gsl_integration_workspace * w =  gsl_integration_workspace_alloc (10);
+    gsl_integration_qag (&f, -99, 99, 0, 1e-2, 10, GSL_INTEG_GAUSS15,
                           w, &result, &error);
     gsl_integration_workspace_free(w);
     //cout << "Fluxtube normalization " << result << " pm " << error << endl;
     
-    fluxtube_normalization = 1.0/result;
+    cout << result << endl;;
+    //fluxtube_normalization = 1.0/result;
+    
     
     
 }
@@ -514,8 +640,8 @@ double inthelperf_fluxtube_y(double y, void* p)
     f.function = inthelperf_fluxtube_x;
     f.params = par;
     double result,error;
-    gsl_integration_workspace * w =  gsl_integration_workspace_alloc (100);
-    gsl_integration_qags (&f, -99, 99, 0, 1e-4, 100,
+    gsl_integration_workspace * w =  gsl_integration_workspace_alloc (10);
+    gsl_integration_qag (&f, -99, 99, 0, 1e-2, 10, GSL_INTEG_GAUSS15,
                           w, &result, &error);
     gsl_integration_workspace_free(w);
     return result;
@@ -533,7 +659,7 @@ std::string Ipsat_Proton::InfoStr()
     ss << "IPsat proton consists of quarks at coordinates ";
     for (int i=0; i<quarks.size(); i++)
     {
-        ss << "(" << quarks[i].GetX() << ", " << quarks[i].GetY() << "), r=" << std::sqrt(2.0*quark_bp[i]) <<", B_q=" << quark_bp[i] ;
+        ss << "(" << quarks3d[i].GetX() << ", " << quarks3d[i].GetY() << ", " << quarks3d[i].GetZ() << "), r=" << std::sqrt(2.0*quark_bp[i]) <<", B_q=" << quark_bp[i] ;
     }
     ss << ". Proton radius " << std::sqrt(2.0*B_p) << " GeV^-1, B_p=" << B_p << " ";
     if (shape == GAUSSIAN)
@@ -545,7 +671,7 @@ std::string Ipsat_Proton::InfoStr()
     if (proton_structure == QUARKS)
         ss << "quarks";
     else if (proton_structure == CENTER_TUBES)
-        ss << "color tubes merging at center";
+        ss << "color tubes merging at center, normalization " << fluxtube_normalization;
     
     ss << ". Saturation: ";
     if (saturation)
@@ -625,4 +751,9 @@ void Ipsat_Proton::SetSkewedness(bool s)
 void Ipsat_Proton::SetStructure(Structure s)
 {
     proton_structure = s;
+}
+
+void Ipsat_Proton::SetFluxTubeNormalization(double n)
+{
+    fluxtube_normalization = n;
 }

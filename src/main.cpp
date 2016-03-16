@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
     {
         cout << "-Q2, -W: set kinematics" << endl;
         cout << "-real, -imag: set real/imaginary part" << endl;
-        cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton,nucleons] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width] [fluxtube]" << endl;
+        cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton,nucleons] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization]" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points/auto" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
@@ -124,7 +124,10 @@ int main(int argc, char* argv[])
                 if (argc > i+4)
                 {
                     if (string(argv[i+4])=="fluxtube")
+                    {
                         ((Ipsat_Proton*)amp)->SetStructure(CENTER_TUBES);
+                        ((Ipsat_Proton*)amp)->SetFluxTubeNormalization(StrToReal(argv[i+5]));
+                    }
                     else if (string(argv[i+4]).substr(0,1)!="-")
                     {
                         cerr << "Unknown ipsatproton option " << argv[i+4] << endl;
