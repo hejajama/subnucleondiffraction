@@ -202,7 +202,7 @@ void Ipsat_Proton::Init()
     skewedness=false;
     Qs_fluctuation_sigma=0;
     fluctuation_shape = LOCAL_FLUCTUATIONS;
-    proton_structure = QUARKSdi ;
+    proton_structure = QUARKS ;
     fluxtube_normalization = -1;
 }
 Ipsat_Proton::Ipsat_Proton()
@@ -289,7 +289,16 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         // par 1: m_c=1.27,   2: m_c=1.4
         double n = dipole_amplitude_(&xpom, &tmpr, &tmpb, &IPSAT12_PAR)/2.0;
         
+        
         double c = std::log(1.0-n);
+        
+        if (std::isnan(c) or std::isinf(c))
+        {
+            // We have so large r, that basically n=1 and c blows up, these should not matter
+            // as wave function cuts these out anyway, but we can just set amplitude to 1
+            return 0.0;
+        }
+        
         double tp = 1.0/(2.0*M_PI*4.0)*std::exp(- tmpb / (2.0*4.0));
         c /= tp;
         
@@ -305,7 +314,6 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
             else
                 skew = Skewedness(skew_lambda);
         }
-        
         return 1.0 - std::exp( GetQsFluctuation(b.GetX(),b.GetY())*skew*c * 1.0/quarks.size()*tpsum);
     }
     else
@@ -490,7 +498,7 @@ void Ipsat_Proton::NormalizeFluxTubeThickness()
     gsl_integration_workspace * w =  gsl_integration_workspace_alloc (100);
     gsl_integration_qags (&f, -99, 99, 0, 1e-4, 100,
                           w, &result, &error);
-    
+    gsl_integration_workspace_free(w);
     //cout << "Fluxtube normalization " << result << " pm " << error << endl;
     
     fluxtube_normalization = 1.0/result;
@@ -509,6 +517,7 @@ double inthelperf_fluxtube_y(double y, void* p)
     gsl_integration_workspace * w =  gsl_integration_workspace_alloc (100);
     gsl_integration_qags (&f, -99, 99, 0, 1e-4, 100,
                           w, &result, &error);
+    gsl_integration_workspace_free(w);
     return result;
 }
 double inthelperf_fluxtube_x(double x, void* p)

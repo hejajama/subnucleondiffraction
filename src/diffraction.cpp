@@ -288,7 +288,10 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
             //res *=-std::sin( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
     }
     
-    
+    if (std::isnan(res) or std::isinf(res))
+    {
+        cerr << "Amplitude integral is " << res << " dipole " << amp << " xp=" << xpom << " Q^2=" << Qsqr << " t="<< t << " r=" << r << " theta_r="<<theta_r << " b="<< b << "theta_b="<< theta_b << " z=" << z << endl;
+    }
     
     return res;
     
