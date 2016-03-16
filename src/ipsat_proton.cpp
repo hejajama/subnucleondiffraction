@@ -9,10 +9,12 @@
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <tools/tools.hpp>
+#include <gsl/gsl_integration.h>
 #include <gsl/gsl_randist.h>
 #include <cmath>
 #include <string>
 #include <sstream>
+#include <algorithm>
 #include "subnucleon_config.hpp"
 
 // IPsat 2012
@@ -38,18 +40,18 @@ void Ipsat_Proton::InitializeTarget()
     
     // TEMP
     /*
-    Vec tmpvec1(-0.131538*FMGEV, 0.0746443*FMGEV);
-    Vec tmpvec2(-0.178239*FMGEV, -0.180608*FMGEV);
-    Vec tmpvec3(-0.309777*FMGEV, 0.105963*FMGEV);
+    Vec tmpvec1(1,1);
+    Vec tmpvec2(-3,-3);
+    Vec tmpvec3(3, -3);
     quarks.push_back(tmpvec1);
     quarks.push_back(tmpvec2);
     quarks.push_back(tmpvec3);
-    quark_bp.push_back(1.0);
-    quark_bp.push_back(1.0);
-    quark_bp.push_back(1.0);
+    quark_bp.push_back(0.3);
+    quark_bp.push_back(2.0);
+    quark_bp.push_back(2.0);
     SampleQsFluctuations();
     return;
-     */
+    */
     
     // Sample 3 quarks
     for (int i=0; i<3; i++)
@@ -200,6 +202,8 @@ void Ipsat_Proton::Init()
     skewedness=false;
     Qs_fluctuation_sigma=0;
     fluctuation_shape = LOCAL_FLUCTUATIONS;
+    proton_structure = QUARKSdi ;
+    fluxtube_normalization = -1;
 }
 Ipsat_Proton::Ipsat_Proton()
 {
@@ -238,19 +242,24 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
     
     Vec r = q - qbar;
     
-    // Need to calculate sum_i T_p(|b-b_i|), where b is the center of the dipole
-    // and b_i is the center of the quark i
-    // Note that at this point we do not take into account z, so b in geometric average, not
-    // center of mass. Should we change this????
     
-    // Currently should correspond to calculation arXiV:1011.1988
     
     double tpsum = 0;
-    for (unsigned int i=0; i < quarks.size(); i++)
+    if (proton_structure == QUARKS)
     {
-        Vec projection (quarks[i].GetX(), quarks[i].GetY());
-        Vec deltab = b - projection;
-        tpsum = tpsum + QuarkThickness(deltab.Len(), i);
+        // Need to calculate sum_i T_p(|b-b_i|), where b is the center of the dipole
+        // and b_i is the center of the quark i
+        for (unsigned int i=0; i < quarks.size(); i++)
+        {
+            Vec projection (quarks[i].GetX(), quarks[i].GetY());
+            Vec deltab = b - projection;
+            tpsum = tpsum + QuarkThickness(deltab.Len(), i);
+        }
+    } else if (proton_structure == CENTER_TUBES)
+    {
+        tpsum = FluxTubeThickness(b);
+        tpsum *= quarks.size(); // Because this sum is later normalized by 1/N_q
+        
     }
     
     if (ipsat == IPSAT06)
@@ -407,9 +416,108 @@ double Ipsat_Proton::ExponentialDistribution(double x, double y, double z)
     
 }
 
+double Ipsat_Proton::FluxTubeThickness(Vec b)
+{
+    // Connect quarks with flux tubes that merge at the center
+    // Idea from hep-lat/0606016
+    // Start tubes from the quarks, and they merge at the center of the triangle
+    // formed by the quarks
+    // In the Ref. that point is actually Fermat point, but make this simpler now
+    // The tube density is then assumed to be a Gaussian function of the distance from a line
+    // connecting the center and a quark. As there are in general 3 distances, the smallest distance is chosen
+    
+    // Check that we are normalized
+    if (fluxtube_normalization < 0)
+        NormalizeFluxTubeThickness();
+    
+    // Calculate first the center of the triangle (center of mass)
+    Vec center;
+    for (unsigned int i=0; i < quarks.size(); i++)
+        center = center + quarks[i];
 
-
+    double dist = 99999999;
+    // Calculate disntances from every line
+    for (unsigned int i=0; i<quarks.size(); i++)
+    {
+        Vec line = center-quarks[i];
+        Vec point = b - quarks[i];  // Move origin to quarks[i]
         
+        // If point is further away from the quark or the center point than the distance between the quark and the center, then
+        // we are at the edge of the tube and make it decay as a Gaussian
+        // First calculate distance to the center
+        Vec point_c = center - b;
+        // Check
+        if (point.LenSqr() > line.LenSqr() or point_c.LenSqr() > line.LenSqr())
+        {
+            double mind = std::min(point.Len(), point_c.Len());
+            
+            if (mind < dist)
+                dist=mind;
+            
+            continue;
+        }
+        
+        
+        double proj = line*point;
+        double norm = line*line;
+        Vec projvec = line;
+        projvec*=proj/norm;
+        
+        Vec distvec = point - projvec;
+        
+        //cout << "Distance of point " << b << " from line " << i << " is " << distvec.Len() << endl;
+        
+        if (distvec.Len() < dist)
+            dist = distvec.Len();
+    }
+    return fluxtube_normalization * QuarkThickness(dist, 0);
+    //cout << y<< " " << x << " " << tpsum << endl;
+}
+
+struct inthelper_fluxtube { Ipsat_Proton* proton; double y; };
+double inthelperf_fluxtube_y(double y, void* p);
+void Ipsat_Proton::NormalizeFluxTubeThickness()
+{
+    // FluxTubeThicknes should be normalized to unity, so calculate
+    // \int dx dy FluxTubeThickness(x,y)
+    // set normalization factor to 1 for this calculation
+    fluxtube_normalization = 1.0;
+    gsl_function f;
+    inthelper_fluxtube par; par.proton = this;
+    f.params = &par;
+    f.function = &inthelperf_fluxtube_y;
+    double result,error;
+    gsl_integration_workspace * w =  gsl_integration_workspace_alloc (100);
+    gsl_integration_qags (&f, -99, 99, 0, 1e-4, 100,
+                          w, &result, &error);
+    
+    //cout << "Fluxtube normalization " << result << " pm " << error << endl;
+    
+    fluxtube_normalization = 1.0/result;
+    
+    
+}
+double inthelperf_fluxtube_x(double x, void* p);
+double inthelperf_fluxtube_y(double y, void* p)
+{
+    inthelper_fluxtube* par = (inthelper_fluxtube*)p;
+    par->y = y;
+    gsl_function f;
+    f.function = inthelperf_fluxtube_x;
+    f.params = par;
+    double result,error;
+    gsl_integration_workspace * w =  gsl_integration_workspace_alloc (100);
+    gsl_integration_qags (&f, -99, 99, 0, 1e-4, 100,
+                          w, &result, &error);
+    return result;
+}
+double inthelperf_fluxtube_x(double x, void* p)
+{
+    inthelper_fluxtube* par = (inthelper_fluxtube*)p;
+    Vec b(x, par->y);
+    return par->proton->FluxTubeThickness(b);
+}
+
 std::string Ipsat_Proton::InfoStr()
 {
     std::stringstream ss;
@@ -420,9 +528,15 @@ std::string Ipsat_Proton::InfoStr()
     }
     ss << ". Proton radius " << std::sqrt(2.0*B_p) << " GeV^-1, B_p=" << B_p << " ";
     if (shape == GAUSSIAN)
-        ss << "Gaussian shape";
+        ss << "Gaussian distribution";
     else if (shape == EXPONENTIAL)
-        ss << "Exponential shape, a=B_p";
+        ss << "Exponential distribution, a=B_p";
+    
+    ss << ". Structure: ";
+    if (proton_structure == QUARKS)
+        ss << "quarks";
+    else if (proton_structure == CENTER_TUBES)
+        ss << "color tubes merging at center";
     
     ss << ". Saturation: ";
     if (saturation)
@@ -497,4 +611,9 @@ double Ipsat_Proton::Skewedness(double lambda)
 void Ipsat_Proton::SetSkewedness(bool s)
 {
     skewedness = s;
+}
+
+void Ipsat_Proton::SetStructure(Structure s)
+{
+    proton_structure = s;
 }

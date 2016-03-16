@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
     double qsfluct_sigma=0;
     Fluctuation_shape fluctshape = LOCAL_FLUCTUATIONS;
     bool auto_mcintpoints = false;
+    std::string wavef_file = "gauss-boosted.dat";
     
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2016" << endl;
@@ -69,13 +70,14 @@ int main(int argc, char* argv[])
     {
         cout << "-Q2, -W: set kinematics" << endl;
         cout << "-real, -imag: set real/imaginary part" << endl;
-        cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton,nucleons] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width]" << endl;
+        cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton,nucleons] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width] [fluxtube]" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points/auto" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
         cout << "-qsfluct sigma: set width of Q_s fluctuations (0: disable); only for ipsatproton!" << endl;
         cout << "-qsfluctshape [local,quarks]: set Q_s^2 to fluctuate at each point / for each quark" << endl;
         cout << "-satscale: print saturation scale" << endl;
+        cout << "-wavef_file filename" << endl;
         return 0;
     }
     
@@ -119,7 +121,16 @@ int main(int argc, char* argv[])
                 ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+2]));
                 ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+3]));
                 ((Ipsat_Proton*)amp)->SetShape(GAUSSIAN);
-                
+                if (argc > i+4)
+                {
+                    if (string(argv[i+4])=="fluxtube")
+                        ((Ipsat_Proton*)amp)->SetStructure(CENTER_TUBES);
+                    else if (string(argv[i+4]).substr(0,1)!="-")
+                    {
+                        cerr << "Unknown ipsatproton option " << argv[i+4] << endl;
+                        exit(1);
+                    }
+                }
             }
             else if (string(argv[i+1])=="ipglasma")
                 amp = new IPGlasma(argv[i+2]);
@@ -159,11 +170,15 @@ int main(int argc, char* argv[])
         }
         else if (string(argv[i])=="-satscale")
             mode = SATURATION_SCALE;
+        else if (string(argv[i])=="-wavef_file")
+            wavef_file = argv[i+1];
+        
         else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
             exit(1);
         }
+        
     }
     
     
@@ -175,8 +190,7 @@ int main(int argc, char* argv[])
     global_rng = gsl_rng_alloc(gsl_rng_default);
 
     
-    
-    BoostedGauss wavef("gauss-boosted.dat");
+    BoostedGauss wavef(wavef_file);
     
     
     
@@ -197,7 +211,7 @@ int main(int argc, char* argv[])
     cout << "# " << wavef << endl;
     
     double mjpsi = JPSI_MASS;
-    double mp = 0.938;
+    double mp = wavef.MesonMass();
     
     
     if (mode == PRINT_NUCLEUS)
@@ -265,8 +279,8 @@ int main(int argc, char* argv[])
     {
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
-        double tstep = 0.05;
-        for (t=0; t<=3; t+=tstep)
+        double tstep = 0.1; //0.05;
+        for (t=0; t<=1.5; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.01)
@@ -288,8 +302,8 @@ int main(int argc, char* argv[])
             cout.precision(10);
             cout << trans  << " " << lng << endl;
             
-            if (t > 0.5)
-                tstep = 0.1;
+            //if (t > 0.5)
+            //    tstep = 0.1;
 
         }
     }

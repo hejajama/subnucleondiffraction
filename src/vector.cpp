@@ -70,6 +70,11 @@ void Vec::operator*=(REAL c)
     x*=c; y*=c; z*=c;
 }
 
+double Vec::operator*(Vec& v)
+{
+    return x*v.GetX() + y*v.GetY() + z*v.GetZ();
+}
+
 Vec Vec::operator*(REAL c)
 {
     Vec tmp(x*c,y*c,z*c);

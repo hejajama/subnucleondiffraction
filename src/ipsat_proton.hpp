@@ -18,7 +18,13 @@
 enum Proton_shape
 {
     GAUSSIAN,
-    EXPONENTIAL
+    EXPONENTIAL,
+};
+
+enum Structure
+{
+    QUARKS,     // Gaussians around quarks
+    CENTER_TUBES,   // Quarks connected by flux tubes that merge at the center of the triangle
 };
 
 enum Ipsat_version
@@ -60,6 +66,7 @@ public:
     void SetQuarkWidth(double bq_);
     
     void SetShape(Proton_shape s);
+    void SetStructure(Structure s);
     
     std::string InfoStr();
     
@@ -72,6 +79,8 @@ public:
     
     void SetFluctuationShape(Fluctuation_shape s);
     Fluctuation_shape GetFluctuationShape();
+    
+    double FluxTubeThickness(Vec b); // Density in the flux tube model
     
 private:
     void Init();
@@ -87,6 +96,9 @@ private:
     bool saturation;
     
     
+    double fluxtube_normalization; // Normalization factor for FluxTube
+    void NormalizeFluxTubeThickness();  // Calculate normalization factor, do this after quark positions
+    // are sampled
     
     double QuarkThickness(double r, int i); // Quark density profile for quark i, distance r from its origin
     
@@ -96,6 +108,8 @@ private:
     bool allocated_gdist;   // True if we have allocated memory for gdist in here
     
     Proton_shape shape;
+    
+    Structure proton_structure;
     
     // Q_s luctuations
     Fluctuation_shape fluctuation_shape;

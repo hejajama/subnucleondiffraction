@@ -31,7 +31,9 @@ class Vec
         Vec operator-(Vec& v);
         void operator*=(REAL c);
         Vec operator*(REAL c);
-        
+    
+        double operator*(Vec &v);   // dot product
+    
         REAL Len();
         REAL LenSqr();
     
