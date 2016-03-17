@@ -9,6 +9,7 @@
  
 
 #include <iostream>
+#include <vector>
 
 typedef double REAL;
 
@@ -42,6 +43,10 @@ class Vec
 };
 
 std::ostream& operator<<(std::ostream& os, Vec& ic);
+
+// Geometry functions
+// Weiszfeld's algorithm to calculate geometric median (Fermat point)
+Vec GeometricMedian(std::vector<Vec> &points);
 
 
 #endif //VEC_H

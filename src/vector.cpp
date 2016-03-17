@@ -97,4 +97,57 @@ std::ostream& operator<<(std::ostream& os, Vec& ic)
         ", " << ic.GetZ() << "), |vec| = " << ic.Len() << " ";
 }
 
+/////////////////////
+// Geometry
+// Weiszfeld's algorithm to calculate geometric median (Fermat point)
+// Ref. https://en.wikipedia.org/wiki/Geometric_median
+Vec GeometricMedian(std::vector<Vec> &points)
+{
+    // Convergence parameters: components can change relatively/absolutely less than
+    // given values
+    const double ITERACCURACY_REL = 0.001;
+    const double ITERACCURACY_ABS = 1e-6;
+    
+    const int MAXITER = 100;
+    Vec y(0,0,0); // Original quess
+    bool converged;
+    for (unsigned int i=0; i<MAXITER; i++)
+    {
+        // y_{i+1} = \sum_j x_j / ||x_j - y_i||  / \sum_j 1/||x_j - y_i ||
+        double normalization = 0;
+        Vec newvec(0,0,0);
+        for (unsigned int j=0; j<points.size(); j++)
+        {
+            Vec dist = points[j] - y;
+            normalization += 1.0 / dist.Len();
+            
+            Vec tmpvec = points[j];
+            tmpvec *= 1.0 / dist.Len();
+            newvec += tmpvec;
+        }
+        
+        newvec *= 1.0 / normalization;
+        
+        // Chec convergence
+        Vec delta= newvec - y;
+        converged=true;
+        if ( std::abs(delta.GetX())/y.GetX() > ITERACCURACY_REL and std::abs(delta.GetX() > ITERACCURACY_ABS ))
+            converged = false;
+        if ( std::abs(delta.GetY())/y.GetY() > ITERACCURACY_REL and std::abs(delta.GetY() > ITERACCURACY_ABS ))
+            converged = false;
+        if ( std::abs(delta.GetZ())/y.GetZ() > ITERACCURACY_REL and std::abs(delta.GetZ() > ITERACCURACY_ABS ))
+            converged = false;
+        y = newvec;
+        if (converged)
+            break;
+    }
+    
+    if (!converged)
+    {
+        cerr << "GeometricMedian() didn't converge! Returning best estimate." << endl;
+    }
+    
+    return y;
+}
+
 

@@ -14,6 +14,7 @@
 #include <string>
 #include "vector.hpp"
 #include "gdist_dglap.hpp"
+#include "vector.hpp"
 
 enum Proton_shape
 {
@@ -94,6 +95,8 @@ private:
     // gdist.Gluedist() returns Pi^2/(2*Nc) * Alphas(x,mu(r)^2) * xg(x,r)
     std::vector<Vec> quarks;    // Quark positions
     std::vector<Vec> quarks3d;  // Quark positions including z coordinate
+    Vec center;                 // Fermat point of the quark triangle projected to z=0
+    Vec center3d;               // Fermat poitn of the quark triangle in 3d
     std::vector<double> quark_bp;
     double maxr;
     double B_p;     // Central value for the proton gaussian width

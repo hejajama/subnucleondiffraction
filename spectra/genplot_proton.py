@@ -91,7 +91,7 @@ files = [
          ##["final/ipsat2012_bp_3.5_bq_0.5_w_100_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          ["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'red', "", 1.0, "red"],
 
-    ["paper_2/ipsat_bp_3.5_bq_1.0_fluxtube_noreal", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$ fluxtube", Linestyle(1), 'blue', "", 1.0, "blue"],
+    ["paper_2/ipsat_bp_3.5_bq_1.0_fluxtube_noreal_noskew", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$ fluxtube", Linestyle(1), 'blue', "", 1.1*1.4, "blue"],
          
          ## B_p = 1.0
          #["final/ipsat2012_bp_1.0_bq_3.0_w_100_q2_0", r"$B_{qc}=1.0\,\mathrm{GeV}^{-2}, B_q=3.0\,\mathrm{GeV}^{-2}$", Linestyle(3), "grey", "", 1.0, "black"],

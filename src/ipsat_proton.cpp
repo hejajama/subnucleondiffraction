@@ -27,6 +27,7 @@ int IPSAT12_PAR = 2;    // m_c=1.4 GeV
 using std::cout; using std::endl;
 
 const double FMGEV = 5.06778;
+double MAXR_SKEW = 20;  // Dont calculate skew at larger r, as it didnt work
 
 void Ipsat_Proton::InitializeTarget()
 {
@@ -105,6 +106,10 @@ void Ipsat_Proton::InitializeTarget()
     }
     
     SampleQsFluctuations();
+    
+    // Calculate center of the quark triangle
+    center = GeometricMedian(quarks);
+    center3d = GeometricMedian(quarks3d);
 }
 
 /* 
@@ -272,25 +277,27 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
     {
         tpsum = FluxTubeThickness(b);
         tpsum *= quarks.size(); // Because this sum is later normalized by 1/N_q
+        /*
+        for (double y=-8; y<8; y+=0.1)
+        {
+            for (double x=-8; x<8; x+=0.1)
+            {
+                Vec tmp(x,y);
+                cout << y << " " << x << " "; // << FluxTubeThickness(tmp) << endl;
+                FluxTubeThickness(tmp);
+                cout << endl;
+            }
+            cout << endl;
+        }
         
-        //for (double y=-8; y<8; y+=0.1)
-        //{
-        //    for (double x=-8; x<8; x+=0.1)
-        //    {
-        //        Vec tmp(x,y);
-        //        cout << y << " " << x << " "; // << FluxTubeThickness(tmp) << endl;
-        //        FluxTubeThickness(tmp);
-        //    }
-        //    cout << endl;
-       // }
-        
-        
+        exit(1);
+         */
     }
     
     if (ipsat == IPSAT06)
         {
             double skew=1.0;
-            if (skewedness)
+            if (skewedness and r.Len() < MAXR_SKEW)
             {
                 double skew_lambda = LogDerivative_xg(xpom, r.Len());
                 skew = Skewedness(skew_lambda);
@@ -328,7 +335,7 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         c /= tp;
         
         double skew=1.0; // now c contains xg that is modified by skewedness correction if enabled
-        if (skewedness)
+        if (skewedness and tmpr < MAXR_SKEW)
         {
             double skew_lambda = LogDerivative_xg(xpom, r.Len());
             if (std::isnan(skew_lambda))
@@ -469,21 +476,13 @@ double Ipsat_Proton::FluxTubeThickness(Vec b)
     if (fluxtube_normalization < 0)
         NormalizeFluxTubeThickness();
     
-    // Calculate first the center of the triangle (center of mass)
-    Vec center;
-    Vec center3d;
-    for (unsigned int i=0; i < quarks.size(); i++)
-    {
-        center = center + quarks[i];
-        center3d = center3d + quarks3d[i];
-    }
-    
-    center*=1.0/quarks.size();
-    center3d*=1.0/quarks.size();
 
     double dist = 99999999;
     int min_index=-1;
     // Calculate distances from every line
+    
+    // Code to calculate projected density
+    /*
     for (unsigned int i=0; i<quarks.size(); i++)
     {
         Vec line = center-quarks[i];
@@ -520,7 +519,7 @@ double Ipsat_Proton::FluxTubeThickness(Vec b)
             dist = distvec.Len();
             min_index=i;
         }
-    } */
+    }*/
     
     // Closest tube is between quarks[min_index] and center.
     // That we integrate over z at point b
@@ -536,7 +535,7 @@ double Ipsat_Proton::FluxTubeThickness(Vec b)
                           w, &result, &error);
     gsl_integration_workspace_free(w);
     
-    //cout << QuarkThickness(dist, 0) << " " << result << endl;
+    //cout << QuarkThickness(dist, 0) << " " << result;
     
     return fluxtube_normalization*result;
     
@@ -568,6 +567,9 @@ double inthelperf_fluxtube_z(double z, void* p)
         
         // If we are "outside" the line, then density decreases as a Gaussian
         // from the quark/center
+        // We also end up here if one angle of the triangle is larger than 120 degrees, when the Fermat
+        // point is actually at one of the quarks
+
         if (quark_to_b.LenSqr() > quark_to_center.LenSqr() or center_to_b.LenSqr() > quark_to_center.LenSqr())
         {
             //cout << "distance from quark "<< i << ": " << quark_to_b.Len() << "   quark_to_center dist " << quark_to_center.Len() << endl;
@@ -605,14 +607,15 @@ struct inthelper_fluxtube { Ipsat_Proton* proton; double y; };
 double inthelperf_fluxtube_y(double y, void* p);
 void Ipsat_Proton::NormalizeFluxTubeThickness()
 {
-    //fluxtube_normalization = 1.0;
-    //return;
+    fluxtube_normalization = 1.0;
+    return;
     
     /// NOTE: not used, as we acutally want total energy to depend on noramlization
     // FluxTubeThicknes should be normalized to unity, so calculate
     // \int dx dy FluxTubeThickness(x,y)
     // set normalization factor to 1 for this calculation
     
+    /*
     fluxtube_normalization = 1.0;
     gsl_function f;
     inthelper_fluxtube par; par.proton = this;
@@ -627,7 +630,7 @@ void Ipsat_Proton::NormalizeFluxTubeThickness()
     
     cout << result << endl;;
     //fluxtube_normalization = 1.0/result;
-    
+    */
     
     
 }
