@@ -6,6 +6,7 @@
  
 #include "vector.hpp"
 #include <tools/config.hpp>
+#include <cstdlib>
 
 using namespace Amplitude;
 
@@ -131,11 +132,11 @@ Vec GeometricMedian(std::vector<Vec> &points)
         // Chec convergence
         Vec delta= newvec - y;
         converged=true;
-        if ( std::abs(delta.GetX())/y.GetX() > ITERACCURACY_REL and std::abs(delta.GetX() > ITERACCURACY_ABS ))
+        if ( std::abs(delta.GetX())/y.GetX() > ITERACCURACY_REL and std::abs(delta.GetX()) > ITERACCURACY_ABS )
             converged = false;
-        if ( std::abs(delta.GetY())/y.GetY() > ITERACCURACY_REL and std::abs(delta.GetY() > ITERACCURACY_ABS ))
+        if ( std::abs(delta.GetY())/y.GetY() > ITERACCURACY_REL and std::abs(delta.GetY()) > ITERACCURACY_ABS )
             converged = false;
-        if ( std::abs(delta.GetZ())/y.GetZ() > ITERACCURACY_REL and std::abs(delta.GetZ() > ITERACCURACY_ABS ))
+        if ( std::abs(delta.GetZ())/y.GetZ() > ITERACCURACY_REL and std::abs(delta.GetZ()) > ITERACCURACY_ABS )
             converged = false;
         y = newvec;
         if (converged)
@@ -144,7 +145,13 @@ Vec GeometricMedian(std::vector<Vec> &points)
     
     if (!converged)
     {
-        cerr << "GeometricMedian() didn't converge! Returning best estimate." << endl;
+        cerr << "GeometricMedian() didn't converge!" << endl;
+        cerr << "Problematic points:" << endl;
+        for (unsigned int k=0; k<points.size(); k++)
+            cout << points[k] << endl;
+        cerr << "Best estimate: " << endl;
+        cerr << y << endl;
+        exit(1);
     }
     
     return y;

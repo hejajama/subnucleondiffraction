@@ -29,6 +29,136 @@ using std::cout; using std::endl;
 const double FMGEV = 5.06778;
 double MAXR_SKEW = 20;  // Dont calculate skew at larger r, as it didnt work
 
+
+
+
+double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
+{
+    // quark transveser coodinates are now nucleons[i].GetX() and GetY()
+    Vec q(q1[0], q1[1]);
+    Vec qbar(q2[0],q2[1]);
+    
+    Vec b = q + qbar;
+    b = b*0.5;
+    
+    Vec r = q - qbar;
+    
+    double tpsum = 0;
+    tpsum = Density(b);
+    
+    if (ipsat == IPSAT06)
+    {
+        double skew=1.0;
+        if (skewedness and r.Len() < MAXR_SKEW)
+        {
+            double skew_lambda = LogDerivative_xg(xpom, r.Len());
+            skew = Skewedness(skew_lambda);
+        }
+        //std::cout << "skew at r=" << r.Len() << " is " << skew << std::endl;
+        if (saturation)
+            return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew*gdist->Gluedist(xpom, r.LenSqr()) * tpsum  );
+        else
+            return r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  ;
+    }
+    else if (ipsat == IPSAT12)
+    {
+        if (!saturation)
+        {
+            std::cerr << "Nonsat is not defined for ipsat2012" << std::endl;
+            exit(1);
+        }
+        // dipole_amplitude(xBj, r, b, parameterSet) gives amplitude 2(1 - exp(c*T(p)))
+        // We have to calculate "gluedist" as in case of ipsat06
+        double tmpb=0;  double tmpr = r.Len();
+        // par 1: m_c=1.27,   2: m_c=1.4
+        double n = dipole_amplitude_(&xpom, &tmpr, &tmpb, &IPSAT12_PAR)/2.0;
+        
+        
+        double c = std::log(1.0-n);
+        
+        if (std::isnan(c) or std::isinf(c))
+        {
+            // We have so large r, that basically n=1 and c blows up, these should not matter
+            // as wave function cuts these out anyway, but we can just set amplitude to 1
+            return 0.0;
+        }
+        
+        double tp = 1.0/(2.0*M_PI*4.0)*std::exp(- tmpb*tmpb / (2.0*4.0));
+        c /= tp;
+        
+        double skew=1.0; // now c contains xg that is modified by skewedness correction if enabled
+        if (skewedness and tmpr < MAXR_SKEW)
+        {
+            double skew_lambda = LogDerivative_xg(xpom, r.Len());
+            if (std::isnan(skew_lambda))
+            {
+                std::cerr << "skew nan at xpom=" << xpom << " r = " << r.Len() << std::endl;
+                skew=1.0;
+            }
+            else
+                skew = Skewedness(skew_lambda);
+        }
+        return 1.0 - std::exp( GetQsFluctuation(b.GetX(),b.GetY())*skew*c * 1.0/quarks.size()*tpsum);
+    }
+    else
+    {
+        std::cerr << "UNKNOWN IPSAT VERSION!" << std::endl;
+        exit(1);
+    }
+    
+}
+
+/*
+ * Proton density
+ * T_p(b), or something that replaces it
+ */
+double Ipsat_Proton::Density(Vec b)
+{
+    double density=0;
+    if (proton_structure == QUARKS)
+    {
+        // Need to calculate sum_i T_p(|b-b_i|), where b is the center of the dipole
+        // and b_i is the center of the quark i
+        for (unsigned int i=0; i < quarks.size(); i++)
+        {
+            Vec projection (quarks[i].GetX(), quarks[i].GetY());
+            Vec deltab = b - projection;
+            density = density + QuarkThickness(deltab.Len(), i);
+        }
+        return density;
+    } else if (proton_structure == CENTER_TUBES)
+    {
+        density = FluxTubeThickness(b);
+        density *= quarks.size(); // Because this sum is later normalized by 1/N_q
+        return density;
+        
+        /*
+         for (double y=-8; y<8; y+=0.1)
+         {
+         for (double x=-8; x<8; x+=0.1)
+         {
+         Vec tmp(x,y);
+         cout << y << " " << x << " "; // << FluxTubeThickness(tmp) << endl;
+         FluxTubeThickness(tmp);
+         cout << endl;
+         }
+         cout << endl;
+         }
+         
+         exit(1);
+         */
+    }
+    else{
+        cerr << "Unkown proton profile!" << endl;
+        exit(1);
+    }
+    
+}
+
+
+
+
+
 void Ipsat_Proton::InitializeTarget()
 {
     double smallestdist=999; double largestdist=0;
@@ -38,21 +168,6 @@ void Ipsat_Proton::InitializeTarget()
     
     quarks.clear();
     quark_bp.clear();
-    
-    // TEMP
-    /*
-    Vec tmpvec1(1,1);
-    Vec tmpvec2(-3,-3);
-    Vec tmpvec3(3, -3);
-    quarks.push_back(tmpvec1);
-    quarks.push_back(tmpvec2);
-    quarks.push_back(tmpvec3);
-    quark_bp.push_back(0.3);
-    quark_bp.push_back(2.0);
-    quark_bp.push_back(2.0);
-    SampleQsFluctuations();
-    return;
-    */
     
     // Sample 3 quarks
     for (int i=0; i<3; i++)
@@ -107,12 +222,35 @@ void Ipsat_Proton::InitializeTarget()
     
     SampleQsFluctuations();
     
+    // set center of mass to origin
+    if (origin_at_center_of_mass)
+    {
+        Vec centerofmass;
+        Vec centerofmass3d;
+        for (int i=0; i<quarks.size(); i++)
+        {
+            centerofmass += quarks[i];
+            centerofmass3d+=quarks3d[i];
+        }
+        centerofmass*=1.0/quarks.size();
+        centerofmass3d*=1.0/quarks.size();
+        for (int i=0; i<quarks.size(); i++)
+        {
+            quarks[i] -= centerofmass;
+            quarks3d[i] -= centerofmass3d;
+        }
+    }
+    
+    
     // Calculate center of the quark triangle
-    center = GeometricMedian(quarks);
-    center3d = GeometricMedian(quarks3d);
+    if (proton_structure == CENTER_TUBES)
+    {
+        center = GeometricMedian(quarks);
+        center3d = GeometricMedian(quarks3d);
+    }
 }
 
-/* 
+/*
  * Sample Q_s fluctuations at each point in transverse plane
  */
 void Ipsat_Proton::SampleQsFluctuations()
@@ -120,6 +258,12 @@ void Ipsat_Proton::SampleQsFluctuations()
     qs_fluctuation_coordinates.clear();
     qs_fluctuation.clear();
     qs_fluctuations_quarks.clear();
+    
+    if (std::abs(Qs_fluctuation_sigma) < 1e-10)
+    {
+        return; // No fluctuations
+    }
+    
     
     if (fluctuation_shape == FLUCTUATE_QUARKS)
     {
@@ -186,7 +330,7 @@ void Ipsat_Proton::SampleQsFluctuations()
 
 double Ipsat_Proton::GetQsFluctuation(double x, double y)
 {
-    if (fluctuation_shape != LOCAL_FLUCTUATIONS)
+    if (fluctuation_shape != LOCAL_FLUCTUATIONS or std::abs(Qs_fluctuation_sigma)<1e-5 or qs_fluctuation_coordinates.size()<1)
         return 1.0;
     
     int xind;
@@ -222,6 +366,7 @@ void Ipsat_Proton::Init()
     fluctuation_shape = LOCAL_FLUCTUATIONS;
     proton_structure = QUARKS ;
     fluxtube_normalization = -1;
+    origin_at_center_of_mass = false;
 }
 Ipsat_Proton::Ipsat_Proton()
 {
@@ -247,114 +392,6 @@ Ipsat_Proton::~Ipsat_Proton()
 }
 
 
-
-
-double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
-{
-    // quark transveser coodinates are now nucleons[i].GetX() and GetY()
-    Vec q(q1[0], q1[1]);
-    Vec qbar(q2[0],q2[1]);
-    
-    Vec b = q + qbar;
-    b = b*0.5;
-    
-    Vec r = q - qbar;
-    
-    
-    
-    double tpsum = 0;
-    if (proton_structure == QUARKS)
-    {
-        // Need to calculate sum_i T_p(|b-b_i|), where b is the center of the dipole
-        // and b_i is the center of the quark i
-        for (unsigned int i=0; i < quarks.size(); i++)
-        {
-            Vec projection (quarks[i].GetX(), quarks[i].GetY());
-            Vec deltab = b - projection;
-            tpsum = tpsum + QuarkThickness(deltab.Len(), i);
-        }
-    } else if (proton_structure == CENTER_TUBES)
-    {
-        tpsum = FluxTubeThickness(b);
-        tpsum *= quarks.size(); // Because this sum is later normalized by 1/N_q
-        /*
-        for (double y=-8; y<8; y+=0.1)
-        {
-            for (double x=-8; x<8; x+=0.1)
-            {
-                Vec tmp(x,y);
-                cout << y << " " << x << " "; // << FluxTubeThickness(tmp) << endl;
-                FluxTubeThickness(tmp);
-                cout << endl;
-            }
-            cout << endl;
-        }
-        
-        exit(1);
-         */
-    }
-    
-    if (ipsat == IPSAT06)
-        {
-            double skew=1.0;
-            if (skewedness and r.Len() < MAXR_SKEW)
-            {
-                double skew_lambda = LogDerivative_xg(xpom, r.Len());
-                skew = Skewedness(skew_lambda);
-            }
-            //std::cout << "skew at r=" << r.Len() << " is " << skew << std::endl;
-        if (saturation)
-            return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew*gdist->Gluedist(xpom, r.LenSqr()) * tpsum  );
-        else
-            return r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  ;
-        }
-    else if (ipsat == IPSAT12)
-    {
-        if (!saturation)
-        {
-            std::cerr << "Nonsat is not defined for ipsat2012" << std::endl;
-            exit(1);
-        }
-        // dipole_amplitude(xBj, r, b, parameterSet) gives amplitude 2(1 - exp(c*T(p)))
-        // We have to calculate "gluedist" as in case of ipsat06
-        double tmpb=0;  double tmpr = r.Len();
-        // par 1: m_c=1.27,   2: m_c=1.4
-        double n = dipole_amplitude_(&xpom, &tmpr, &tmpb, &IPSAT12_PAR)/2.0;
-        
-        
-        double c = std::log(1.0-n);
-        
-        if (std::isnan(c) or std::isinf(c))
-        {
-            // We have so large r, that basically n=1 and c blows up, these should not matter
-            // as wave function cuts these out anyway, but we can just set amplitude to 1
-            return 0.0;
-        }
-        
-        double tp = 1.0/(2.0*M_PI*4.0)*std::exp(- tmpb / (2.0*4.0));
-        c /= tp;
-        
-        double skew=1.0; // now c contains xg that is modified by skewedness correction if enabled
-        if (skewedness and tmpr < MAXR_SKEW)
-        {
-            double skew_lambda = LogDerivative_xg(xpom, r.Len());
-            if (std::isnan(skew_lambda))
-            {
-                std::cerr << "skew nan at xpom=" << xpom << " r = " << r.Len() << std::endl;
-                skew=1.0;
-            }
-            else
-                skew = Skewedness(skew_lambda);
-        }
-        return 1.0 - std::exp( GetQsFluctuation(b.GetX(),b.GetY())*skew*c * 1.0/quarks.size()*tpsum);
-    }
-    else
-    {
-        std::cerr << "UNKNOWN IPSAT VERSION!" << std::endl;
-        exit(1);
-    }
-
-}
 
 
 /* extract collinear factorization gluon distribution from ipsat
@@ -659,28 +696,32 @@ double inthelperf_fluxtube_x(double x, void* p)
 std::string Ipsat_Proton::InfoStr()
 {
     std::stringstream ss;
-    ss << "IPsat proton consists of quarks at coordinates ";
+    ss << "#IPsat proton consists of quarks at coordinates " << endl;;
     for (int i=0; i<quarks.size(); i++)
     {
-        ss << "(" << quarks3d[i].GetX() << ", " << quarks3d[i].GetY() << ", " << quarks3d[i].GetZ() << "), r=" << std::sqrt(2.0*quark_bp[i]) <<", B_q=" << quark_bp[i] ;
+        ss << "# (" << quarks3d[i].GetX() << ", " << quarks3d[i].GetY() << ", " << quarks3d[i].GetZ() << "), r=" << std::sqrt(2.0*quark_bp[i]) <<", B_q=" << quark_bp[i]<< endl ;
     }
-    ss << ". Proton radius " << std::sqrt(2.0*B_p) << " GeV^-1, B_p=" << B_p << " ";
+    ss << "# Proton radius " << std::sqrt(2.0*B_p) << " GeV^-1, B_p=" << B_p << " ";
     if (shape == GAUSSIAN)
         ss << "Gaussian distribution";
     else if (shape == EXPONENTIAL)
         ss << "Exponential distribution, a=B_p";
     
-    ss << ". Structure: ";
+    ss << endl;
+    
+    ss << "# Structure: ";
     if (proton_structure == QUARKS)
         ss << "quarks";
     else if (proton_structure == CENTER_TUBES)
         ss << "color tubes merging at center, normalization " << fluxtube_normalization;
+    if (origin_at_center_of_mass)
+        ss << "Origin moved to the center of mass (shrinks proton size!)";
     
-    ss << ". Saturation: ";
+    ss << endl << "# Saturation: ";
     if (saturation)
         ss << " enabled";
     else ss << "disabled";
-    ss << ". ";
+    ss << endl <<"# ";
     if (ipsat == IPSAT06)
         ss << "IPsat version: 2006 (KMW)";
     else if (ipsat == IPSAT12)
@@ -690,7 +731,7 @@ std::string Ipsat_Proton::InfoStr()
         ss << " Enabled";
     else
         ss << "Disabled";
-    ss << ". ln Q_s^2 fluctuation width: " << Qs_fluctuation_sigma;
+    ss << endl << "# ln Q_s^2 fluctuation width: " << Qs_fluctuation_sigma;
     return ss.str();
 }
 
@@ -759,4 +800,9 @@ void Ipsat_Proton::SetStructure(Structure s)
 void Ipsat_Proton::SetFluxTubeNormalization(double n)
 {
     fluxtube_normalization = n;
+}
+
+void Ipsat_Proton::SetQuarkCenterOfMassToOrigin(bool s)
+{
+    origin_at_center_of_mass = s;
 }

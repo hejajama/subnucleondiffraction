@@ -16,6 +16,7 @@
 		12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */; };
 		1349C3F71C29CF1500B8EBA7 /* dipxs_intb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1349C3F51C29CF1500B8EBA7 /* dipxs_intb.cpp */; };
 		1349C3F91C29F38B00B8EBA7 /* satscale.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1349C3F81C29F38B00B8EBA7 /* satscale.cpp */; };
+		137168441C9C3E76002C9873 /* basis_expansion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 137168431C9C3E76002C9873 /* basis_expansion.cpp */; };
 		138FE4A71C7BC85F0078E11F /* average_amplitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 138FE4A61C7BC85F0078E11F /* average_amplitude.cpp */; };
 /* End PBXBuildFile section */
 
@@ -71,6 +72,7 @@
 		1349C3F51C29CF1500B8EBA7 /* dipxs_intb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dipxs_intb.cpp; path = tools/dipxs_intb.cpp; sourceTree = "<group>"; };
 		1349C3F61C29CF1500B8EBA7 /* dipxs_intb.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dipxs_intb.hpp; path = tools/dipxs_intb.hpp; sourceTree = "<group>"; };
 		1349C3F81C29F38B00B8EBA7 /* satscale.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = satscale.cpp; path = tools/satscale.cpp; sourceTree = "<group>"; };
+		137168431C9C3E76002C9873 /* basis_expansion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = basis_expansion.cpp; path = tools/basis_expansion.cpp; sourceTree = "<group>"; };
 		1380AA6A1C57CAF000F8E9C8 /* spectra.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = spectra.py; path = tools/spectra.py; sourceTree = "<group>"; };
 		138FE4A61C7BC85F0078E11F /* average_amplitude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = average_amplitude.cpp; path = tools/average_amplitude.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -114,6 +116,7 @@
 				1217F7801C0509E50008A90C /* nucleons.cpp */,
 				1217F7811C0509E50008A90C /* nucleons.hpp */,
 				123E8F861BFA76F700681374 /* ipsat_proton.cpp */,
+				137168431C9C3E76002C9873 /* basis_expansion.cpp */,
 				1217F7831C11EA830008A90C /* sample_color_charges.cpp */,
 				1217F7841C11EA830008A90C /* sample_color_charges.hpp */,
 				123E8F871BFA76F700681374 /* ipsat_proton.hpp */,
@@ -231,6 +234,7 @@
 				1349C3F71C29CF1500B8EBA7 /* dipxs_intb.cpp in Sources */,
 				12F504E61BECEFA3005540EF /* subnucleon_config.cpp in Sources */,
 				138FE4A71C7BC85F0078E11F /* average_amplitude.cpp in Sources */,
+				137168441C9C3E76002C9873 /* basis_expansion.cpp in Sources */,
 				1349C3F91C29F38B00B8EBA7 /* satscale.cpp in Sources */,
 				12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */,
 				12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */,

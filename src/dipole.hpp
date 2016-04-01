@@ -41,6 +41,8 @@ public:
     // r_s^2 = 2/Q_s^2
     // That is, we choose the arbitrary direction to be along the x axis
     double SaturationScale(double xpom, Vec b);
+    
+    virtual double Density(Vec b);  // T_p(b), or whatever replaces T_b
 };
 
 #endif

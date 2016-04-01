@@ -314,8 +314,8 @@ int main(int argc, char* argv[])
     {
         cout << "# Real part correction" << endl;
         cout << "# t  transverse  longitudinal" << endl;
-        double tstep=0.05;
-        for (t=0; t<=3; t+=tstep)
+        double tstep=0.1; //0.05;
+        for (t=0; t<=1.5; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.01)

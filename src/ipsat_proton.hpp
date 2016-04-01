@@ -87,6 +87,10 @@ public:
     
     void SetFluxTubeNormalization(double n);
     
+    double Density(Vec b);    // Density (T_b) at given point b
+    
+    void SetQuarkCenterOfMassToOrigin(bool s);
+    
 private:
     void Init();
     
@@ -130,6 +134,8 @@ private:
     Ipsat_version ipsat;
     
     bool skewedness;    // Enable skewedness in dipole amplitude, multiplies xg
+    
+    bool origin_at_center_of_mass;    // If true, move quarks s.t. their center of mass is at b=0
 };
 
 #endif /* ipsat_proton_hpp */

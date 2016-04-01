@@ -29,7 +29,7 @@ minx=0.0
 maxx=2.0
 miny=0.01
 maxy=40
-
+maxy=100
 
 PI=3.141592
 
@@ -47,9 +47,18 @@ data=[
       #["test/ipglasma_bp_2.0_bq_0.3_norm07_nc_96", r"IP-Glasma, $B_p=2.0\,\mathrm{GeV}^{-2}, B_q=0.3\,\mathrm{GeV}^{-2}$", Linestyle(3), 1.4],
       #["final/ipglasma_bp_2.0_bq_0.3_m04_n07_ncf_416_w_100_q2_0", r"IP-Glasma, $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_q=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0),"grey", "", Color(0)],
       # ["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n075_qsfluct_ncf_96", r"IP-Glasma, $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_q=0.3\,\mathrm{GeV}^{-2}$ fluct", Linestyle(2),Color(2), "", Color(2)],
-      ["paper_2/ipglasma_bp_2.0_bq_0.5_m08_n075_qsfluct_ncf_96", r"IP-Glasma, $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2} m=0.8$ ", Linestyle(2),Color(2), "", Color(2)],
-      ["paper_2/ipglasma_bp_2.0_bq_0.5_m04_n075_qsfluct_ncf_384", r"IP-Glasma, $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2} m=0.4$ ", Linestyle(3),Color(3), "", Color(3)],
-      ["paper_2/ipglasma_bp_2.0_bq_0.5_m02_n075_qsfluct_ncf_96", r"IP-Glasma, $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}, m=0.2$", Linestyle(1),Color(1), "", Color(1)]
+      #["paper_2/ipglasma_bp_2.0_bq_0.5_m08_n075_qsfluct_ncf_96", r"IP-Glasma, $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2} m=0.8$ ", Linestyle(2),Color(2), "", Color(2)],
+      # ["paper_2/ipglasma_bp_2.0_bq_0.5_m04_n075_qsfluct_ncf_384", r"IP-Glasma, $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2} m=0.4$ ", Linestyle(3),Color(3), "", Color(3)],
+      # ["paper_2/ipglasma_bp_2.0_bq_0.5_m02_n075_qsfluct_ncf_96", r"IP-Glasma, $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}, m=0.2$", Linestyle(1),Color(1), "", Color(1)]
+      #["final/ipglasma_bp_4.0_m04_n065_ncf_288_w_100_q2_0", r"$B_{p}=4\,\mathrm{GeV}^{-2}$", Linestyle(0), Color(1), "", "blue" ],
+      # ["paper_2/ipglasma_bp_4.0_ny_1", r"$B_p=4.0\,\mathrm{GeV}^{-2}, N_y=1$", Linestyle(1), Color(1), "", Color(2) ],
+      
+      #["paper_2/ipglasma_bp_4.0_mdep_m_0.2", r"$B_p=4.0\,\mathrm{GeV}^{-2}, m=0.2$", Linestyle(1), Color(0), "" , Color(1) ],
+      #["paper_2/ipglasma_bp_4.0_mdep_m_0.4", r"$B_p=4.0\,\mathrm{GeV}^{-2}, m=0.4$", Linestyle(2), Color(2), "" , Color(2) ],
+      #["paper_2/ipglasma_bp_4.0_mdep_m_0.8", r"$B_p=4.0\,\mathrm{GeV}^{-2}, m=0.8$", Linestyle(3), Color(3), "", Color(3) ],
+      
+      ["paper_2/ipglasma_fluct_m_0.2", r"$m=0.2$", Linestyle(3), Color(3), "",  Color(3) ],
+      ["paper_2/ipglasma_fluct_m_0.6", r"$m=0.6$", Linestyle(1), Color(1), "",  Color(1) ],
 ]
 
 fig = figure()
