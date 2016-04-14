@@ -103,9 +103,12 @@ for f in files:
             readfile_xy(fname_imag,tvals_imag, transverse_imag)
             readfile_xy(fname_imag, tmplist, longitudinal_imag, ycol=2)
     except IOError:
-        print "#File not found: " + fname_real + " or " + fname_imag
+        print >> sys.stderr, "#File not found: " + fname_real + " or " + fname_imag
         continue
-    
+    except ValueError, e:
+        print >> sys.stderr, "Error while reading file " + fname_real + " or " + fname_imag +", error: " + str(e)
+        sys.exit(1)
+
     # assume that all files go to largest t
     if tvals == []:
         tvals = tvals_real
@@ -141,7 +144,7 @@ tmp=[]
 tvals_corrections=[]
 if corrections_file != "":
     readfile_xy(corrections_file, tvals_corrections, corrections_t)
-    readfile_xy(corrections_file, tmp, corrections_l)
+    readfile_xy(corrections_file, tmp, corrections_l, ycol=2)
     # Check that tvals match
     for i in range(len(tvals_corrections)):
         if tvals_corrections[i] != tvals[i]:

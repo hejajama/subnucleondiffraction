@@ -644,6 +644,7 @@ struct inthelper_fluxtube { Ipsat_Proton* proton; double y; };
 double inthelperf_fluxtube_y(double y, void* p);
 void Ipsat_Proton::NormalizeFluxTubeThickness()
 {
+    cout << "Normalizing fluxtube\n" << endl;
     fluxtube_normalization = 1.0;
     return;
     

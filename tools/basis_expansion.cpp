@@ -28,7 +28,7 @@ using namespace std;
 using Amplitude::SQR;
 gsl_rng* global_rng;
 
-const double MAXR = 20;
+const double MAXR = 5;
 const int INTERVALS = 20;
 const double INTACCURACY = 0.001;
 const double INTACCURACY_ABS = 1e-6;

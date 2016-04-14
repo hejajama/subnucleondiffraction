@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
     
-    IPGlasma dipole(argv[1]);
+ //   IPGlasma dipole(argv[1]);
     
     Ipsat_Proton dipole_ipsat;
     dipole_ipsat.SetProtonWidth(0.0001);
@@ -34,7 +34,9 @@ int main(int argc, char* argv[])
     {
         for (double x=-6; x<6; x+=0.05)
         {
-            double qs = dipole.SaturationScale(0.01, Vec(x,y));
+		if (std::sqrt(x*x + y*y) > 0.5*5.068)
+			continue;
+            double qs = dipole_ipsat.SaturationScale(0.01, Vec(x,y));
             if (qs < 0)
             {
                 qs=0;

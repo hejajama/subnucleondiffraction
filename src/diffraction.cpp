@@ -68,6 +68,7 @@ double Diffraction::Correction(double xpom, double Qsqr, double t, Polarization 
     double lambda = LogDerivative(xpom, Qsqr, t, pol);
     
     double beta = std::tan(lambda*M_PI/2.0);
+    
     double Rg = 1.0; //std::pow(2.0, 2.0*lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(lambda+5.0/2.0)/gsl_sf_gamma(lambda+4.0);
     return (1.0+beta*beta)*Rg*Rg;
 }
@@ -343,7 +344,15 @@ double Diffraction::ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, 
     Vec q1(b+r/2.0,0);
     Vec q2(b-r/2.0, 0);
     double amp = 2.0*dipole->Amplitude(xpom, q1, q2);
-    double overlap =wavef->PsiSqr_tot(Qsqr, r, z)/(4.0*M_PI);
+    //double overlap =wavef->PsiSqr_tot(Qsqr, r, z)/(4.0*M_PI);
+    double overlap=0;
+    if (pol == TRANSVERSE)
+        overlap = wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI);
+    else if (pol == LONGITUDINAL)
+        overlap = wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
+    else
+        cerr << "Unknown polarization in Diffraction::ScatteringAmplitudeRotationalSymmetryIntegrand! " << endl;
+
     // Bessel integrals INCLUDING jacobian
     double delta = std::sqrt(t);
     double bessel = 2.0*M_PI*b*gsl_sf_bessel_J0(b*delta)*2.0*M_PI*r*gsl_sf_bessel_J0((1.0-z)*r*delta);
