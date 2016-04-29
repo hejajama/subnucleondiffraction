@@ -31,7 +31,7 @@ rc("xtick", labelsize=textsize)
 rc("ytick", labelsize=textsize)
 
 minx=0.0
-maxx=2.5
+maxx=2.50
 miny=0.02
 maxy=1.5e3
 
@@ -50,13 +50,6 @@ PI=3.141592
 GEVSQRTONB = 1.0e7/(5.068*5.068)
 
 
-# filename title normalization style
-files = [
-         # [ "old_code/proton_ipsat_corrected", "IPsat", 1, Linestyle(0), Color(0)],
-         
-         ]
-
-
 
 fig = figure()
 p1=fig.add_subplot(111)
@@ -65,28 +58,12 @@ xlabel(r"$|t|$ $[\mathrm{GeV}^2]$", fontsize=textsize+2)
 #xlabel(r"$rQ_s$")
 ylabel(r"$\mathrm{d}\sigma/\mathrm{d}t$ $[\mathrm{nb}/\mathrm{GeV}^2]$ ", fontsize=textsize+2)
 
-col=-1
-for f in files:
-    col=col+1
-    xdata=[]
-    ydata=[]
-    try:
-        readfile_xy(f[0], xdata, ydata)
-        scale_list(ydata, f[2])
-    except:
-        print "Error with file " + f[0]
-        continue
-    p1.plot(xdata, ydata, label=f[1], linestyle=f[3], linewidth=1, color=Color(0))
-
-    totxs = scipy.integrate.simps(np.array(ydata),np.array(xdata))
-    print f[1] + " totxs " + str(totxs)
-
     
 #fig.suptitle(r"$W = 100 \, \mathrm{GeV}, Q^2=0\,\mathrm{GeV}^2$" , fontsize=textsize )
 
 # fname title style normalization,facecolor, hatch, linecolor
 files = [
-         ["final/ipsat2012_w_100_q2_0", r"IPsat, $B_p=4.0\, \mathrm{GeV}^{-2}$", Linestyle(0), "", "", 1.0, "black"],
+         #["final/ipsat2012_w_100_q2_0", r"IPsat, $B_p=4.0\, \mathrm{GeV}^{-2}$", Linestyle(0), "", "", 1.0, "black"],
          
          
          # B_p = 3.5
@@ -94,7 +71,6 @@ files = [
          #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(1), 'red', "", 1.0, "red"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_new", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$ new", Linestyle(1), 'blue', "", 1.0, "blue"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_new2", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$ new2", Linestyle(3), 'red', "", 1.0, "red"],
-
          
          ##["paper_2/ipsat_bp_3.5_bq_1.0_origin2", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$ origin", Linestyle(1), 'blue', "", 1.0, "blue"],
          
@@ -108,23 +84,26 @@ files = [
          #fluct 3.5 1.0
          #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_gridfluct_05", r"IPsat, $a=0.5\,\mathrm{fm}$", Linestyle(2),1.0],
          #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_gridfluct_04", r"IPsat, $a=0.4\,\mathrm{fm}$", Linestyle(3), "blue", "", 1.0, Color(0)],
-         #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_quarkfluct_0.5", r"IPsat $B_p=3.5, B_q=1.0, \sigma=0.5$", Linestyle(3), "grey", "", 1.0, Color(1)],
+         #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_quarkfluct_0.5", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(2), "blue", "", 1.0, "blue"],
          #["paper_2/ipsat_bp_4.0_gridfluct_04", r"IPsat $B_p=4\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(2), "blue", "", 1.0, "blue"],
          
-         # B_p = 3.75
+         #
+         
+         # round ipsat, fluctuations
+         #["paper_2/ipsat_bp_4.0_gridfluct_04", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}, a=0.4\,\mathrm{fm}, \sigma=0.5$", Linestyle(3), "grey", "", 1.0, Color(1)],
          
          # ipglasma
          #["final/ipglasma_bp_2.0_bq_0.3_m04_n07_ncf_416_w_100_q2_0", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0), 'grey', "", 1.0, "black"],
-         ["final/ipglasma_bp_4.0_m04_n065_ncf_288_w_100_q2_0", r"$B_{p}=4\,\mathrm{GeV}^{-2}$", Linestyle(0), Color(1), "", 1.0, "blue" ],
+         #["final/ipglasma_bp_4.0_m04_n065_ncf_288_w_100_q2_0", r"$B_{p}=4\,\mathrm{GeV}^{-2}, m=0.4\,\mathrm{GeV}$", Linestyle(0), Color(0), "", 1.0, "black" ],
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n075_qsfluct_ncf_96", r"$B_p=2.0\,\mathrm{GeV}^{-2}, B_q=0.3\,\mathrm{GeV}^{-2}$, fluct", Linestyle(2), Color(2), "", 1.0, Color(2) ],
          #["paper_2/ipglasma_bp_2.0_bq_0.5_m08_n075_qsfluct_ncf_96", r"$B_p=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}, m=0.8$", Linestyle(2), Color(2), "", 1.0, Color(2) ],
          #["paper_2/ipglasma_bp_2.0_bq_0.5_m04_n075_qsfluct_ncf_384", r"$B_p=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}, m=0.4$", Linestyle(3), Color(3), "", 1.0, Color(3) ],
          #["paper_2/ipglasma_bp_2.0_bq_0.5_m02_n075_qsfluct_ncf_96", r"$B_p=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}, m=0.2$", Linestyle(1), Color(1), "", 1.0, Color(2) ],
          #["paper_2/ipglasma_bp_4.0_ny_1", r"$B_p=4.0\,\mathrm{GeV}^{-2}, N_y=1$", Linestyle(1), Color(1), "", 1.4, Color(2) ],
          
-         ["paper_2/ipglasma_bp_4.0_mdep_m_0.2", r"$B_p=4.0\,\mathrm{GeV}^{-2}, m=0.2$", Linestyle(1), Color(0), "", 1.4, Color(1) ],
+         #["paper_2/ipglasma_bp_4.0_mdep_m_0.2", r"$B_p=4.0\,\mathrm{GeV}^{-2}, m=0.2\,\mathrm{GeV}$", Linestyle(1), Color(0), "", 1.4, Color(1) ],
          #["paper_2/ipglasma_bp_4.0_mdep_m_0.4", r"$B_p=4.0\,\mathrm{GeV}^{-2}, m=0.4$", Linestyle(0), Color(2), "", 1.4, Color(2) ],
-         ["paper_2/ipglasma_bp_4.0_mdep_m_0.6", r"$B_p=4.0\,\mathrm{GeV}^{-2}, m=0.6$", Linestyle(3), Color(3), "", 1.4, Color(3) ],
+         #["paper_2/ipglasma_bp_4.0_mdep_m_0.6", r"$B_p=4.0\,\mathrm{GeV}^{-2}, m=0.6$", Linestyle(3), Color(3), "", 1.4, Color(3) ],
          #["paper_2/ipglasma_fluct_m_0.2", r"$m=0.2$", Linestyle(3), Color(3), "", 1.4, Color(3) ],
          #["paper_2/ipglasma_fluct_m_0.6", r"$m=0.6$", Linestyle(1), Color(1), "", 1.4, Color(1) ],
          
@@ -132,7 +111,14 @@ files = [
          #["paper_2/ipsat_bp_3.5_bq_0.5_fluxtube_norm_0.11", r"Fluxtube $B_{qc}=3.5, B_q=0.5$", Linestyle(0), Color(1), "", 1.0, Color(1)],
          #["paper_2/ipsat_bp_3.5_bq_1.0_fluxtube_norm_0.11", r"Fluxtube $B_{qc}=3.5, B_q=1.0$", Linestyle(1), Color(2), "", 1.0, Color(2)],
          #["paper_2/ipsat_bp_3.5_bq_1.5_fluxtube_norm_0.11", r"flix $B_p=3.5, B_q=1.5$", Linestyle(3), Color(3), "", 1.0, Color(3)],
+ 
+         
+         # w = 75
+         ["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0", r"$B_{qc}=1.0\,\mathrm{GeV}^{-2}, B_q=3.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'red', "", 1.0, "red"],
+         ["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
+
 ]
+
 
 
 #p1.plot(np.NaN, np.NaN, '-', color="white", label=r"IPsat")
@@ -224,7 +210,7 @@ experr=[]
 tmp=[]
 readfile_xy("proton/coherent/exp/h1_q2_0_w_100", expx, expy)
 readfile_xy("proton/coherent/exp/h1_q2_0_w_100", tmp, experr, ycol=2)
-p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=1, markersize=markersize_coh, label=r"Coherent H1", color=Color(1), markeredgecolor=Color(1))
+#p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=1, markersize=markersize_coh, label=r"Coherent H1", color=Color(1), markeredgecolor=Color(1))
 
 
 # h1 data
@@ -234,7 +220,7 @@ experr=[]
 tmp=[]
 readfile_xy("proton/coherent/exp/h1_q2_3.2_w_100", expx, expy)
 readfile_xy("proton/coherent/exp/h1_q2_3.2_w_100", tmp, experr, ycol=2)
-#p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=1, label=r"H1 $Q^2=3.2\,\mathrm{GeV}^2$")
+##p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=1, label=r"H1 $Q^2=3.2\,\mathrm{GeV}^2$")
 
 
 # h1 data
@@ -244,7 +230,7 @@ experr=[]
 tmp=[]
 readfile_xy("proton/coherent/exp/h1_q2_22.4_w_100", expx, expy)
 readfile_xy("proton/coherent/exp/h1_q2_22.4_w_100", tmp, experr, ycol=2)
-#p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=1, label=r"H1 $Q^2=22.4\mathrm{GeV}^2$")
+##p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=1, label=r"H1 $Q^2=22.4\mathrm{GeV}^2$")
 
 expx=[]
 expy=[]
@@ -252,7 +238,7 @@ experr=[]
 tmp=[]
 readfile_xy("proton/coherent/exp/zeus_q2_0_w_100", expx, expy)
 readfile_xy("proton/coherent/exp/zeus_q2_0_w_100", tmp, experr, ycol=2)
-p1.errorbar(expx, expy, yerr=experr, marker=datadashes[1], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(2), markeredgecolor=Color(2),label=r"Coherent ZEUS")
+#p1.errorbar(expx, expy, yerr=experr, marker=datadashes[1], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(2), markeredgecolor=Color(2),label=r"Coherent ZEUS")
 
 expx=[]
 expy=[]
@@ -260,7 +246,7 @@ experr=[]
 tmp=[]
 readfile_xy("proton/incoherent/exp/h1_jpsi_w_100", expx, expy)
 readfile_xy("proton/incoherent/exp/h1_jpsi_w_100", tmp, experr, ycol=2)
-p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(1), markeredgecolor=Color(1), label=r"Total H1")
+#p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(1), markeredgecolor=Color(1), label=r"Total H1")
 
 
 expx=[]
@@ -272,7 +258,7 @@ readfile_xyerrors("proton/incoherent/exp/zeus_jpsi_w_100", expx, expy, pluserr, 
 #scale_list(expy, 1000)
 #scale_list(pluserr, 1000)
 #scale_list(minuserr, 1000)
-p1.errorbar(expx, expy, yerr=[minuserr,pluserr], marker=datadashes[1], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(2), markeredgecolor=Color(2), label=r"Incoherent ZEUS")
+#p1.errorbar(expx, expy, yerr=[minuserr,pluserr], marker=datadashes[1], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(2), markeredgecolor=Color(2), label=r"Incoherent ZEUS")
 
 #old zeus
 expx=[]
@@ -284,7 +270,24 @@ readfile_xyerrors("proton/incoherent/exp/zeus_jpsi_w_94", expx, expy, pluserr, m
 scale_list(expy, 1000)
 scale_list(pluserr, 1000)
 scale_list(minuserr, 1000)
-#p1.errorbar(expx, expy, yerr=[minuserr,pluserr], marker=datadashes[4], linestyle='None', linewidth=0.7, markersize=4.4, label=r"incoh old ZEUS $Q^2=0, W=95$")
+##p1.errorbar(expx, expy, yerr=[minuserr,pluserr], marker=datadashes[4], linestyle='None', linewidth=0.7, markersize=4.4, label=r"incoh old ZEUS $Q^2=0, W=95$")
+
+### W = 75 data
+expx=[]
+expy=[]
+experr=[]
+tmp=[]
+readfile_xy("proton/coherent/exp/h1_jpsi_w_75", expx, expy)
+readfile_xy("proton/coherent/exp/h1_jpsi_w_75", tmp, experr, ycol=2)
+p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(2), markeredgecolor=Color(2), label=r"Coherent H1")
+expx=[]
+expy=[]
+experr=[]
+tmp=[]
+readfile_xy("proton/incoherent/exp/h1_jpsi_w_75", expx, expy)
+readfile_xy("proton/incoherent/exp/h1_jpsi_w_75", tmp, experr, ycol=2)
+p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(1), markeredgecolor=Color(1), label=r"Incoherent H1")
+
 
 
 yscale("log",nonposy='clip')

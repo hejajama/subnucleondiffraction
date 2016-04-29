@@ -464,13 +464,26 @@ std::vector<double> Ipsat_Proton::GetRadii()
 
 double Ipsat_Proton::QuarkThickness(double r, int i)
 {
-    double bp = quark_bp[i];
-    double fluct = 1.0;
-    if (fluctuation_shape == FLUCTUATE_QUARKS)
+    if (shape == GAUSSIAN)
     {
-        fluct = qs_fluctuations_quarks[i];
+        double bp = quark_bp[i];
+        double fluct = 1.0;
+        if (fluctuation_shape == FLUCTUATE_QUARKS)
+        {
+            fluct = qs_fluctuations_quarks[i];
+        }
+        return fluct/(2.0*M_PI*bp)*std::exp(- r*r / (2.0*bp));
     }
-    return fluct/(2.0*M_PI*bp)*std::exp(- r*r / (2.0*bp));
+    else if (shape == EXPONENTIAL)
+    {
+        double bp = quark_bp[i];
+        double fluct = 1.0;
+        if (fluctuation_shape == FLUCTUATE_QUARKS)
+        {
+            fluct = qs_fluctuations_quarks[i];
+        }
+        return fluct/(2.0*M_PI*bp*bp)*std::exp(- r / bp);
+    }
 }
 
 /*
@@ -487,9 +500,8 @@ double Ipsat_Proton::ExponentialDistribution(double x, double y, double z)
 {
     //a = \sqrt{12}/R_p = 3.87, with R_p = 0.895 from
     //http://journals.aps.org/rmp/pdf/10.1103/RevModPhys.77.1
-    double a = B_p;
     
-    return std::exp( -a * std::sqrt( x*x + y*y + z*z ) );
+    return std::exp( - std::sqrt( x*x + y*y + z*z ) / B_p );
     
 }
 
@@ -702,11 +714,11 @@ std::string Ipsat_Proton::InfoStr()
     {
         ss << "# (" << quarks3d[i].GetX() << ", " << quarks3d[i].GetY() << ", " << quarks3d[i].GetZ() << "), r=" << std::sqrt(2.0*quark_bp[i]) <<", B_q=" << quark_bp[i]<< endl ;
     }
-    ss << "# Proton radius " << std::sqrt(2.0*B_p) << " GeV^-1, B_p=" << B_p << " ";
+    ss << "# Proton (Gaussian) radius " << std::sqrt(2.0*B_p) << " GeV^-1, B_p=" << B_p << " ";
     if (shape == GAUSSIAN)
-        ss << "Gaussian distribution";
+        ss << "Gaussian distribution exp(-b^2/(2B_p)";
     else if (shape == EXPONENTIAL)
-        ss << "Exponential distribution, a=B_p";
+        ss << "Exponential distribution, exp(-b/B)";
     
     ss << endl;
     
