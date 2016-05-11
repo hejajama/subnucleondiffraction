@@ -212,10 +212,11 @@ void Ipsat_Proton::InitializeTarget()
             do{
                 x = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
                 y = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
-                z = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
+                z = 0; //2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
             } while (gsl_rng_uniform(global_rng) > ExponentialDistribution(x,y,z));
             Vec tmpvec(x,y,z);
             quarks.push_back(tmpvec);
+            quarks3d.push_back(tmpvec); // We only save 2d coordinates
             quark_bp.push_back(B_q);
         }
     }
