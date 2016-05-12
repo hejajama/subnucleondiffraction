@@ -265,6 +265,18 @@ void Ipsat_Proton::SampleQsFluctuations()
         return; // No fluctuations
     }
     
+    // ln Q_s^2 fluctuates according to a log-normal distribution
+    // 1/(sqrt(2pi) sigma) exp[ -ln^2 x / (2 sigma^2) ],
+    // where x = Q_s / <Q_s>
+    
+    // As we want that the average Q_s does not change, the sampled factor
+    // is normalized by the arithmetic mean of the log-normal
+    // distribution
+    // The arithmetic mean of log0noral distribution exp(- ln^2 x/(2\sigma^2))
+    // is exp(1/2 * sigma^2), and in our case sigma=0.5
+    // This gives 1.133148
+    
+    double lognormal_mean = 1.133148;
     
     if (fluctuation_shape == FLUCTUATE_QUARKS)
     {
@@ -272,13 +284,17 @@ void Ipsat_Proton::SampleQsFluctuations()
         // Note that as Q_s^2 ~ xg * T_q, and we get ln Q_s^2 fluctuations from
         // a Gaussian distribution, this same distribution can be used to describe
         // the normalization fluctuations of quarks
+        
+        
+        
         int nq  = quarks.size();
         double sum=0;
         for (int i=0; i<nq; i++)
         {
             double f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
-            qs_fluctuations_quarks.push_back(std::exp(f));
-            sum+=std::exp(f);
+            double fluct = std::exp(f)/lognormal_mean;
+            qs_fluctuations_quarks.push_back(lognormal_mean);
+            sum+=lognormal_mean;
         }
         cout << "# Sampled " << nq << " quark fluctuations ";
         for (int i=0; i<nq; i++) cout << qs_fluctuations_quarks[i] << " ";
@@ -308,7 +324,8 @@ void Ipsat_Proton::SampleQsFluctuations()
                 {
                     //f = fluct;  // no b dependence
                     f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
-                    fluct_coef_sum += std::exp(f); pts++; stdev += std::pow(1.0-std::exp(f),2.0);
+                    double fluct = std::exp(f)/lognormal_mean;
+                    fluct_coef_sum += fluct; pts++; stdev += std::pow(1.0-fluct,2.0);
                 }
                 else
                     f=0;
@@ -499,7 +516,7 @@ double Ipsat_Proton::GaussianRadiusDistribution(double r)
 
 double Ipsat_Proton::ExponentialDistribution(double x, double y, double z)
 {
-    //a = \sqrt{12}/R_p = 3.87, with R_p = 0.895 from
+    //a = \sqrt{12}/R_p = 3.87, with R_p = 0.895 from for 3d exp(-a*r)
     //http://journals.aps.org/rmp/pdf/10.1103/RevModPhys.77.1
     
     return std::exp( - std::sqrt( x*x + y*y + z*z ) / B_p );
@@ -513,7 +530,7 @@ double Ipsat_Proton::FluxTubeThickness(Vec b)
 {
     // Connect quarks with flux tubes that merge at the center
     // Idea from hep-lat/0606016
-    // Start tubes from the quarks, and they merge at the center of the triangle
+    // Start tubes from the quarks, and they merge at the Fermat point of the triangle
     // formed by the quarks
     // In the Ref. that point is actually Fermat point, but make this simpler now
     // The tube density is then assumed to be a Gaussian function of the distance from a line
