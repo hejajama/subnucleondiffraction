@@ -276,7 +276,7 @@ void Ipsat_Proton::SampleQsFluctuations()
     // is exp(1/2 * sigma^2), and in our case sigma=0.5
     // This gives 1.133148
     
-    double lognormal_mean = 1.133148;
+    double lognormal_mean = std::exp(0.5*Qs_fluctuation_sigma*Qs_fluctuation_sigma);;
     
     if (fluctuation_shape == FLUCTUATE_QUARKS)
     {
@@ -293,8 +293,8 @@ void Ipsat_Proton::SampleQsFluctuations()
         {
             double f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
             double fluct = std::exp(f)/lognormal_mean;
-            qs_fluctuations_quarks.push_back(lognormal_mean);
-            sum+=lognormal_mean;
+            qs_fluctuations_quarks.push_back(fluct);
+            sum+=fluct;
         }
         cout << "# Sampled " << nq << " quark fluctuations ";
         for (int i=0; i<nq; i++) cout << qs_fluctuations_quarks[i] << " ";
