@@ -44,8 +44,8 @@ lw_incoh = 0.9
 if slides:
     lw_incoh += 0.7
 
-markersize_coh = 5.0
-markersize_incoh = 6.0
+markersize_coh = 8#5.0
+markersize_incoh = 9#6.0
 
 PI=3.141592
 
@@ -128,14 +128,21 @@ files = [
          ########## W = 75
          # w = 75
          #["paper_2/ipsat_bp_4.0", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
+         #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local_avgfluct1", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}, \sigma=0.5, a=0.4\,\mathrm{fm}$", Linestyle(1), 'green', "", 1.0, "green"],
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}, \sigma=0.5, a=0.4\,\mathrm{fm}$", Linestyle(1), 'green', "", 1.0, "green"],
          #["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0", r"$B_{qc}=1.0\,\mathrm{GeV}^{-2}, B_q=3.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'red', "", 1.0, "red"],
-         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"Gaussian $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'blue', "", 1.0, "blue"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(3), 'red', "", 1.0, "red"],
+         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark_avgfluct1", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, \sigma=0.5$ avg1", Linestyle(1), 'blue', "", 1.0, "blue"],
          
-         #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0), "black", "", 1.0, "black"],
+         ["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0), "black", "", 1.0, "black"],
+         ["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift", r"$B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$ noshift", Linestyle(1), "blue", "", 1.0, "black"],
+         #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(1), "blue", "", 1.0, "blue"],
+         #["paper_2/ipglasma_bp_2.0_bq_0.5_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.5\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(2), "red", "", 1.0, "red"],
          
-         ["paper_2/ipsat_exponential_bp_1.3_bq_0.5_w_75_q2_0", r"$B_{qc}=1.3\,\mathrm{GeV}^{-1}, B_{q}=0.3\,\mathrm{GeV}^{-1}$", Linestyle(0), "black", "", 1.0, "black"],
+         
+         #["paper_2/ipsat_exponential_bp_1.2_bq_0.5_w_75_q2_0", r"Exponential $B_{qc}=1.2\,\mathrm{GeV}^{-1}, B_{q}=0.5\,\mathrm{GeV}^{-1}$", Linestyle(3), "red", "", 1.0, "red"],
+         
          
 
 ]
@@ -301,7 +308,7 @@ experr=[]
 tmp=[]
 readfile_xy("proton/coherent/exp/h1_jpsi_w_75", expx, expy)
 readfile_xy("proton/coherent/exp/h1_jpsi_w_75", tmp, experr, ycol=2)
-p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(2), markeredgecolor=Color(2), label=r"Coherent")
+p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(0), markeredgecolor=Color(0), label=r"Coherent")
 expx=[]
 expy=[]
 experr=[]

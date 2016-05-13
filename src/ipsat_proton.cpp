@@ -312,40 +312,44 @@ void Ipsat_Proton::SampleQsFluctuations()
             qs_fluctuation_coordinates.push_back(x);
         
         
-        double fluct=gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
+        //double fluct=gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
         double fluct_coef_sum=0; int pts=0; double stdev = 0;
         for (int yind=0; yind<points; yind++)
         {
             std::vector<double> row;
             for (int xind=0; xind<points; xind++)
             {
-                double f;
+                double fluct;
                 if (Qs_fluctuation_sigma > 0)
                 {
                     //f = fluct;  // no b dependence
-                    f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
-                    double fluct = std::exp(f)/lognormal_mean;
+                    double f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
+                    fluct = std::exp(f)/lognormal_mean;
                     fluct_coef_sum += fluct; pts++; stdev += std::pow(1.0-fluct,2.0);
                 }
                 else
-                    f=0;
-                row.push_back(f);
+                    fluct=0;
+                row.push_back(fluct);
                 
             }
             qs_fluctuation.push_back(row);
         }
         
-        cout << "# Sampled local Q_s^2 fluctuations, grid " << size << "x" << size << ", cell size " << 2.0*size/(points-1) / FMGEV << " fm, fluctuation width " << Qs_fluctuation_sigma << ", average Q_s^2 modification " << fluct_coef_sum/pts << ", average dev: sqrt(<(modification-1)^2>) = " << std::sqrt(stdev/pts) << endl;
+        cout << "# Sampled local Q_s^2 fluctuations, grid " << size << "x" << size << ", cell size " << 2.0*size/(points-1) / FMGEV << " fm, fluctuation width " << Qs_fluctuation_sigma << ", mean of lognormal distribution " << lognormal_mean <<", average Q_s^2 modification " << fluct_coef_sum/pts << ", average dev: sqrt(<(modification-1)^2>) = " << std::sqrt(stdev/pts) << endl;
     }
     else
     {
-        cerr << "Unknown fluctuatio type set!" << endl;
+        cerr << "Unknown fluctuation type set!" << endl;
         exit(1);
     }
     
 }
 
-
+/*
+ * Get Q_s fluctuations on the transverse plane
+ * Note that if we have Q_s fluctuations individually for each quark, then these
+ * fluctuations are taken care in QuarkThickness() function
+ */
 double Ipsat_Proton::GetQsFluctuation(double x, double y)
 {
     if (fluctuation_shape != LOCAL_FLUCTUATIONS or std::abs(Qs_fluctuation_sigma)<1e-5 or qs_fluctuation_coordinates.size()<1)
@@ -364,7 +368,7 @@ double Ipsat_Proton::GetQsFluctuation(double x, double y)
     
     //cout << x << " " << y << " " <<std::exp(qs_fluctuation[yind][xind]) << endl;
     
-    return std::exp(qs_fluctuation[yind][xind]);
+    return qs_fluctuation[yind][xind];
     
 }
 
