@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
     if (mode == PRINT_NUCLEUS)
     {
 
-        
+        /*
         double origin[2]={0,0};
         double max = ((IPGlasma*)amp)->MaxX();
         double min = ((IPGlasma*)amp)->MinX();
@@ -239,25 +239,25 @@ int main(int argc, char* argv[])
             }
          cout << endl;
         }
-        
+        */
          
-        /*
+        
         double origin[2]={0,0};
-        double max = 12;
-        double min = -12;
+        double max = 8;
+        double min = -8;
         double step = 0.1;
-        cout << "# x y N(0,(x,y))  " << endl;
+        cout << "# x y N(0,(x,y)) T(b) " << endl;
         for (double y=min+step/2; y < max-step/2; y+=step)
         {
             for (double x=min+step/2; x < max-step/2; x+=step)
             {
                 double p[2] = {x,y};
                 
-                cout << y << " " << x << " " << amp->Amplitude(0.001, origin, p) << endl;
+                cout << y << " " << x << " " << amp->Amplitude(0.001, origin, p) << " " << ((Ipsat_Proton*)amp)->Density(Vec(x,y)) << endl;
             }
             cout << endl;
         }
-         */
+        
          
          
         return 0;
@@ -285,7 +285,7 @@ int main(int argc, char* argv[])
         double tstep = 0.05;
         for (t=0; t<=3.0; t+=tstep)
         {
-            double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
+            double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.01)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
@@ -317,7 +317,7 @@ int main(int argc, char* argv[])
         double tstep=0.05;
         for (t=0; t<=3; t+=tstep)
         {
-            double xpom = (mjpsi*mjpsi+Qsqr-t)/(w*w+Qsqr-mp*mp);
+            double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.01)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;

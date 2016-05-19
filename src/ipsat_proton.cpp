@@ -246,6 +246,7 @@ void Ipsat_Proton::InitializeTarget()
     // Calculate center of the quark triangle
     if (proton_structure == CENTER_TUBES)
     {
+        NormalizeFluxTubeThickness();
         center = GeometricMedian(quarks);
         center3d = GeometricMedian(quarks3d);
     }
@@ -678,16 +679,16 @@ struct inthelper_fluxtube { Ipsat_Proton* proton; double y; };
 double inthelperf_fluxtube_y(double y, void* p);
 void Ipsat_Proton::NormalizeFluxTubeThickness()
 {
-    cout << "Normalizing fluxtube\n" << endl;
-    fluxtube_normalization = 1.0;
+    //cout << "Normalizing fluxtube\n" << endl;
+    //fluxtube_normalization = 1.0;
     return;
     
-    /// NOTE: not used, as we acutally want total energy to depend on noramlization
+    /// NOTE: not used, as we acutally want total energy to depend on normalization
     // FluxTubeThicknes should be normalized to unity, so calculate
     // \int dx dy FluxTubeThickness(x,y)
     // set normalization factor to 1 for this calculation
-    
     /*
+    
     fluxtube_normalization = 1.0;
     gsl_function f;
     inthelper_fluxtube par; par.proton = this;
@@ -701,6 +702,7 @@ void Ipsat_Proton::NormalizeFluxTubeThickness()
     //cout << "Fluxtube normalization " << result << " pm " << error << endl;
     
     cout << result << endl;;
+    exit(1);
     //fluxtube_normalization = 1.0/result;
     */
     
