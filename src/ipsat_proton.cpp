@@ -212,11 +212,12 @@ void Ipsat_Proton::InitializeTarget()
             do{
                 x = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
                 y = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
-                z = 0; //2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
+                z = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
             } while (gsl_rng_uniform(global_rng) > ExponentialDistribution(x,y,z));
-            Vec tmpvec(x,y,z);
+            Vec tmpvec(x,y,0);
             quarks.push_back(tmpvec);
-            quarks3d.push_back(tmpvec); // We only save 2d coordinates
+            Vec tmpvec3d(x,y,z);
+            quarks3d.push_back(tmpvec3d); // We only save 2d coordinates
             quark_bp.push_back(B_q);
         }
     }
@@ -687,7 +688,7 @@ void Ipsat_Proton::NormalizeFluxTubeThickness()
     // FluxTubeThicknes should be normalized to unity, so calculate
     // \int dx dy FluxTubeThickness(x,y)
     // set normalization factor to 1 for this calculation
-    /*
+    
     
     fluxtube_normalization = 1.0;
     gsl_function f;
@@ -704,7 +705,7 @@ void Ipsat_Proton::NormalizeFluxTubeThickness()
     cout << result << endl;;
     exit(1);
     //fluxtube_normalization = 1.0/result;
-    */
+    
     
     
 }

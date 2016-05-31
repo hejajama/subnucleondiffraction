@@ -243,7 +243,7 @@ double IPGlasma::XStep()
 std::string IPGlasma::InfoStr()
 {
     std::stringstream ss;
-    ss << "IPGlasma loaded from file " << datafile ;
+    ss << "# IPGlasma loaded from file " << datafile ;
     return ss.str();
 }
 

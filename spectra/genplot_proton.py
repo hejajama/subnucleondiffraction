@@ -18,7 +18,7 @@ import numpy as np
 from matplotlib import rcParams
 #rcParams.update({'figure.autolayout': True})
 
-slides=True
+slides=False
 
 ShowStatErrs = True
 ShowBand = False  # show largest/smallest xs at given t
@@ -70,9 +70,9 @@ files = [
          #["final/ipsat2012_w_100_q2_0", r"IPsat, $B_p=4.0\, \mathrm{GeV}^{-2}$", Linestyle(0), "", "", 1.0, "black"],
          
          
-         # B_p = 3.5
+         ## B_p = 3.5
          #["final/ipsat2012_bp_3.5_bq_0.5_w_100_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
-         #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "grey"], #blue
+         #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'black', "", 1.0, "grey"], #blue
          #["paper_2/ipsat_bp_3.5_bq_1.0_new", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$ new", Linestyle(1), 'blue', "", 1.0, "blue"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_new2", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$ new2", Linestyle(3), 'red', "", 1.0, "red"],
         
@@ -130,32 +130,33 @@ files = [
          
          ########## W = 75
          # w = 75
-         #["paper_2/ipsat_bp_4.0_w_75", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
+         #["paper_2/ipsat_bp_4.0_w_75", r"Round, $B_{p}=4.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local_avgfluct1", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}, \sigma=0.5, a=0.4\,\mathrm{fm}$", Linestyle(1), 'green', "", 1.0, "green"],
          #["paper_2/ipsat_bp_4.0_w_75", r"No fluctuations", Linestyle(0), 'black', "", 1.0, "black"],
-         #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local_avgfluct1", r"$Q_s$ fluctuations", Linestyle(1), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local_avgfluct1", r"Round with $Q_s$ fluctuations", Linestyle(1), 'green', "", 1.0, "green"],
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}, \sigma=0.5, a=0.4\,\mathrm{fm}$", Linestyle(1), 'green', "", 1.0, "green"],
-         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
-         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"Lumpy", Linestyle(0), 'red', "", 1.0, "red"],
+         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"Geometric fluctuations", Linestyle(2), 'blue', "", 1.0, "blue"],
          #["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0", r"Smooth", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          
-         #["paper_2/ipsat_bp_3.5_bq_1.0_fluxtube_norm_0.11_w_75_q2_0", r"Fluxtube $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_r=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
-         ["paper_2/ipsat_bp_3.7_bq_0.7_fluxtube_norm_0.11_w_75_q2_0", r"Fluxtube $B_{qc}=3.7\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
+         #["paper_2/ipsat_bp_3.9_bq_0.6_fluxtube_norm_0.095_w_75_q2_0", r"Fluxtube $B_{qc}=3.9\,\mathrm{GeV}^{-2}, B_r=0.6\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
+         # ["paper_2/ipsat_bp_3.7_bq_0.7_fluxtube_norm_0.11_w_75_q2_0", r"Fluxtube $B_{qc}=3.7\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2} 0.11$", Linestyle(1), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat_bp_4.0_bq_0.7_fluxtube_norm_0.093_w_75_q2_0", r"Fluxtube $B_{qc}=4.0\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2} 0.11$", Linestyle(0), 'blue', "", 1.0, "blue"],
          
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(3), 'red', "", 1.0, "red"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark_avgfluct1", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(3), 'red', "", 1.0, "red"],
-         ##["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark_avgfluct1", r"With $Q_s$ fluctuations", Linestyle(1), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark_avgfluct1", r"Geometric and $Q_s$ fluctuations", Linestyle(3), 'red', "", 1.0, "red"],
          
-         #["paper_2/ipglasma_bp_4.0_m04_n065_w_75_q2_0", r"Round proton", Linestyle(0), "black", "", 1.0, "black"],
+         ["paper_2/ipglasma_bp_4.0_m04_n065_w_75_q2_0", r"IP-glasm,a $B_p=4.0\,\mathrm{GeV}^{-2}$", Linestyle(0), "black", "", 1.0, "black"],
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0), "black", "", 1.0, "black"],
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift", r"Geometric fluctuations", Linestyle(1), "blue", "", 1.0, "blue"], #$B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"Geometric $+ \, Q_s$ fluctuations", Linestyle(2), "red", "", 1.0, "red"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
+         ["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift", r"Geometric fluctuations", Linestyle(1), "blue", "", 1.0, "blue"], #$B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$
+         ["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"Geometric $+ \, Q_s$ fluctuations", Linestyle(2), "red", "", 1.0, "red"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(1), "blue", "", 1.0, "blue"],
          #["paper_2/ipglasma_bp_2.0_bq_0.5_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.5\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(2), "red", "", 1.0, "red"],
          
          
-         #["paper_2/ipsat_exponential_bp_1.2_bq_0.5_w_75_q2_0", r"Exponential $B_{qc}=1.2\,\mathrm{GeV}^{-1}, B_{q}=0.5\,\mathrm{GeV}^{-1}$", Linestyle(3), "red", "", 1.0, "red"],
+         #["paper_2/ipsat_exponential_bp_1.2_bq_0.5_w_75_q2_0", r"Exponential $\tilde B_{qc}=1.2\,\mathrm{GeV}^{-1}, \tilde B_{q}=0.5\,\mathrm{GeV}^{-1}$", Linestyle(3), "red", "", 1.0, "red"],
          
          
 
@@ -243,7 +244,7 @@ for f in files:
 
 #p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
 #p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
-#p1.plot([1,2], [-1,-2], '-', color='white', label=r"H1")
+p1.plot([1,2], [-1,-2], '-', color='white', label=r"H1")
 
 if not w_75_data:
     # h1 data
@@ -323,22 +324,22 @@ if w_75_data:
     tmp=[]
     readfile_xy("proton/coherent/exp/h1_jpsi_w_75", expx, expy)
     readfile_xy("proton/coherent/exp/h1_jpsi_w_75", tmp, experr, ycol=2)
-    p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(0), markeredgecolor=Color(0), label=r"H1 coherent")
+    p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(0), markeredgecolor=Color(0), label=r"Coherent")
     expx=[]
     expy=[]
     experr=[]
     tmp=[]
     readfile_xy("proton/incoherent/exp/h1_jpsi_w_75", expx, expy)
     readfile_xy("proton/incoherent/exp/h1_jpsi_w_75", tmp, experr, ycol=2)
-    p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(1), markeredgecolor=Color(1), label=r"H1 incoherent")
+    p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(1), markeredgecolor=Color(1), label=r"Incoherent")
 
-
+#p1.text(0.2,0.1,"IPsat", fontsize=textsize)
 
 yscale("log",nonposy='clip')
 #xscale("log")
 axis([minx,maxx,miny,maxy])
 
-legfont = textsize-8
+legfont = textsize-8.5 #-8
 # orig legfont + 2
 if slides:
     legfont = legfont + 3
