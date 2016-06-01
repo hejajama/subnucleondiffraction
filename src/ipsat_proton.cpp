@@ -132,21 +132,6 @@ double Ipsat_Proton::Density(Vec b)
         density *= quarks.size(); // Because this sum is later normalized by 1/N_q
         return density;
         
-        /*
-         for (double y=-8; y<8; y+=0.1)
-         {
-         for (double x=-8; x<8; x+=0.1)
-         {
-         Vec tmp(x,y);
-         cout << y << " " << x << " "; // << FluxTubeThickness(tmp) << endl;
-         FluxTubeThickness(tmp);
-         cout << endl;
-         }
-         cout << endl;
-         }
-         
-         exit(1);
-         */
     }
     else{
         cerr << "Unkown proton profile!" << endl;
@@ -217,7 +202,7 @@ void Ipsat_Proton::InitializeTarget()
             Vec tmpvec(x,y,0);
             quarks.push_back(tmpvec);
             Vec tmpvec3d(x,y,z);
-            quarks3d.push_back(tmpvec3d); // We only save 2d coordinates
+            quarks3d.push_back(tmpvec3d);
             quark_bp.push_back(B_q);
         }
     }
@@ -486,6 +471,19 @@ std::vector<double> Ipsat_Proton::GetRadii()
     return radii;
 }
 
+// Helpers used to integrate z direction of the exponential density profile
+struct inthelper_exponential3d
+{
+    Ipsat_Proton* proton;
+    double r;
+    double bq;
+};
+double inthelperf_exponential3d(double z, void *p)
+{
+    inthelper_exponential3d* par = (inthelper_exponential3d*)p;
+    return 1.0/(8.0*M_PI*std::pow(par->bq,3.0)) * std::exp( - std::sqrt(par->r*par->r + z*z) / par->bq);
+}
+
 double Ipsat_Proton::QuarkThickness(double r, int i)
 {
     if (shape == GAUSSIAN)
@@ -501,12 +499,26 @@ double Ipsat_Proton::QuarkThickness(double r, int i)
     else if (shape == EXPONENTIAL)
     {
         double bp = quark_bp[i];
+        inthelper_exponential3d par; par.proton=this; par.r=r; par.bq = bp;
+        gsl_function f; f.function=&inthelperf_exponential3d;
+        f.params=&par;
+        double result,error;
+        gsl_integration_workspace * w =  gsl_integration_workspace_alloc (10);
+        gsl_integration_qag (&f, -999, 999, 0, 1e-2, 10, GSL_INTEG_GAUSS15,
+                             w, &result, &error);
+        gsl_integration_workspace_free(w);
+
+        
         double fluct = 1.0;
         if (fluctuation_shape == FLUCTUATE_QUARKS)
         {
             fluct = qs_fluctuations_quarks[i];
         }
-        return fluct/(2.0*M_PI*bp*bp)*std::exp(- r / bp);
+        
+        return result * fluct;
+        
+        // 2d exponential
+        //return fluct/(2.0*M_PI*bp*bp)*std::exp(- r / bp);
     }
 }
 
@@ -517,8 +529,7 @@ double Ipsat_Proton::GaussianRadiusDistribution(double r)
 {
     return std::sqrt(std::exp(1) / std::exp(B_p))*r*std::exp( - r*r / (2.0*B_p));
 }
-    // Factor 0.5 should not matter, in just puts the probability always < 1 to accept
-    // a sampled radius. Any factor ]0,1] should work (TEST!)
+
 
 double Ipsat_Proton::ExponentialDistribution(double x, double y, double z)
 {
