@@ -9,9 +9,18 @@
 
 #include <string>
 #include <cmath>
-#include <tools/tools.hpp>
+#include <tools/config.hpp>
+
+
 
 const int VM_MODE_TOT=1; const int VM_MODE_L=2; const int VM_MODE_T=3;
+/*
+enum Polarization
+{
+    TRANSVERSE,
+    LONGITUDINAL
+};
+*/
 
 typedef double REAL;
 
@@ -28,7 +37,7 @@ class WaveFunction{
         REAL PsiSqr_intz(REAL Qsqr, REAL r);
         void SetMode(int m);
 
-        virtual REAL MesonMass()=0;   // Get vector meson mass
+        virtual REAL MesonMass();   // Get vector meson mass
     private:
         int mode;   // What to return when PsiSqr_intz
 };
@@ -40,8 +49,8 @@ double epsfunsqr(double z, double Qsqr, double msqr);
 
 double epsfun(double z, double Qsqr, double msqr);
 
-const double ALPHA_e = 1.0/137.035999679;
-const double e = sqrt(4*M_PI*ALPHA_e);
+//const double ALPHA_e = 1.0/137.035999679;
+const double e = sqrt(4*M_PI*Amplitude::ALPHA_e);
 
 const int NC = 3;
 

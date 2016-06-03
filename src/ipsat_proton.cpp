@@ -692,7 +692,7 @@ double inthelperf_fluxtube_y(double y, void* p);
 void Ipsat_Proton::NormalizeFluxTubeThickness()
 {
     //cout << "Normalizing fluxtube\n" << endl;
-    //fluxtube_normalization = 1.0;
+    fluxtube_normalization = 1.0;
     return;
     
     /// NOTE: not used, as we acutally want total energy to depend on normalization

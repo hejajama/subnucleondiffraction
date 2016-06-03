@@ -13,6 +13,7 @@
 #include <gsl/gsl_sf_bessel.h>
 #include "subnucleon_config.hpp"
 
+using namespace std;
 
 #include <complex>
 
@@ -249,7 +250,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
 
     double res = 0;
     
-    res = 2.0 * r * b;
+    res = 2.0 * r * b;  // r and b from Jacobians, 2 as we have written sigma_qq = 2 N
     
     double delta = std::sqrt(t);
     
@@ -272,7 +273,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     }
     else
     {
-        if (pol == TRANSVERSE)
+        if (pol == T)
             res *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
         else
             res *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
@@ -346,9 +347,9 @@ double Diffraction::ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, 
     double amp = 2.0*dipole->Amplitude(xpom, q1, q2);
     //double overlap =wavef->PsiSqr_tot(Qsqr, r, z)/(4.0*M_PI);
     double overlap=0;
-    if (pol == TRANSVERSE)
+    if (pol == T)
         overlap = wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI);
-    else if (pol == LONGITUDINAL)
+    else if (pol == L)
         overlap = wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
     else
         cerr << "Unknown polarization in Diffraction::ScatteringAmplitudeRotationalSymmetryIntegrand! " << endl;

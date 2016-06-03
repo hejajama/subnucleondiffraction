@@ -24,6 +24,8 @@
 #include "subnucleon_config.hpp"
 #include "ipglasma.hpp"
 #include "nucleons.hpp"
+#include "dis.hpp"
+#include "virtual_photon.hpp"
 
 using namespace std;
 
@@ -38,6 +40,7 @@ enum MODE
     AMPLITUDE_DT,   // Calculate amplitude as a function of t, real/imag part set by other cli argument
     CORRECTIONS ,    // Caluclate corrections, require dipole amplitude with rotational symmetry
     PRINT_NUCLEUS,
+    F2,             // Calculate F2
     SATURATION_SCALE    // Print saturation scale on a g gripd
 };
 
@@ -50,6 +53,7 @@ int main(int argc, char* argv[])
     // have error handling everywhere!
     
     double Qsqr=0;
+    double xbj=0; // x for F2
     double t=0.1;
     //double xpom=0.000959089;
     double w = 100;
@@ -77,6 +81,7 @@ int main(int argc, char* argv[])
         cout << "-qsfluct sigma: set width of Q_s fluctuations (0: disable); only for ipsatproton!" << endl;
         cout << "-qsfluctshape [local,quarks]: set Q_s^2 to fluctuate at each point / for each quark" << endl;
         cout << "-satscale: print saturation scale" << endl;
+        cout << "-F2 Qsqr x: calculate structure function" << endl;
         cout << "-wavef_file filename" << endl;
         return 0;
     }
@@ -175,7 +180,12 @@ int main(int argc, char* argv[])
             mode = SATURATION_SCALE;
         else if (string(argv[i])=="-wavef_file")
             wavef_file = argv[i+1];
-        
+        else if (string(argv[i])=="-F2")
+        {
+            mode = F2;
+            Qsqr = StrToReal(argv[i+1]);
+            xbj=StrToReal(argv[i+2]);
+        }
         else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -193,7 +203,9 @@ int main(int argc, char* argv[])
     global_rng = gsl_rng_alloc(gsl_rng_default);
 
     
+    
     BoostedGauss wavef(wavef_file);
+    
     
     
     
@@ -220,7 +232,7 @@ int main(int argc, char* argv[])
     if (mode == PRINT_NUCLEUS)
     {
 
-        /*
+        
         double origin[2]={0,0};
         double max = ((IPGlasma*)amp)->MaxX();
         double min = ((IPGlasma*)amp)->MinX();
@@ -239,10 +251,10 @@ int main(int argc, char* argv[])
             }
          cout << endl;
         }
-        */
+        
          
         
-        double origin[2]={0,0};
+        /*double origin[2]={0,0};
         double max = 8;
         double min = -8;
         double step = 0.1;
@@ -258,7 +270,7 @@ int main(int argc, char* argv[])
             cout << endl;
         }
         
-         
+         */
          
         return 0;
     }
@@ -296,10 +308,10 @@ int main(int argc, char* argv[])
                 MCINTPOINTS = MCpoints(t);
             
             cout.precision(5);
-            double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, TRANSVERSE);
+            double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
             double lng = 0;
             if (Qsqr > 0)
-                lng = diff.ScatteringAmplitude(xpom, Qsqr, t, LONGITUDINAL);
+                lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
 
             cout << t << " ";
             cout.precision(10);
@@ -325,16 +337,36 @@ int main(int argc, char* argv[])
             }
             
             cout.precision(5);
-            double res_t = diff.Correction(xpom, Qsqr, t, TRANSVERSE);
+            double res_t = diff.Correction(xpom, Qsqr, t, T);
             double res_l=0;
             if (Qsqr > 0)
-                res_l= diff.Correction(xpom, Qsqr, t, LONGITUDINAL);
+                res_l= diff.Correction(xpom, Qsqr, t, L);
             cout << t << " ";
             cout.precision(10);
             cout << res_t << " " << res_l   << endl;
             if (t>0.5)
                 tstep=0.1;
         }
+    }
+    
+    else if (mode == F2)
+    {
+        cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << ") " << endl;
+        WaveFunction * photon = new VirtualPhoton();;
+        
+        amp->SetSkewedness(false);
+        Diffraction f2(*amp, *photon);
+        
+        // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
+        // Note* 4pi, as convention in BoostedGaussian and VirtualPhoton classes are different!!!
+        double xs_t = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
+        double xs_l = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, L);
+        double structurefun = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l+xs_t);
+        cout << structurefun << endl;
+        //DIS dis(amp);
+        //cout << dis.F2(Qsqr, xbj) << endl;
+        
+        delete photon;
     }
     
     

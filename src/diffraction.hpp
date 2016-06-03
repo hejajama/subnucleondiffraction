@@ -9,12 +9,9 @@
 
 #include "dipole.hpp"
 #include "wave_function.hpp"
+#include <tools/config.hpp>
 
-enum Polarization
-{
-    TRANSVERSE,
-    LONGITUDINAL
-};
+using namespace Amplitude;
 
 class Diffraction
 {
@@ -22,16 +19,16 @@ public:
     Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_);
     
     // Calculate amplitude A, this will later be averaged and squared
-    double ScatteringAmplitude(double xpom, double Qsqr, double t,Polarization pol=TRANSVERSE );
-    double ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol=TRANSVERSE);
+    double ScatteringAmplitude(double xpom, double Qsqr, double t,Polarization pol=T );
+    double ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol=T);
     
     // Calculate scattering amplitude in case of cylinderical cymmetry (e.g. ipsat with no constituent quarks)
-    double ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t, Polarization pol=TRANSVERSE);
-    double ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z, Polarization pol=TRANSVERSE);
+    double ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t, Polarization pol=T);
+    double ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z, Polarization pol=T);
     
     
-    double LogDerivative(double xpom, double Qsqr, double t, Polarization pol=TRANSVERSE);   // der ln A / der y
-    double Correction(double xpom, double Qsqr, double t, Polarization pol=TRANSVERSE);
+    double LogDerivative(double xpom, double Qsqr, double t, Polarization pol=T);   // der ln A / der y
+    double Correction(double xpom, double Qsqr, double t, Polarization pol=T);
     
     void SetNumOfAverages(int n);
     

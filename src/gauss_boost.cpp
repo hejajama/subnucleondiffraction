@@ -23,6 +23,8 @@ const REAL ZINTACCURACY=ZINT_RELACCURACY;
 const int MAXITER_ZINT=ZINT_INTERVALS;
 const REAL MINZ=0.00001;  // Integration limits
 const REAL MAXZ=0.9999;
+//const double ALPHA_e = 1.0/137.035999679;
+//const double e = sqrt(4.0*M_PI*ALPHA_e);
 
 
 BoostedGauss::BoostedGauss(REAL e_f_, REAL N_T_, REAL N_L_, REAL R_, 

@@ -7,6 +7,12 @@
  
 #include "wave_function.hpp"
 #include <iostream>
+#include <tools/config.hpp>
+#include <tools/tools.hpp>
+
+//const double ALPHA_e = 1.0/137.035999679;
+//const double e = sqrt(4.0*M_PI*ALPHA_e);
+using namespace Amplitude;
 
 WaveFunction::WaveFunction()
 {
@@ -54,6 +60,10 @@ void WaveFunction::SetMode(int m)
     mode=m;
 }
 
+double WaveFunction::MesonMass()
+{
+    return 0;
+}
 
 
 // eps(z,Q,r) = sqrt(z(1-z)*Q^2 + m^2)
@@ -65,3 +75,5 @@ double epsfunsqr(double z, double Qsqr, double msqr)
 double epsfun(double z, double Qsqr, double msqr) {
     return std::sqrt(epsfunsqr(z,Qsqr,msqr));
 }
+
+
