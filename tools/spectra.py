@@ -286,8 +286,8 @@ if coherent == False:
                         tmplist_t_i.append(ic[t][0])
                         tmplist_l_r.append(rc[t][1])
                         tmplist_l_i.append(ic[t][1])
-                    except IOError:
-                        print >> sys.stderr, "Error at t=" + str(t) + ", rc " + str(rc) +", ic " + str(ic)
+                    except:
+                        print >> sys.stderr, "Error at t=" + str(t) #+ ", rc " + str(rc) +", ic " + str(ic)
                 i=i+1
             
             jackknife_xs_t_real.append( np.var(tmplist_t_r))

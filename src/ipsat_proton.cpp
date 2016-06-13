@@ -29,7 +29,8 @@ using std::cout; using std::endl;
 const double FMGEV = 5.06778;
 double MAXR_SKEW = 20;  // Dont calculate skew at larger r, as it didnt work
 
-
+const int INTPOINTS_EXP_ZINT = 7;   // Depth of z integral subintervals when projecting exponential
+// distribution into 2d
 
 
 double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
@@ -194,11 +195,18 @@ void Ipsat_Proton::InitializeTarget()
         {
             // We have to sample x,y,z separately
             double x,y,z;
-            do{
-                x = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
-                y = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
-                z = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
-            } while (gsl_rng_uniform(global_rng) > ExponentialDistribution(x,y,z));
+            if (B_p < 1e-5)
+            {
+                x=y=z=0;
+            }
+            else
+            {
+                do{
+                    x = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
+                    y = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
+                    z = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
+                } while (gsl_rng_uniform(global_rng) > ExponentialDistribution(x,y,z));
+            }
             Vec tmpvec(x,y,0);
             quarks.push_back(tmpvec);
             Vec tmpvec3d(x,y,z);
@@ -376,6 +384,8 @@ void Ipsat_Proton::Init()
     proton_structure = QUARKS ;
     fluxtube_normalization = -1;
     origin_at_center_of_mass = false;
+    
+    intworkspace_exp_zint = gsl_integration_workspace_alloc(INTPOINTS_EXP_ZINT);
 }
 Ipsat_Proton::Ipsat_Proton()
 {
@@ -398,6 +408,7 @@ Ipsat_Proton::~Ipsat_Proton()
 {
     if (allocated_gdist)
         delete gdist;
+    gsl_integration_workspace_free(intworkspace_exp_zint);
 }
 
 
@@ -503,10 +514,10 @@ double Ipsat_Proton::QuarkThickness(double r, int i)
         gsl_function f; f.function=&inthelperf_exponential3d;
         f.params=&par;
         double result,error;
-        gsl_integration_workspace * w =  gsl_integration_workspace_alloc (10);
-        gsl_integration_qag (&f, -999, 999, 0, 1e-2, 10, GSL_INTEG_GAUSS15,
-                             w, &result, &error);
-        gsl_integration_workspace_free(w);
+        //gsl_integration_workspace * w =  gsl_integration_workspace_alloc (7);
+        gsl_integration_qag (&f, 0, 999, 0, 5e-2, INTPOINTS_EXP_ZINT, GSL_INTEG_GAUSS15,
+                             intworkspace_exp_zint, &result, &error);
+        //gsl_integration_workspace_free(w);
 
         
         double fluct = 1.0;
@@ -515,7 +526,7 @@ double Ipsat_Proton::QuarkThickness(double r, int i)
             fluct = qs_fluctuations_quarks[i];
         }
         
-        return result * fluct;
+        return 2.0*result * fluct;  // Factor 2 as we integrate from 0 to inf
         
         // 2d exponential
         //return fluct/(2.0*M_PI*bp*bp)*std::exp(- r / bp);

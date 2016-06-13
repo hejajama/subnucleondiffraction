@@ -23,7 +23,7 @@ slides=False
 ShowStatErrs = True
 ShowBand = False  # show largest/smallest xs at given t
 
-w_75_data = True
+w_75_data = False
 
 rc('text',usetex=True)
 rc('text.latex',  preamble='\usepackage{amsmath},\usepackage{amssymb},\usepackage{mathtools}')
@@ -70,39 +70,25 @@ ylabel(r"$\mathrm{d}\sigma/\mathrm{d}t$ $[\mathrm{nb}/\mathrm{GeV}^2]$ ", fontsi
 
 # fname title style normalization,facecolor, hatch, linecolor
 files = [
-         #["final/ipsat2012_w_100_q2_0", r"$B_p=4.0\, \mathrm{GeV}^{-2}$", Linestyle(0), "", "", 1.0, "black"],
          
          
-         ## B_p = 3.5
-         #["final/ipsat2012_bp_3.5_bq_0.5_w_100_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
-         #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'black', "", 1.0, "grey"], #blue
+         
+         ## lumpy
+         ["paper_2/ipsat_bp_3.3_bq_0.7_w_100_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
+         ["paper_2/ipsat_bp_3.3_bq_0.5_w_100_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_fixedx", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'black', "", 1.0, "grey"], #blue
          #huom new tarkoittaa että origo on siirretty mkp:hen
          #["paper_2/ipsat_bp_3.5_bq_1.0_new", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$ new", Linestyle(1), 'blue', "", 1.0, "blue"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_new2", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$ new2", Linestyle(3), 'red', "", 1.0, "red"],
-        
-         #["paper_2/ipsat_bp_3.5_bq_1.0_nq_4", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, n_q=4$ ", Linestyle(2), 'blue', "", 1.0, "blue"],
-         #["paper_2/ipsat_bp_3.5_bq_1.0_nq_5", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, n_q=5$ ", Linestyle(3), 'blue', "", 1.0, "blue"],
-         # ["paper_2/ipsat_bp_3.5_bq_0.7_nq_5", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}, n_q=5$ ", Linestyle(2), 'red', "", 1.0, "red"]
          
          ##["paper_2/ipsat_bp_3.5_bq_1.0_origin2", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$ origin", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          ## B_p = 1.0
-         #["final/ipsat2012_bp_1.0_bq_3.0_w_100_q2_0", r"$B_{qc}=1.0\,\mathrm{GeV}^{-2}, B_q=3.0\,\mathrm{GeV}^{-2}$", Linestyle(3), "red", "", 1.0, "red"],  # paper: grey black
+         ["paper_2/ipsat2012_bp_1.0_bq_3.0_w_100_q2_0_fixedx", r"$B_{qc}=1.0\,\mathrm{GeV}^{-2}, B_q=3.0\,\mathrm{GeV}^{-2}$", Linestyle(2), "red", "", 1.0, "red"],  # paper: grey black
 
-         
+         #["paper_2/ipsat2012_bp_4.0_w_100_q2_0_fixedx", r"$B_p=4.0\, \mathrm{GeV}^{-2}$", Linestyle(3), "green", "", 1.0, "green"],
          
 
-         
-         #fluct 3.5 1.0
-         #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_gridfluct_05", r"IPsat, $a=0.5\,\mathrm{fm}$", Linestyle(2),1.0],
-         #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_gridfluct_04", r"IPsat, $a=0.4\,\mathrm{fm}$", Linestyle(3), "blue", "", 1.0, Color(0)],
-         #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_quarkfluct_0.5", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(2), "blue", "", 1.0, "blue"],
-         #["paper_2/ipsat_bp_4.0_gridfluct_04", r"IPsat $B_p=4\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(2), "blue", "", 1.0, "blue"],
-         
-         #
-         
-         # round ipsat, fluctuations
-         #["paper_2/ipsat_bp_4.0_gridfluct_04", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}, a=0.4\,\mathrm{fm}, \sigma=0.5$", Linestyle(3), "grey", "", 1.0, Color(1)],
          
          # ipglasma
          #["final/ipglasma_bp_2.0_bq_0.3_m04_n07_ncf_416_w_100_q2_0", r"$m=0.4\,\mathrm{GeV}$", Linestyle(0), 'grey', "", 1.0, "black"], # $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}
@@ -134,46 +120,48 @@ files = [
          
          ########## W = 75
          # w = 75
-         #["paper_2/ipsat_bp_4.0_w_75", r"No fluctuations", Linestyle(0), 'black', "", 1.0, "black"],
-         #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local_avgfluct1", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}, \sigma=0.5, a=0.4\,\mathrm{fm}$", Linestyle(1), 'green', "", 1.0, "green"],
+         #["paper_2/ipsat_bp_4.0_w_75_q2_0_fixedx", r"No fluctuations", Linestyle(0), 'black', "", 1.0, "black"],
+         #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local_avgfluct1_fixedx", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}$ $+$ $Q_s$ fluct", Linestyle(3), 'green', "", 1.0, "green"],
          #["paper_2/ipsat_bp_4.0_w_75", r"No fluctuations", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local_avgfluct1", r"Round with $Q_s$ fluctuations", Linestyle(1), 'green', "", 1.0, "green"],
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}, \sigma=0.5, a=0.4\,\mathrm{fm}$", Linestyle(1), 'green', "", 1.0, "green"],
-         ["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"Gaussians, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
-         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, n_q=3$", Linestyle(0), 'black', "", 1.0, "black"],
-         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"Geometric fluctuations", Linestyle(2), 'blue', "", 1.0, "blue"],
-         #["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0", r"Smooth", Linestyle(1), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"Gaussians, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
+         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_fixedx", r"Fixed, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'blue', "", 1.0, "blue"],
+         
+         #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
+         #["paper_2/ipsat_bp_3.3_bq_0.5_w_75_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          
          #["paper_2/ipsat_bp_3.5_bq_1.0_fluxtube_norm_0.0958_w_75_q2_0", r"Fluxtube $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_r=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_fluxtube_norm_0.11_w_75_q2_0", r"Fluxtube $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_r=1.0\,\mathrm{GeV}^{-2}$", Linestyle(1), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_3.9_bq_0.6_fluxtube_norm_0.095_w_75_q2_0", r"Fluxtube $B_{qc}=3.9\,\mathrm{GeV}^{-2}, B_r=0.6\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_3.7_bq_0.7_fluxtube_norm_0.11_w_75_q2_0", r"Fluxtube $B_{qc}=3.7\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2} 0.11$", Linestyle(1), 'blue', "", 1.0, "blue"],
-         ["paper_2/ipsat_bp_4.0_bq_0.7_fluxtube_norm_0.093_w_75_q2_0", r"Fluxtube, $B_{qc}=4.0\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2}$", Linestyle(2), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat_bp_4.0_bq_0.7_fluxtube_norm_0.093_w_75_q2_0", r"Fluxtube, $B_{qc}=4.0\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2}$", Linestyle(2), 'blue', "", 1.0, "blue"],
          
-         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(3), 'red', "", 1.0, "red"],
+         #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_qsfluct_avgfluct1_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$ $+$ $Q_s$ fluct", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark_avgfluct1", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(3), 'red', "", 1.0, "red"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark_avgfluct1", r"Geometric and $Q_s$ fluctuations", Linestyle(3), 'red', "", 1.0, "red"],
          
          #["paper_2/ipglasma_bp_4.0_m04_n065_w_75_q2_0", r"$B_p=4.0\,\mathrm{GeV}^{-2}$", Linestyle(2), "red", "", 1.0, "red"],
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0), "black", "", 1.0, "black"],
         
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m02_n07_w_75_q2_0_noshift", r"$B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.2\,\mathrm{GeV}$", Linestyle(1), "blue", "", 1.0, "blue"],
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift", r"$B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.4\,\mathrm{GeV}$", Linestyle(0), "black", "", 1.0, "black"],
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m06_n07_w_75_q2_0_noshift", r"$B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.6\,\mathrm{GeV}$", Linestyle(3), "red", "", 1.0, "red"],
+         #["paper_2/ipglasma_bp_1.5_bq_0.3_m02_n07_w_75_q2_0_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.2\,\mathrm{GeV}$", Linestyle(1), "blue", "", 1.0, "blue"],
+         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.4\,\mathrm{GeV}$", Linestyle(0), "black", "", 1.0, "black"],
+         #["paper_2/ipglasma_bp_1.5_bq_0.3_m06_n07_w_75_q2_0_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.6\,\mathrm{GeV}$", Linestyle(3), "red", "", 1.0, "red"],
          
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"$B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(0), "black", "", 1.0, "black"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
+         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$ $+$ $Q_s$ fluct", Linestyle(1), "blue", "", 1.0, "blue"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(1), "blue", "", 1.0, "blue"],
          #["paper_2/ipglasma_bp_2.0_bq_0.5_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.5\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(2), "red", "", 1.0, "red"],
          
          
          #["paper_2/ipsat_exponential3d_bp_1.2_bq_0.5_q2_0", r"Exponential $\tilde B_{qc}=1.2\,\mathrm{GeV}^{-1}, \tilde B_{q}=0.5\,\mathrm{GeV}^{-1}$", Linestyle(3), "red", "", 1.0, "red"],
-         #["paper_2/ipsat_exponential3d_bp_1.0_bq_0.4_q2_0_w_75", r"Exponential, $\tilde B_{qc}=1.0\,\mathrm{GeV}^{-1}, \tilde B_{q}=0.4\,\mathrm{GeV}^{-1}$", Linestyle(3), "red", "", 1.0, "red"],
+         #["paper_2/ipsat_exponential3d_bp_1.25_bq_0.55_w_75_q2_0_fixedx", r"Exponential, $\tilde B_{qc}^{(3)}=1.25\,\mathrm{GeV}^{-1}, \tilde B_{q}^{(3)}=0.55\,\mathrm{GeV}^{-1}$", Linestyle(3), "red", "", 1.0, "red"],
          #["paper_2/ipsat_exponential3d_bp_1.5_bq_0.5_q2_0", r"Exponential $\tilde B_{qc}=,\mathrm{GeV}^{-1}, \tilde B_{q}=\,\mathrm{GeV}^{-1}$", Linestyle(3), "red", "", 1.0, "red"],
          
          # n_q dep
-         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_nq_5", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, n_q=5$", Linestyle(1), 'blue', "", 1.0, "blue"],
-         #["paper_2/ipsat_bp_3.5_bq_0.7_w_75_q2_0_nq_5", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}, n_q=5$", Linestyle(2), 'red', "", 1.0, "red"],
+         #["paper_2/ipsat_bp_3.5_bq_0.7_w_75_q2_0_nq_5", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}, n_q=5$", Linestyle(0), 'black', "", 1.0, "black"],
+         #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_nq_5_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}, n_q=5$", Linestyle(1), 'blue', "", 1.0, "blue"],
+         
 
 ]
 
@@ -258,8 +246,9 @@ for f in files:
     color = color + 1
 
 #p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
-#p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
-p1.plot([1,2], [-1,-2], '-', color='white', label=r"H1")
+p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
+if w_75_data:
+    p1.plot([1,2], [-1,-2], '-', color='white', label=r"H1")
 
 if not w_75_data:
     # h1 data

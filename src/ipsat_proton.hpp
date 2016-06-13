@@ -8,6 +8,7 @@
 #ifndef ipsat_proton_hpp
 #define ipsat_proton_hpp
 
+#include <gsl/gsl_integration.h>
 
 #include "dipole.hpp"
 #include <vector>
@@ -136,6 +137,8 @@ private:
     bool skewedness;    // Enable skewedness in dipole amplitude, multiplies xg
     
     bool origin_at_center_of_mass;    // If true, move quarks s.t. their center of mass is at b=0
+    
+    gsl_integration_workspace *intworkspace_exp_zint;   // Used to calculate z int of exponential distribution
 };
 
 #endif /* ipsat_proton_hpp */

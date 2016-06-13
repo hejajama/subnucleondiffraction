@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
                 amp = new Ipsat_Proton;
                 ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+2]));
                 ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+3]));
-                ((Ipsat_Proton*)amp)->SetShape(GAUSSIAN);
+                ((Ipsat_Proton*)amp)->SetShape(EXPONENTIAL);
                 if (argc > i+4)
                 {
                     if (string(argv[i+4])=="fluxtube")
@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
     if (mode == PRINT_NUCLEUS)
     {
 
-        
+        /*
         double origin[2]={0,0};
         double max = ((IPGlasma*)amp)->MaxX();
         double min = ((IPGlasma*)amp)->MinX();
@@ -250,11 +250,11 @@ int main(int argc, char* argv[])
                 cout << y << " " << x << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->AmplitudeImaginaryPart(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << " " << 1.0 - tr/3.0 <<endl;
             }
          cout << endl;
-        }
+        }*/
         
          
         
-        /*double origin[2]={0,0};
+        double origin[2]={0,0};
         double max = 8;
         double min = -8;
         double step = 0.1;
@@ -270,7 +270,7 @@ int main(int argc, char* argv[])
             cout << endl;
         }
         
-         */
+        
          
         return 0;
     }
