@@ -29,7 +29,7 @@ using std::cout; using std::endl;
 const double FMGEV = 5.06778;
 double MAXR_SKEW = 20;  // Dont calculate skew at larger r, as it didnt work
 
-const int INTPOINTS_EXP_ZINT = 7;   // Depth of z integral subintervals when projecting exponential
+const int INTPOINTS_ZINT = 7;   // Depth of z integral subintervals when projecting exponential
 // distribution into 2d
 
 
@@ -240,7 +240,6 @@ void Ipsat_Proton::InitializeTarget()
     // Calculate center of the quark triangle
     if (proton_structure == CENTER_TUBES)
     {
-        NormalizeFluxTubeThickness();
         center = GeometricMedian(quarks);
         center3d = GeometricMedian(quarks3d);
     }
@@ -385,7 +384,7 @@ void Ipsat_Proton::Init()
     fluxtube_normalization = -1;
     origin_at_center_of_mass = false;
     
-    intworkspace_exp_zint = gsl_integration_workspace_alloc(INTPOINTS_EXP_ZINT);
+    intworkspace_zint = gsl_integration_workspace_alloc(INTPOINTS_ZINT);
 }
 Ipsat_Proton::Ipsat_Proton()
 {
@@ -408,7 +407,7 @@ Ipsat_Proton::~Ipsat_Proton()
 {
     if (allocated_gdist)
         delete gdist;
-    gsl_integration_workspace_free(intworkspace_exp_zint);
+    gsl_integration_workspace_free(intworkspace_zint);
 }
 
 
@@ -515,8 +514,8 @@ double Ipsat_Proton::QuarkThickness(double r, int i)
         f.params=&par;
         double result,error;
         //gsl_integration_workspace * w =  gsl_integration_workspace_alloc (7);
-        gsl_integration_qag (&f, 0, 999, 0, 5e-2, INTPOINTS_EXP_ZINT, GSL_INTEG_GAUSS15,
-                             intworkspace_exp_zint, &result, &error);
+        gsl_integration_qag (&f, 0, 999, 0, 5e-2, INTPOINTS_ZINT, GSL_INTEG_GAUSS15,
+                             intworkspace_zint, &result, &error);
         //gsl_integration_workspace_free(w);
 
         
@@ -625,10 +624,10 @@ double Ipsat_Proton::FluxTubeThickness(Vec b)
     gsl_function f; f.params=&par;
     f.function = &inthelperf_fluxtube_z;
     double result,error;
-    gsl_integration_workspace * w =  gsl_integration_workspace_alloc (10);
-    gsl_integration_qag (&f, -99, 99, 0, 1e-2, 10, GSL_INTEG_GAUSS15,
-                          w, &result, &error);
-    gsl_integration_workspace_free(w);
+    //gsl_integration_workspace * w =  gsl_integration_workspace_alloc (10);
+    gsl_integration_qag (&f, -99, 99, 0, 1e-2, INTPOINTS_ZINT, GSL_INTEG_GAUSS15,
+                          intworkspace_zint, &result, &error);
+    //gsl_integration_workspace_free(w);
     
     //cout << QuarkThickness(dist, 0) << " " << result;
     
@@ -718,10 +717,10 @@ void Ipsat_Proton::NormalizeFluxTubeThickness()
     f.params = &par;
     f.function = &inthelperf_fluxtube_y;
     double result,error;
-    gsl_integration_workspace * w =  gsl_integration_workspace_alloc (10);
-    gsl_integration_qag (&f, -99, 99, 0, 1e-2, 10, GSL_INTEG_GAUSS15,
-                          w, &result, &error);
-    gsl_integration_workspace_free(w);
+    //gsl_integration_workspace * w =  gsl_integration_workspace_alloc (10);
+    gsl_integration_qag (&f, -99, 99, 0, 1e-2, INTPOINTS_ZINT, GSL_INTEG_GAUSS15,
+                          intworkspace_zint, &result, &error);
+    //gsl_integration_workspace_free(w);
     //cout << "Fluxtube normalization " << result << " pm " << error << endl;
     
     cout << result << endl;;

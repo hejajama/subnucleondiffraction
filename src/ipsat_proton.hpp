@@ -138,7 +138,7 @@ private:
     
     bool origin_at_center_of_mass;    // If true, move quarks s.t. their center of mass is at b=0
     
-    gsl_integration_workspace *intworkspace_exp_zint;   // Used to calculate z int of exponential distribution
+    gsl_integration_workspace *intworkspace_zint;   // Used to calculate z int of exponential/fluxtube distribution
 };
 
 #endif /* ipsat_proton_hpp */
