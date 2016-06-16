@@ -126,7 +126,7 @@ files = [
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local_avgfluct1", r"Round with $Q_s$ fluctuations", Linestyle(1), 'green', "", 1.0, "green"],
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}, \sigma=0.5, a=0.4\,\mathrm{fm}$", Linestyle(1), 'green', "", 1.0, "green"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"Gaussians, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
-         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_fixedx", r"Fixed, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_fixedx", r"Fixed, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"Gaussian", Linestyle(0), 'black', "", 1.0, "black"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
          #["paper_2/ipsat_bp_3.3_bq_0.5_w_75_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
@@ -138,6 +138,8 @@ files = [
          #["paper_2/ipsat_bp_3.7_bq_0.7_fluxtube_norm_0.11_w_75_q2_0", r"Fluxtube $B_{qc}=3.7\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2} 0.11$", Linestyle(1), 'blue', "", 1.0, "blue"],
          #["paper_2/ipsat_bp_4.0_bq_0.7_fluxtube_norm_0.093_w_75_q2_0", r"Fluxtube, $B_{qc}=4.0\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2}$", Linestyle(2), 'blue', "", 1.0, "blue"],
          
+         #["paper_2/ipsat_bp_4.0_bq_0.7_fluxtube_norm_0.113_w_75_q2_0", r"Fluxtube, $B_{qc}=4.0\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2}$ n 011", Linestyle(0), 'black', "", 1.0, "black"],
+        
          #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_qsfluct_avgfluct1_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$ $+$ $Q_s$ fluct", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark_avgfluct1", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(3), 'red', "", 1.0, "red"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark_avgfluct1", r"Geometric and $Q_s$ fluctuations", Linestyle(3), 'red', "", 1.0, "red"],
@@ -149,7 +151,7 @@ files = [
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.4\,\mathrm{GeV}$", Linestyle(0), "black", "", 1.0, "black"],
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m06_n07_w_75_q2_0_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.6\,\mathrm{GeV}$", Linestyle(3), "red", "", 1.0, "red"],
          
-         ["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$ $+$ $Q_s$ fluct", Linestyle(0), "black", "", 1.0, "black"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
+         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$ $+$ $Q_s$ fluct", Linestyle(0), "black", "", 1.0, "black"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(1), "blue", "", 1.0, "blue"],
          #["paper_2/ipglasma_bp_2.0_bq_0.5_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.5\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(2), "red", "", 1.0, "red"],
          
@@ -167,7 +169,7 @@ files = [
 
          
          # hydropaper
-          ["hydropaper/ipglasma_bp_1.5_bq_0.2_m04-y-1.6-qsfluct-nq-5", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.2\,\mathrm{GeV}^{-2}, n_q=5$ $+$ $Q_s$ fluct", Linestyle(1), "blue", "", 3.0/5.0, "blue"]
+         ["hydropaper/ipglasma_bp_1.8_bq_0.25_m04-y-1.6-qsfluct-nq-5", r"$B_{qc}=3.6\,\mathrm{GeV}^{-2}, B_{q}=0.25\,\mathrm{GeV}^{-2}, n_q=5$ $+$ $Q_s$ fluct", Linestyle(1), "blue", "", 1.0, "blue"]
 ]
 
 

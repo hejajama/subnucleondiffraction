@@ -17,12 +17,15 @@
 #include "gdist_dglap.hpp"
 #include "vector.hpp"
 
+// How are the hotspots distributed
 enum Proton_shape
 {
     GAUSSIAN,
     EXPONENTIAL,
+    ALBACETE,   // implement 1605.09176
 };
 
+// Quark structure
 enum Structure
 {
     QUARKS,     // Gaussians around quarks
@@ -95,6 +98,8 @@ public:
 private:
     void Init();
     
+    int number_of_quarks;
+    
     double Skewedness(double lambda);
     DGLAPDist *gdist;    // DGLAP evolved xg
     // gdist.Gluedist() returns Pi^2/(2*Nc) * Alphas(x,mu(r)^2) * xg(x,r)
@@ -117,6 +122,7 @@ private:
     
     double GaussianRadiusDistribution(double r);    // Used to sample Gaussian radius
     double ExponentialDistribution(double x, double y, double z);   // Exponential distribution for a vector
+    double RepulsiveGaussianDistribution(std::vector<Vec> quarks, double rc); // Distribution from 1605.09176
     
     bool allocated_gdist;   // True if we have allocated memory for gdist in here
     

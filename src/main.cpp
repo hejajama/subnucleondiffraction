@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
     {
         cout << "-Q2, -W: set kinematics" << endl;
         cout << "-real, -imag: set real/imaginary part" << endl;
-        cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton,nucleons] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization]" << endl;
+        cout << "-dipole [ipsat,ipnonsat,ipglasma,ipsatproton,nucleons] [ipglasmafile, ipsat_radius_fluctuation_fraction, ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [albacete]" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points/auto" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
@@ -125,18 +125,23 @@ int main(int argc, char* argv[])
                 amp = new Ipsat_Proton;
                 ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+2]));
                 ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+3]));
-                ((Ipsat_Proton*)amp)->SetShape(GAUSSIAN);
-                if (argc > i+4)
+                if (string(argv[i+4]) == "ALBACETE")
+                    ((Ipsat_Proton*)amp)->SetShape(ALBACETE);
+                else
                 {
-                    if (string(argv[i+4])=="fluxtube")
+                    ((Ipsat_Proton*)amp)->SetShape(GAUSSIAN);
+                    if (argc > i+4)
                     {
-                        ((Ipsat_Proton*)amp)->SetStructure(CENTER_TUBES);
-                        ((Ipsat_Proton*)amp)->SetFluxTubeNormalization(StrToReal(argv[i+5]));
-                    }
-                    else if (string(argv[i+4]).substr(0,1)!="-")
-                    {
-                        cerr << "Unknown ipsatproton option " << argv[i+4] << endl;
-                        exit(1);
+                        if (string(argv[i+4])=="fluxtube")
+                        {
+                            ((Ipsat_Proton*)amp)->SetStructure(CENTER_TUBES);
+                            ((Ipsat_Proton*)amp)->SetFluxTubeNormalization(StrToReal(argv[i+5]));
+                        }
+                        else if (string(argv[i+4]).substr(0,1)!="-")
+                        {
+                            cerr << "Unknown ipsatproton option " << argv[i+4] << endl;
+                            exit(1);
+                        }
                     }
                 }
             }
@@ -231,8 +236,8 @@ int main(int argc, char* argv[])
     
     if (mode == PRINT_NUCLEUS)
     {
-
         /*
+        
         double origin[2]={0,0};
         double max = ((IPGlasma*)amp)->MaxX();
         double min = ((IPGlasma*)amp)->MinX();
@@ -250,9 +255,9 @@ int main(int argc, char* argv[])
                 cout << y << " " << x << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->AmplitudeImaginaryPart(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << " " << 1.0 - tr/3.0 <<endl;
             }
          cout << endl;
-        }*/
+        }
+        */
         
-         
         
         double origin[2]={0,0};
         double max = 8;
@@ -269,6 +274,7 @@ int main(int argc, char* argv[])
             }
             cout << endl;
         }
+        
         
         
          

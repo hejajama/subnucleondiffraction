@@ -155,66 +155,125 @@ void Ipsat_Proton::InitializeTarget()
     quarks.clear();
     quark_bp.clear();
     
-    // Sample 3 quarks
-    for (int i=0; i<3; i++)
+    // Correlated sampling
+    if (shape == ALBACETE)
     {
-        // Radius from uniform distribution
-        double radius=0;
-        double maxr = 30;
-        
-        if (shape == GAUSSIAN)
+        /*
+         * Implement arXiv:1605.09176.
+         * Quark positions s_i are sampled from a distribution
+         * prod_i<j, i,j=1...n_q  (1-exp(-mu*|s_i - s_j|^2/R^2)
+         * Where s_i are sampled also from a Gaussian distribution that has width R
+         * Note that in this case we keep the proton center-of-mass at the origin, thus
+         * we only sample two quarks which then fixes the position of the third quark
+         * Implemented using simple rejection method
+         *
+         * Note that we identify B_qc=R, B_q=R_hs, BUT THERE IS A DIFFERENCE
+         * of factor 2 in definition of B_qc and R!
+         */
+        double r_c = 0.3 * 5.068;   // Repulsive core radius 0.3fm
+        if (B_p < 1e-5)
         {
-            double x,y,z;
-            if (B_p < 1e-5)
+            std::cerr << "Does not support zero size proton!" << std::endl;
+            exit(1);
+        }
+        else
+        {
+            std::vector<Vec> tmpquarkvec;
+            do{
+                tmpquarkvec.clear();
+                double xsum=0;
+                double ysum=0;
+                for (int i=0; i<number_of_quarks-1; i++)
+                {
+                    // Sample quark i
+                    // sqrt(2) because there is no 2 in exp(-s_i^2/R^2)
+                    double x,y;
+                    x=gsl_ran_gaussian(global_rng, B_p/std::sqrt(2.0));
+                    y=gsl_ran_gaussian(global_rng, B_p/std::sqrt(2.0));
+                    xsum +=x;
+                    ysum +=y;
+                    Vec s(x,y);
+                    tmpquarkvec.push_back(s);
+                }
+                // Calculate last quark position by fixing origin=center of mass
+                Vec q( -xsum, -ysum );
+                tmpquarkvec.push_back(q);
+                
+            } while (gsl_rng_uniform(global_rng) > RepulsiveGaussianDistribution(tmpquarkvec, r_c));
+            // Save accepted quarks
+             for (int i=0; i<tmpquarkvec.size(); i++)
             {
-                x=y=z=0;
-                //radius=0;
+                quark_bp.push_back(B_q);
+                quarks.push_back(tmpquarkvec[i]);
+                quarks3d.push_back(tmpquarkvec[i]);
             }
             
-            else
-            {
-                x=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
-                y=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
-                z=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
-                /*
-                do{
-                    radius = gsl_rng_uniform(global_rng) * maxr;
-                } while (gsl_rng_uniform(global_rng) > GaussianRadiusDistribution(radius));
-                 */
-            }
-            // Sample angle
-            //double angle = 2.0*M_PI*gsl_rng_uniform(global_rng);
-            //Vec tmpvec(radius*std::cos(angle), radius*std::sin(angle));
-            Vec tmpvec(x,y,0);
-            Vec tmpvec3d(x,y,z);
-            quarks.push_back(tmpvec);
-            quarks3d.push_back(tmpvec3d);
-            quark_bp.push_back(B_q);
         }
-        else if (shape == EXPONENTIAL)
+     }
+        // Sample uncorrelated quark positions
+     else {
+         
+        // Sample 3 quarks
+        for (int i=0; i<3; i++)
         {
-            // We have to sample x,y,z separately
-            double x,y,z;
-            if (B_p < 1e-5)
+            // Radius from uniform distribution
+            double radius=0;
+            double maxr = 30;
+            
+            if (shape == GAUSSIAN)
             {
-                x=y=z=0;
+                double x,y,z;
+                if (B_p < 1e-5)
+                {
+                    x=y=z=0;
+                    //radius=0;
+                }
+                
+                else
+                {
+                    x=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
+                    y=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
+                    z=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
+                    /*
+                    do{
+                        radius = gsl_rng_uniform(global_rng) * maxr;
+                    } while (gsl_rng_uniform(global_rng) > GaussianRadiusDistribution(radius));
+                     */
+                }
+                // Sample angle
+                //double angle = 2.0*M_PI*gsl_rng_uniform(global_rng);
+                //Vec tmpvec(radius*std::cos(angle), radius*std::sin(angle));
+                Vec tmpvec(x,y,0);
+                Vec tmpvec3d(x,y,z);
+                quarks.push_back(tmpvec);
+                quarks3d.push_back(tmpvec3d);
+                quark_bp.push_back(B_q);
             }
-            else
+            else if (shape == EXPONENTIAL)
             {
-                do{
-                    x = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
-                    y = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
-                    z = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
-                } while (gsl_rng_uniform(global_rng) > ExponentialDistribution(x,y,z));
+                // We have to sample x,y,z separately
+                double x,y,z;
+                if (B_p < 1e-5)
+                {
+                    x=y=z=0;
+                }
+                else
+                {
+                    do{
+                        x = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
+                        y = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
+                        z = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
+                    } while (gsl_rng_uniform(global_rng) > ExponentialDistribution(x,y,z));
+                }
+                Vec tmpvec(x,y,0);
+                quarks.push_back(tmpvec);
+                Vec tmpvec3d(x,y,z);
+                quarks3d.push_back(tmpvec3d);
+                quark_bp.push_back(B_q);
             }
-            Vec tmpvec(x,y,0);
-            quarks.push_back(tmpvec);
-            Vec tmpvec3d(x,y,z);
-            quarks3d.push_back(tmpvec3d);
-            quark_bp.push_back(B_q);
+            
         }
-    }
-    
+     }
     SampleQsFluctuations();
     
     // set center of mass to origin
@@ -242,6 +301,7 @@ void Ipsat_Proton::InitializeTarget()
     {
         center = GeometricMedian(quarks);
         center3d = GeometricMedian(quarks3d);
+        //NormalizeFluxTubeThickness();
     }
 }
 
@@ -383,6 +443,7 @@ void Ipsat_Proton::Init()
     proton_structure = QUARKS ;
     fluxtube_normalization = -1;
     origin_at_center_of_mass = false;
+    number_of_quarks=3;
     
     intworkspace_zint = gsl_integration_workspace_alloc(INTPOINTS_ZINT);
 }
@@ -496,7 +557,7 @@ double inthelperf_exponential3d(double z, void *p)
 
 double Ipsat_Proton::QuarkThickness(double r, int i)
 {
-    if (shape == GAUSSIAN)
+    if (shape == GAUSSIAN or shape == ALBACETE)
     {
         double bp = quark_bp[i];
         double fluct = 1.0;
@@ -549,7 +610,25 @@ double Ipsat_Proton::ExponentialDistribution(double x, double y, double z)
     return std::exp( - std::sqrt( x*x + y*y + z*z ) / B_p );
     
 }
-
+/*
+ * Distribution from 1605.09176
+ *  prod i<j 1..3 (1-exp( -|s_i-s_j|^2/rc^2))
+ */
+double Ipsat_Proton::RepulsiveGaussianDistribution(std::vector<Vec> quarks, double rc)
+{
+    double result = 1.0;
+    for (unsigned int i=0; i<quarks.size(); i++)
+    {
+        for (unsigned int j=i+1; j<quarks.size(); j++)
+        {
+            Vec d = quarks[i] - quarks[j];
+            result *= 1.0 - std::exp( - d.LenSqr() / (rc*rc)) ;
+        }
+    }
+    
+    return result;
+    
+}
 struct inthelper_fluxtube_z{ Ipsat_Proton* proton; Vec b;  std::vector<Vec> quarks; Vec center;};
 double inthelperf_fluxtube_z(double z, void* p);
 
@@ -702,8 +781,8 @@ double inthelperf_fluxtube_y(double y, void* p);
 void Ipsat_Proton::NormalizeFluxTubeThickness()
 {
     //cout << "Normalizing fluxtube\n" << endl;
-    fluxtube_normalization = 1.0;
-    return;
+    //fluxtube_normalization = 1.0;
+    //return;
     
     /// NOTE: not used, as we acutally want total energy to depend on normalization
     // FluxTubeThicknes should be normalized to unity, so calculate
@@ -717,10 +796,10 @@ void Ipsat_Proton::NormalizeFluxTubeThickness()
     f.params = &par;
     f.function = &inthelperf_fluxtube_y;
     double result,error;
-    //gsl_integration_workspace * w =  gsl_integration_workspace_alloc (10);
-    gsl_integration_qag (&f, -99, 99, 0, 1e-2, INTPOINTS_ZINT, GSL_INTEG_GAUSS15,
-                          intworkspace_zint, &result, &error);
-    //gsl_integration_workspace_free(w);
+    gsl_integration_workspace * w =  gsl_integration_workspace_alloc (10);
+    gsl_integration_qag (&f, -99, 99, 0, 1e-2, 10, GSL_INTEG_GAUSS15,
+                          w, &result, &error);
+    gsl_integration_workspace_free(w);
     //cout << "Fluxtube normalization " << result << " pm " << error << endl;
     
     cout << result << endl;;
