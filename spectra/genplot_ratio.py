@@ -39,13 +39,13 @@ GEVSQRTONB = 1.0e7/(5.068*5.068)
 
 # fname title style marker facecolor hatch, linecolor
 data=[
-      #["final/ipsat2012_bp_1.0_bq_3.0_w_100_q2_0", r"IPsat $B_{qc}=1.0\,\mathrm{GeV}^{-2}, B_q=3.0\,\mathrm{GeV}^{-2}$", Linestyle(3),"grey", "", "black"],
-      #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0", r"IPsat, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'red', "", "red"], # use linestyle 2
+      ["final/ipsat2012_bp_1.0_bq_3.0_w_100_q2_0", r"IPsat $B_{qc}=1.0\,\mathrm{GeV}^{-2}, B_q=3.0\,\mathrm{GeV}^{-2}$", Linestyle(3),"grey", "", "black"],
+      ["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0", r"IPsat, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'red', "", "red"], # use linestyle 2
       #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_gridfluct_04", r"IPsat$B_p=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, a=0.4\,\mathrm{fm}$", Linestyle(1),"grey", "", "black"],
       #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_gridfluct_01", r"$B_p=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, a=0.1\,\mathrm{fm}$", Linestyle(3),""],
-      #["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_quarkfluct_0.5", r"IPsat, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(1),"green", "", "green"],
+      ["final/ipsat2012_bp_3.5_bq_1.0_w_100_q2_0_quarkfluct_0.5", r"IPsat, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(1),"green", "", "green"],
       #["test/ipglasma_bp_2.0_bq_0.3_norm07_nc_96", r"IP-Glasma, $B_p=2.0\,\mathrm{GeV}^{-2}, B_q=0.3\,\mathrm{GeV}^{-2}$", Linestyle(3), 1.4],
-      #["final/ipglasma_bp_2.0_bq_0.3_m04_n07_ncf_416_w_100_q2_0", r"IP-Glasma, $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_q=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0),"grey", "", Color(0)],
+      ["final/ipglasma_bp_2.0_bq_0.3_m04_n07_ncf_416_w_100_q2_0", r"IP-Glasma, $B_{qc}=4.0\,\mathrm{GeV}^{-2}, B_q=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0),"grey", "", Color(0)],
       # ["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n075_qsfluct_ncf_96", r"IP-Glasma, $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_q=0.3\,\mathrm{GeV}^{-2}$ fluct", Linestyle(2),Color(2), "", Color(2)],
       #["paper_2/ipglasma_bp_2.0_bq_0.5_m08_n075_qsfluct_ncf_96", r"IP-Glasma, $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2} m=0.8$ ", Linestyle(2),Color(2), "", Color(2)],
       # ["paper_2/ipglasma_bp_2.0_bq_0.5_m04_n075_qsfluct_ncf_384", r"IP-Glasma, $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2} m=0.4$ ", Linestyle(3),Color(3), "", Color(3)],
@@ -57,7 +57,7 @@ data=[
       #["paper_2/ipglasma_bp_4.0_mdep_m_0.4", r"$B_p=4.0\,\mathrm{GeV}^{-2}, m=0.4$", Linestyle(2), Color(2), "" , Color(2) ],
       #["paper_2/ipglasma_bp_4.0_mdep_m_0.8", r"$B_p=4.0\,\mathrm{GeV}^{-2}, m=0.8$", Linestyle(3), Color(3), "", Color(3) ],
       
-      ["paper_2/ipsat_bp_3.3_bq_0.7_w_100_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"]
+      #["paper_2/ipsat_bp_3.3_bq_0.7_w_100_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"]
       
 
       

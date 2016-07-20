@@ -22,25 +22,21 @@ public:
     
     void InitializeTarget();
     
-    // Set size parameters, affect to next InitializeTarget() call
-    void SetProtonWidth(double bp_);
-    void SetQuarkWidth(double bq_);
     
-    Nucleons();
+    
+    Nucleons(std::vector<DipoleAmplitude*> nucleons);
+    ~Nucleons();
     double WS_unnorm(double r );
+    
+    std::string InfoStr();
     
 private:
     int A;
-    double B_p;       // Proton size parameter
-    double B_q;     // Quark size parameter
-    std::vector<Ipsat_Proton> nucleons; // Todo: change to support general proton/nucleon class?
+    std::vector<DipoleAmplitude*> nucleons; // Todo: change to support general proton/nucleon class?
     std::vector<Vec> nucleon_positions;
     
     double ws_delta;
     double ws_ra;
-    
-    DGLAPDist gdist;    // Use when create nucleus from ipsat protons, so that not every proton has to
-    // load the gluon distribution
     
 };
 

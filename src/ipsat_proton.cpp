@@ -161,14 +161,14 @@ void Ipsat_Proton::InitializeTarget()
         /*
          * Implement arXiv:1605.09176.
          * Quark positions s_i are sampled from a distribution
-         * prod_i<j, i,j=1...n_q  (1-exp(-mu*|s_i - s_j|^2/R^2)
+         * prod_i<j, i,j=1...n_q  (1-exp(-mu*|s_i - s_j|^2/R^2))
          * Where s_i are sampled also from a Gaussian distribution that has width R
          * Note that in this case we keep the proton center-of-mass at the origin, thus
          * we only sample two quarks which then fixes the position of the third quark
          * Implemented using simple rejection method
          *
-         * Note that we identify B_qc=R, B_q=R_hs, BUT THERE IS A DIFFERENCE
-         * of factor 2 in definition of B_qc and R!
+         * Note that we use a Gaussian distribution exp(-b^2/2B) when sampling the
+         * constituent quark radii, which is different parametrization form Ref.
          */
         double r_c = 0.3 * 5.068;   // Repulsive core radius 0.3fm
         if (B_p < 1e-5)
@@ -179,17 +179,18 @@ void Ipsat_Proton::InitializeTarget()
         else
         {
             std::vector<Vec> tmpquarkvec;
+            int rejections=-1;
             do{
+                rejections++;
                 tmpquarkvec.clear();
                 double xsum=0;
                 double ysum=0;
                 for (int i=0; i<number_of_quarks-1; i++)
                 {
                     // Sample quark i
-                    // sqrt(2) because there is no 2 in exp(-s_i^2/R^2)
                     double x,y;
-                    x=gsl_ran_gaussian(global_rng, B_p/std::sqrt(2.0));
-                    y=gsl_ran_gaussian(global_rng, B_p/std::sqrt(2.0));
+                    x=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
+                    y=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
                     xsum +=x;
                     ysum +=y;
                     Vec s(x,y);
@@ -200,6 +201,7 @@ void Ipsat_Proton::InitializeTarget()
                 tmpquarkvec.push_back(q);
                 
             } while (gsl_rng_uniform(global_rng) > RepulsiveGaussianDistribution(tmpquarkvec, r_c));
+            cout << "# Rejected " << rejections << " configurations due to short-range repulsive correlations" << endl;
             // Save accepted quarks
              for (int i=0; i<tmpquarkvec.size(); i++)
             {
@@ -301,7 +303,7 @@ void Ipsat_Proton::InitializeTarget()
     {
         center = GeometricMedian(quarks);
         center3d = GeometricMedian(quarks3d);
-        //NormalizeFluxTubeThickness();
+        NormalizeFluxTubeThickness();
     }
 }
 

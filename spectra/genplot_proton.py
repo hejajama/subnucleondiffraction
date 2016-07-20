@@ -91,9 +91,9 @@ files = [
 
          
          # ipglasma
-         #["final/ipglasma_bp_2.0_bq_0.3_m04_n07_ncf_416_w_100_q2_0", r"$m=0.4\,\mathrm{GeV}$", Linestyle(0), 'grey', "", 1.0, "black"], # $B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_100_noshift", r"$B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_q=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0), "black", "", 1.0, "black"],
-         #["final/ipglasma_bp_4.0_m04_n065_ncf_288_w_100_q2_0", r"$B_{p}=4\,\mathrm{GeV}^{-2}$", Linestyle(2), "blue", "", 1.0, "blue" ],
+         # ["final/ipglasma_bp_2.0_bq_0.3_m04_n07_ncf_416_w_100_q2_0", r"$B_{qc}=4.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0), 'grey', "", 1.0, "black"], #
+         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_100_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_q=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0), "black", "", 1.0, "black"],
+         #["final/ipglasma_bp_4.0_m04_n065_ncf_288_w_100_q2_0", r"$B_{p}=4\,\mathrm{GeV}^{-2}$", Linestyle(1), "blue", "", 1.0, "blue" ],
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n075_qsfluct_ncf_96", r"$B_p=2.0\,\mathrm{GeV}^{-2}, B_q=0.3\,\mathrm{GeV}^{-2}$, fluct", Linestyle(2), Color(2), "", 1.0, Color(2) ],
          #["paper_2/ipglasma_bp_2.0_bq_0.5_m08_n075_qsfluct_ncf_96", r"$B_p=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}, m=0.8$", Linestyle(2), Color(2), "", 1.0, Color(2) ],
          #["paper_2/ipglasma_bp_2.0_bq_0.5_m04_n075_qsfluct_ncf_384", r"$B_p=2.0\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}, m=0.4$", Linestyle(3), Color(3), "", 1.0, Color(3) ],
@@ -120,7 +120,7 @@ files = [
          
          ########## W = 75
          # w = 75
-         #["paper_2/ipsat_bp_4.0_w_75_q2_0_fixedx", r"No fluctuations", Linestyle(0), 'black', "", 1.0, "black"],
+         
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local_avgfluct1_fixedx", r"$B_{p}=4.0\,\mathrm{GeV}^{-2}$ $+$ $Q_s$ fluct", Linestyle(3), 'green', "", 1.0, "green"],
          #["paper_2/ipsat_bp_4.0_w_75", r"No fluctuations", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_qsfluct_local_avgfluct1", r"Round with $Q_s$ fluctuations", Linestyle(1), 'green', "", 1.0, "green"],
@@ -128,30 +128,44 @@ files = [
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"Gaussians, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_fixedx", r"Fixed, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
-         #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"Gaussian", Linestyle(0), 'black', "", 1.0, "black"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
+         ["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
          #["paper_2/ipsat_bp_3.3_bq_0.5_w_75_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          
+         #smooth
+         ["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx", r"$B_{qc}=1.0\,\mathrm{GeV}^{-2}, B_q=3.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'red', "", 1.0, "red"],
+         
+         
+         #["paper_2/ipsat_bp_4.0_w_75_q2_0_fixedx", r"No geometric fluctuations", Linestyle(3), 'green', "", 1.0, "green"],
+         
+         #fluxtube
+         
+         #["paper_2/ipsat_bp_4.2_bq_0.6_fluxtube_norm_0.112_w_75_q2_0", r"$B_{t}=4.2\,\mathrm{GeV}^{-2}, B_r=0.6\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
+         #["paper_2/ipsat_bp_1.8_bq_2.0_fluxtube_norm_0113_w_75_q2_0", r"$B_{t}=1.8\,\mathrm{GeV}^{-2}, B_r=2.0\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat_bp_2.0_bq_2.0_fluxube_norm_0113_w_75_q2_0", r"$B_{t}=2.0\,\mathrm{GeV}^{-2}, B_r=2.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'blue', "", 1.0, "blue"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_fluxtube_norm_0.0958_w_75_q2_0", r"Fluxtube $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_r=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_fluxtube_norm_0.11_w_75_q2_0", r"Fluxtube $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_r=1.0\,\mathrm{GeV}^{-2}$", Linestyle(1), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_3.9_bq_0.6_fluxtube_norm_0.095_w_75_q2_0", r"Fluxtube $B_{qc}=3.9\,\mathrm{GeV}^{-2}, B_r=0.6\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_3.7_bq_0.7_fluxtube_norm_0.11_w_75_q2_0", r"Fluxtube $B_{qc}=3.7\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2} 0.11$", Linestyle(1), 'blue', "", 1.0, "blue"],
          #["paper_2/ipsat_bp_4.0_bq_0.7_fluxtube_norm_0.093_w_75_q2_0", r"Fluxtube, $B_{qc}=4.0\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2}$", Linestyle(2), 'blue', "", 1.0, "blue"],
          
-         #["paper_2/ipsat_bp_4.0_bq_0.7_fluxtube_norm_0.113_w_75_q2_0", r"Fluxtube, $B_{qc}=4.0\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2}$ n 011", Linestyle(0), 'black', "", 1.0, "black"],
+         #["paper_2/ipsat_bp_4.0_bq_0.7_fluxtube_norm_0.113_w_75_q2_0", r"Fluxtube, $B_{qc}=4.0\,\mathrm{GeV}^{-2}, B_r=0.7\,\mathrm{GeV}^{-2}$ n 013", Linestyle(0), 'black', "", 1.0, "black"],
+         
         
          #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_qsfluct_avgfluct1_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$ $+$ $Q_s$ fluct", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark_avgfluct1", r"$B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(3), 'red', "", 1.0, "red"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_qsfluct_quark_avgfluct1", r"Geometric and $Q_s$ fluctuations", Linestyle(3), 'red', "", 1.0, "red"],
          
-         #["paper_2/ipglasma_bp_4.0_m04_n065_w_75_q2_0", r"$B_p=4.0\,\mathrm{GeV}^{-2}$", Linestyle(2), "red", "", 1.0, "red"],
+         #["paper_2/ipglasma_bp_4.0_m04_n065_w_75_q2_0", r"Color charge ", Linestyle(2), "red", "", 1.0, "red"],
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0), "black", "", 1.0, "black"],
-        
+         
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m02_n07_w_75_q2_0_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.2\,\mathrm{GeV}$", Linestyle(1), "blue", "", 1.0, "blue"],
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.4\,\mathrm{GeV}$", Linestyle(0), "black", "", 1.0, "black"],
+         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift", r"Geometric and color charge", Linestyle(1), "blue", "", 1.0, "blue"], # $B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m06_n07_w_75_q2_0_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.6\,\mathrm{GeV}$", Linestyle(3), "red", "", 1.0, "red"],
          
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$ $+$ $Q_s$ fluct", Linestyle(0), "black", "", 1.0, "black"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
+         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift_onlyreal", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$ only real", Linestyle(1), "blue", "", 1.0, "black"],
+         
+         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"Geometric, color charge and $Q_s$", Linestyle(0), "black", "", 1.0, "black"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(1), "blue", "", 1.0, "blue"],
          #["paper_2/ipglasma_bp_2.0_bq_0.5_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.5\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(2), "red", "", 1.0, "red"],
          
@@ -169,12 +183,14 @@ files = [
 
          
          # hydropaper
-         ["hydropaper/ipglasma_bp_1.8_bq_0.25_m04-y-1.6-qsfluct-nq-5", r"$B_{qc}=3.6\,\mathrm{GeV}^{-2}, B_{q}=0.25\,\mathrm{GeV}^{-2}, n_q=5$ $+$ $Q_s$ fluct", Linestyle(1), "blue", "", 1.0, "blue"]
+         #["hydropaper/ipglasma_bp_1.8_bq_0.25_m04-y-1.6-qsfluct-nq-5", r"$B_{qc}=3.6\,\mathrm{GeV}^{-2}, B_{q}=0.25\,\mathrm{GeV}^{-2}, n_q=5$ $+$ $Q_s$ fluct", Linestyle(1), "blue", "", 1.0, "blue"],
+         #["hydropaper/ipglasma_bp_1.9_bq_0.28_m04-y-1.6-qsfluct-nq-5", r"$B_{qc}=3.8\,\mathrm{GeV}^{-2}, B_{q}=0.28\,\mathrm{GeV}^{-2}, n_q=5$ $+$ $Q_s$ fluct", Linestyle(0), "blue", "", 1.0, "blue"],
+         # ["hydropaper/ipglasma_bp_1.9_bq_0.28_m04-y-1.6-qsfluct-nq-5-qsmu-065", r"$B_{qc}=3.8\,\mathrm{GeV}^{-2}, B_{q}=0.28\,\mathrm{GeV}^{-2}, n_q=5$ $+$ $Q_s$ fluct", Linestyle(0), "black", "", 1.0, "black"]
 ]
 
 
 
-#p1.plot(np.NaN, np.NaN, '-', color="white", label=r"IPsat")
+#p1.plot(np.NaN, np.NaN, '-', color="white", label=r"Fluctuations")
 
 style=-1
 color=-1
@@ -252,8 +268,8 @@ for f in files:
     p1.fill_between(xdata, np.array(ydata)-np.array(staterr), np.array(ydata)+np.array(staterr), alpha=0.2, edgecolor='none', facecolor=f[3], hatch=f[4])
     color = color + 1
 
-#p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
 p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
+#p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
 if w_75_data:
     p1.plot([1,2], [-1,-2], '-', color='white', label=r"H1")
 

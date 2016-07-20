@@ -10,6 +10,8 @@
 #include "subnucleon_config.hpp"
 #include <gsl/gsl_rng.h>
 #include <cmath>
+#include <sstream>
+#include <string>
 
 const double FMGEV = 5.067731;
 
@@ -31,31 +33,21 @@ double Nucleons::Amplitude(double xpom, double q1[2], double q2[2] )
         // Calculate the quark and antiquark coordinates in the frame where the nucleon i is at the origin
         Vec new_q1  = qv1 - nucleon_positions[i];
         Vec new_q2 = qv2 - nucleon_positions[i];
-        smat = smat * (1.0 - nucleons[i].Amplitude(xpom, new_q1, new_q2));
+        smat = smat * (1.0 - nucleons[i]->Amplitude(xpom, new_q1, new_q2));
         
     }
     return 1.0-smat;
 }
 
-void Nucleons::SetQuarkWidth(double bq)
-{
-    B_q = bq;
-}
-
-void Nucleons::SetProtonWidth(double bp)
-{
-    B_p = bp;
-}
 
 void Nucleons::InitializeTarget()
 {
-    nucleons.clear();
     nucleon_positions.clear();
     
     
     for (int i=0; i<A; i++)
     {   
-    
+        nucleons[i]->InitializeTarget();
         double maxr = 3.0*ws_ra;
         
         Vec tmp;
@@ -66,21 +58,15 @@ void Nucleons::InitializeTarget()
             tmp=tmpvec;
         } while (gsl_rng_uniform(global_rng) > WS_unnorm(tmp.Len())); // WS distribution!
         nucleon_positions.push_back(tmp);
-
-        Ipsat_Proton p(&gdist);
-        p.SetQuarkWidth(B_q);
-        p.SetProtonWidth(B_p);
-        p.InitializeTarget();
-        nucleons.push_back(p);
-        
-
     }
     
 }
 
-Nucleons::Nucleons()
+Nucleons::Nucleons(std::vector<DipoleAmplitude*> nucleons_)
 {
-    A=197;
+    A=nucleons_.size();
+    cout << nucleons_[0]->InfoStr();
+    nucleons=nucleons_;
     ws_delta=0.54*FMGEV;
     ws_ra = 1.12 * std::pow(A, 1.0/3.0) * FMGEV;
 
@@ -91,4 +77,20 @@ double Nucleons::WS_unnorm(double r )
 {
     return 1.0 / (1+exp((r-ws_ra)/ws_delta));
     
+}
+
+std::string Nucleons::InfoStr()
+{
+    std::stringstream ss;
+    ss << "#DipoleAmplitude: Nucleus cosisting of " << A << " nucleons, nucleon 0 info: " << endl;
+    ss << nucleons[0]->InfoStr() << endl;
+    return ss.str();
+}
+
+Nucleons::~Nucleons()
+{
+    // Nucleons are allocated in main.cpp but should be freed here
+    // If DGLAPdist was allocated in main.cpp, it is also freed there
+    for (int i=0; i<A; i++)
+        delete nucleons[i];
 }
