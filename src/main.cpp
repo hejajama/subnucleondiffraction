@@ -159,7 +159,8 @@ int main(int argc, char* argv[])
                     {
                         if (j==0)
                             gd = new DGLAPDist;
-                        Ipsat_Proton *nucleon = new Ipsat_Proton(gd);
+                        //Ipsat_Proton *nucleon = new Ipsat_Proton(gd);
+                        Ipsat_Proton *nucleon = new Ipsat_Proton();
                         nucleon->SetProtonWidth(StrToReal(argv[i+3]));
                         nucleon->SetQuarkWidth(StrToReal(argv[i+4]));
                         if (string(argv[i+5]) == "ALBACETE")
@@ -271,7 +272,7 @@ int main(int argc, char* argv[])
     
     if (mode == PRINT_NUCLEUS)
     {
-        /*
+        
         
         double origin[2]={0,0};
         double max = ((IPGlasma*)amp)->MaxX();
@@ -291,9 +292,9 @@ int main(int argc, char* argv[])
             }
          cout << endl;
         }
-        */
+       
         
-        
+      /*  
         double origin[2]={0,0};
         double max = 8;
         double min = -8;
@@ -311,7 +312,7 @@ int main(int argc, char* argv[])
         }
         
         
-        
+        */
          
         return 0;
     }
@@ -335,8 +336,8 @@ int main(int argc, char* argv[])
     {
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
-        double tstep = 0.05;
-        for (t=0; t<=3.0; t+=tstep)
+        double tstep = 0.1;
+        for (t=0; t<=2; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.01)
@@ -392,8 +393,10 @@ int main(int argc, char* argv[])
     
     else if (mode == F2)
     {
-        cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << ") " << endl;
+        cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm sum " << endl;
         WaveFunction * photon = new VirtualPhoton();;
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT);
+        cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
         
         amp->SetSkewedness(false);
         Diffraction f2(*amp, *photon);
@@ -403,7 +406,16 @@ int main(int argc, char* argv[])
         double xs_t = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
         double xs_l = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, L);
         double structurefun = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l+xs_t);
-        cout << structurefun << endl;
+        
+        // heavy quark contribution
+        /*((VirtualPhoton*)photon)->SetQuark(Amplitude::C);
+        cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
+        double xs_t_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
+        double xs_l_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, L);
+        double structurefun_c = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c+xs_t_c);
+        */
+	double structurefun_c=0;
+        cout << structurefun << " " << structurefun_c << " " << structurefun + structurefun_c << endl;
         //DIS dis(amp);
         //cout << dis.F2(Qsqr, xbj) << endl;
         
@@ -439,8 +451,8 @@ string InfoStr()
     info << endl << amp->InfoStr();
 
     
-    if (REAL_PART) info << ". Real part";
-    else info << ". Imaginary part";
+    if (REAL_PART) info << "# Real part";
+    else info << "# Imaginary part";
     
     if (FACTORIZE_ZINT)
         info <<". z integral factorized";

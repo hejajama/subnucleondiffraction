@@ -27,7 +27,7 @@ int IPSAT12_PAR = 2;    // m_c=1.4 GeV
 using std::cout; using std::endl;
 
 const double FMGEV = 5.06778;
-double MAXR_SKEW = 20;  // Dont calculate skew at larger r, as it didnt work
+double MAXR_SKEW = 15;  // Dont calculate skew at larger r, as it didnt work
 
 const int INTPOINTS_ZINT = 7;   // Depth of z integral subintervals when projecting exponential
 // distribution into 2d

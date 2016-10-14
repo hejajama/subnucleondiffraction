@@ -3,6 +3,7 @@
 
 #include "../src/ipglasma.hpp"
 #include "../src/ipsat_proton.hpp"
+#include <tools/tools.hpp>
 #include <string>
 #include <sstream>
 #include <gsl/gsl_integration.h>
@@ -24,8 +25,8 @@ struct bhelper
     double b;
 };
 
-const int INTPOINTS = 3000;
-const double INTACCURACY = 0.2;
+const int INTPOINTS = 60;
+const double INTACCURACY = 0.5;
 double rhelperf(double theta_r, void* p); // average over dipole orientation
 double bhelperf(double theta_b, void* p); // average over b angle
 
@@ -52,13 +53,12 @@ int main(int argc, char* argv[])
     f.function = &bhelperf;  // do a circle around the proton
     f.params = &helper;
     
-    for (double b=1e-3; b<50; b*=1.2)
+    for (double r=1e-3; r<20; r*=1.2)
     {
-        helper.b=b;
-        double r = 0.5;
-        helper.r=r;
+double x1[2]={StrToReal(argv[2]),r/2.0}; double x2[2]={StrToReal(argv[2]),-r/2.0};
+	double result = glasma.Amplitude(1e-3,x1,x2);
     
-         
+        /* 
         gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS);
         double result,error;
         int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 1e-5, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
@@ -70,12 +70,13 @@ int main(int argc, char* argv[])
         gsl_integration_workspace_free(w);
         
         result = result / (2.0*M_PI*2.0*M_PI);
-        
+        */
         // IPsat comparison
+	double b = StrToReal(argv[2]);
         Vec q1(b+0.5*r,0); Vec q2(b-0.5*r,0);
         double ipsat_n = ipsat.DipoleAmplitude::Amplitude(1e-3, q1, q2);
         
-        cout << b << " " << result << " " << ipsat_n << endl;
+        cout << r << " " << result << " " << ipsat_n << endl;
     }
     
     

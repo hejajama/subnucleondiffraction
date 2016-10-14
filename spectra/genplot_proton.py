@@ -18,7 +18,7 @@ import numpy as np
 from matplotlib import rcParams
 #rcParams.update({'figure.autolayout': True})
 
-slides=False
+slides=True
 
 ShowStatErrs = True
 ShowBand = False  # show largest/smallest xs at given t
@@ -70,6 +70,10 @@ ylabel(r"$\mathrm{d}\sigma/\mathrm{d}t$ $[\mathrm{nb}/\mathrm{GeV}^2]$ ", fontsi
 
 # fname title style normalization,facecolor, hatch, linecolor
 files = [
+         # tests
+         #["test/ipglasma_bp_3.0_bq_0.3_fluct_qsmu_0.7", "$Q_s \mu = 0.7$, qsfluct", Linestyle(0), 'black', "",1.0,"black"],
+         #["test/ipglasma_bp_3.0_bq_0.3_fluct_qsmu_1", "$Q_s \mu = 1.0$, qsfluct", Linestyle(1), 'blue', "",1.0,"blue"],
+
          
          
          
@@ -128,18 +132,19 @@ files = [
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0", r"Gaussians, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_fixedx", r"Fixed, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
-         ["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
+         #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"Lumpy $(B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2})$", Linestyle(0), 'black', "", 1.0, "black"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
+         ["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"Lumpy", Linestyle(0), 'red', "", 1.0, "red"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
          #["paper_2/ipsat_bp_3.3_bq_0.5_w_75_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          
          #smooth
-         ["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx", r"$B_{qc}=1.0\,\mathrm{GeV}^{-2}, B_q=3.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'red', "", 1.0, "red"],
+         ["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx", r"Smooth", Linestyle(2), 'blue', "", 1.0, "blue"],
          
          
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_fixedx", r"No geometric fluctuations", Linestyle(3), 'green', "", 1.0, "green"],
          
          #fluxtube
-         
+         #["paper_2/ipsat_bp_4.2_bq_0.6_fluxtube_norm_0.112_w_75_q2_0", r"Strigyn proton", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_4.2_bq_0.6_fluxtube_norm_0.112_w_75_q2_0", r"$B_{t}=4.2\,\mathrm{GeV}^{-2}, B_r=0.6\,\mathrm{GeV}^{-2}$", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_1.8_bq_2.0_fluxtube_norm_0113_w_75_q2_0", r"$B_{t}=1.8\,\mathrm{GeV}^{-2}, B_r=2.0\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          #["paper_2/ipsat_bp_2.0_bq_2.0_fluxube_norm_0113_w_75_q2_0", r"$B_{t}=2.0\,\mathrm{GeV}^{-2}, B_r=2.0\,\mathrm{GeV}^{-2}$", Linestyle(2), 'blue', "", 1.0, "blue"],
@@ -269,7 +274,7 @@ for f in files:
     color = color + 1
 
 p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
-#p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
+p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
 if w_75_data:
     p1.plot([1,2], [-1,-2], '-', color='white', label=r"H1")
 

@@ -19,6 +19,7 @@
 		137168441C9C3E76002C9873 /* basis_expansion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 137168431C9C3E76002C9873 /* basis_expansion.cpp */; };
 		138FE4A71C7BC85F0078E11F /* average_amplitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 138FE4A61C7BC85F0078E11F /* average_amplitude.cpp */; };
 		13E399D01CFF6B61002471F5 /* dis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 13E399CE1CFF6B61002471F5 /* dis.cpp */; };
+		13E8924D1D63B62000DA2C38 /* modified_ipsat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 13E8924C1D63B62000DA2C38 /* modified_ipsat.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -80,6 +81,7 @@
 		13E399CD1CFF6A9B002471F5 /* virtual_photon.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = virtual_photon.hpp; path = src/virtual_photon.hpp; sourceTree = "<group>"; };
 		13E399CE1CFF6B61002471F5 /* dis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dis.cpp; path = src/dis.cpp; sourceTree = "<group>"; };
 		13E399CF1CFF6B61002471F5 /* dis.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dis.hpp; path = src/dis.hpp; sourceTree = "<group>"; };
+		13E8924C1D63B62000DA2C38 /* modified_ipsat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = modified_ipsat.cpp; path = tools/modified_ipsat.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +139,7 @@
 				12B519261BD976AB00230988 /* dipole.cpp */,
 				12B519271BD976AB00230988 /* dipole.hpp */,
 				1349C3F81C29F38B00B8EBA7 /* satscale.cpp */,
+				13E8924C1D63B62000DA2C38 /* modified_ipsat.cpp */,
 				12B519311BD98AB900230988 /* smooth_ws_nuke.cpp */,
 				12B519331BD98F8F00230988 /* diffraction.cpp */,
 				12B519341BD98F8F00230988 /* diffraction.hpp */,
@@ -238,6 +241,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13E399D01CFF6B61002471F5 /* dis.cpp in Sources */,
+				13E8924D1D63B62000DA2C38 /* modified_ipsat.cpp in Sources */,
 				1217F7851C11EA830008A90C /* sample_color_charges.cpp in Sources */,
 				1217F7821C0509E50008A90C /* nucleons.cpp in Sources */,
 				120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */,
