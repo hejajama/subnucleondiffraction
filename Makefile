@@ -14,7 +14,7 @@ diffraction: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $< -c -o $@
 
 tools: tools/sample_color_charges.o tools/fftwpp/fftw++.o tools/satscale.o tools/dipxs_intb.o tools/average_amplitude.o tools/basis_expansion.o tools/modified_ipsat.o
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) tools/sample_color_charges.cpp src/dipole.o src/wilsonline.o src/ipsat_proton.o src/vector.o ../amplitudelib_v2/tools/tools.o src/gdist_dglap.o src/subnucleon_config.o tools/fftwpp/fftw++.o -o tools/sample_color_charges -lfftw3
+	#$(CXX) $(CXXFLAGS) $(LDFLAGS) tools/sample_color_charges.cpp src/dipole.o src/wilsonline.o src/ipsat_proton.o src/vector.o ../amplitudelib_v2/tools/tools.o src/gdist_dglap.o src/subnucleon_config.o tools/fftwpp/fftw++.o -o tools/sample_color_charges -lfftw3
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) tools/satscale.cpp src/dipole.o src/wilsonline.o src/ipsat_proton.o src/vector.o src/gdist_dglap.o src/ipglasma.o src/subnucleon_config.o ../amplitudelib_v2/tools/tools.o -o tools/satscale
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) tools/dipxs_intb.cpp src/dipole.o src/wilsonline.o src/ipsat_proton.o src/vector.o src/gdist_dglap.o src/ipglasma.o src/subnucleon_config.o ../amplitudelib_v2/tools/tools.o -o tools/dipxs_intb
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) tools/average_amplitude.o src/dipole.o src/wilsonline.o src/ipsat_proton.o src/vector.o src/gdist_dglap.o src/ipglasma.o src/subnucleon_config.o ../amplitudelib_v2/tools/tools.o -o tools/average_amplitude

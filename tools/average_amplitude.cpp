@@ -25,10 +25,13 @@ struct bhelper
     double b;
 };
 
-const int INTPOINTS = 60;
+const int INTPOINTS = 1;
 const double INTACCURACY = 0.5;
+const double MINB=0;
+const double MAXB=1;
 double rhelperf(double theta_r, void* p); // average over dipole orientation
-double bhelperf(double theta_b, void* p); // average over b angle
+double bhelperf(double b, void* p); // average over b
+double bhelperf_theta(double theta_b, void* p);
 
 int main(int argc, char* argv[])
 {
@@ -38,6 +41,7 @@ int main(int argc, char* argv[])
     
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
+    gsl_set_error_handler_off ();
     
     IPGlasma glasma(fname);
     bhelper helper;
@@ -55,28 +59,28 @@ int main(int argc, char* argv[])
     
     for (double r=1e-3; r<20; r*=1.2)
     {
-double x1[2]={StrToReal(argv[2]),r/2.0}; double x2[2]={StrToReal(argv[2]),-r/2.0};
-	double result = glasma.Amplitude(1e-3,x1,x2);
+        double x1[2]={StrToReal(argv[2]),r/2.0}; double x2[2]={StrToReal(argv[2]),-r/2.0};
+        double fixedresult = glasma.Amplitude(1e-3,x1,x2);
     
-        /* 
+        helper.r = r;
         gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS);
         double result,error;
-        int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 1e-5, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
+        int status = gsl_integration_qag(&f, MINB, MAXB, 1e-5, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
         
-        if (status)
-            cerr << "#btheta_b int failed, result  " << result << " relerror " << error << " r " <<r  << endl;
+        //if (status)
+          //  cerr << "#bint failed (" << gsl_strerror (status) << ", result  " << result << " relerror " << error/result << " r " <<r  << endl;
         
         
         gsl_integration_workspace_free(w);
         
-        result = result / (2.0*M_PI*2.0*M_PI);
-        */
+        result = result / (2.0*M_PI*M_PI*(MAXB-MINB)*(MAXB-MINB));
+        
         // IPsat comparison
 	double b = StrToReal(argv[2]);
         Vec q1(b+0.5*r,0); Vec q2(b-0.5*r,0);
         double ipsat_n = ipsat.DipoleAmplitude::Amplitude(1e-3, q1, q2);
         
-        cout << r << " " << result << " " << ipsat_n << endl;
+        cout << r << " " << fixedresult << " " << result << " " << ipsat_n << endl;
     }
     
     
@@ -85,7 +89,32 @@ double x1[2]={StrToReal(argv[2]),r/2.0}; double x2[2]={StrToReal(argv[2]),-r/2.0
 }
 
 
-double bhelperf(double theta_b, void* p)
+double bhelperf(double b, void* p)
+{
+    bhelper* par = (bhelper*)p;
+    par->b = b;
+    gsl_function f;
+    f.function = &bhelperf_theta; // do a circle around the proton
+    f.params = par;
+    
+    
+    
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS);
+    double result,error;
+    int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 1e-5, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
+    
+    //if (status)
+      //  cerr << "#btheta failed (" << gsl_strerror (status)  << "), result  " << result << " relerror " << error/result << " b " <<b << endl;
+    
+    gsl_integration_workspace_free(w);
+    
+    return b*result;
+    
+    
+}
+
+
+double bhelperf_theta(double theta_b, void* p)
 {
     bhelper* par = (bhelper*)p;
     par->theta_b = theta_b;
@@ -99,8 +128,8 @@ double bhelperf(double theta_b, void* p)
     double result,error;
     int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 1e-5, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
     
-    if (status)
-        cerr << "#btheta_r int failed, result  " << result << " relerror " << error << " theta_b " <<theta_b << endl;
+   // if (status)
+     //   cerr << "#btheta_r int failed, result  " << result << " relerror " << error << " theta_b " <<theta_b << endl;
     
     gsl_integration_workspace_free(w);
     
