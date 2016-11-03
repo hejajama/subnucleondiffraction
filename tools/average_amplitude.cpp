@@ -25,7 +25,7 @@ struct bhelper
     double b;
 };
 
-const int INTPOINTS = 1;
+const int INTPOINTS = 2;
 const double INTACCURACY = 0.5;
 const double MINB=0;
 const double MAXB=1;
@@ -56,6 +56,8 @@ int main(int argc, char* argv[])
     gsl_function f;
     f.function = &bhelperf;  // do a circle around the proton
     f.params = &helper;
+    
+    cout << "# r [1/GeV]  N(x=" << argv[2] << ", y=+/- r/2),  <N(r, " << MINB << "<b<"<<MAXB << "), IPsat N(r,b=" << argv[2] << ")" << endl;
     
     for (double r=1e-3; r<20; r*=1.2)
     {
@@ -119,7 +121,7 @@ double bhelperf_theta(double theta_b, void* p)
     bhelper* par = (bhelper*)p;
     par->theta_b = theta_b;
     gsl_function f;
-    f.function = &rhelperf;  // do a circle around the proton
+    f.function = &rhelperf;  // rotate dipole
     f.params = par;
     
     
