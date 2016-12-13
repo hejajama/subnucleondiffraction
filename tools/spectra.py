@@ -5,6 +5,7 @@
 import os
 import sys
 import math
+import scipy.integrate
 
 def sqr(x):
     return x*x
@@ -15,7 +16,7 @@ sys.path.append("/nashome2/hejajama/lib/")
 from matplotlibhelper import *
 import numpy as np
 
-
+GEVSQRTONB = 1.0e7/(5.068*5.068)
 dir = ""
 imagdir = ""
 corrections_file=""  # if set, read corrections from separated file
@@ -131,7 +132,11 @@ for f in files:
     fnames.append(fname_real)
 
 if len(realparts) != len(imagparts):
-    print "ERROR! different number of real and imaginary parts!"
+    print >> sys.stderr, "ERROR! different number of real and imaginary parts!"
+    sys.exit(-1)
+
+if len(realparts)==0:
+    print >> sys.stderr, "ERRROR! Only 0 files in the dir " + dir
     sys.exit(-1)
 
 print "# Read " + str(len(realparts)) + " amplitudes from dir " + dir
@@ -153,6 +158,16 @@ if corrections_file != "":
             print str(tvals_corrections)
             sys.exit(-1)
 
+
+# Array to save dsigma/dt at each config
+# syntax coherent_dt_data[config][tind]
+coherent_dt_data = []
+for c in range(len(realparts)):
+    tmplist=[]
+    for t in range(len(realparts[0])):
+        tmplist.append(0)
+    coherent_dt_data.append(tmplist)
+
 # Ok, calculate coheret xs
 if coherent:
     # <A_T>^2 + <A_L>^2
@@ -168,6 +183,19 @@ if coherent:
         amp_l_imag = []
         xs_t=[]   # cross sections from individual files
         xs_l=[]
+        
+        # Get correction
+        correction_t=1.0
+        correction_l=1.0
+        if corrections_file != "":
+            if len(corrections_t) <= t: # Use highest t calculated
+                correction_t = corrections_t[len(corrections_t)-1]
+                correction_l = corrections_l[len(corrections_l)-1]
+            else:
+                correction_t = corrections_t[t]
+                correction_l = corrections_l[t]
+    
+    
         for conf in range(len(realparts)):
             # check if the calculations is done at high t
             if len(realparts[conf]) <= t or len(imagparts[conf])<=t:
@@ -184,6 +212,9 @@ if coherent:
                 amp_l_imag.append(imagparts[conf][t][1])
                 xs_t.append(sqr(amp_t_real[-1]) + sqr(amp_t_imag[-1]))
                 xs_l.append(sqr(amp_l_real[-1])+ sqr(amp_l_imag[-1]))
+            
+                # Save corrected coheret xs for later use
+                coherent_dt_data[conf][t] = (xs_t[-1]*correction_t + xs_l[-1]*correction_l)/(16.0*pi)
             #print conf,t,realparts[conf][t][0], sum_real_t
             except IndexError:  # Some calculation was not done at high enough t, skip
                 print "# WHY INDEX ERROR at " + str(conf) + " at t " + str(tvals[t])
@@ -195,16 +226,7 @@ if coherent:
         
         
 
-        # Get correction
-        correction_t=1.0
-        correction_l=1.0
-        if corrections_file != "":
-            if len(corrections_t) <= t: # Use highest t calculated
-                correction_t = corrections_t[len(corrections_t)-1]
-                correction_l = corrections_l[len(corrections_l)-1]
-            else:
-                correction_t = corrections_t[t]
-                correction_l = corrections_l[t]
+
         
         # staterr
         #staterr_t = sqr(np.std( amp_t_real ) / sqrt(len(amp_t_real))) + sqr(np.std( amp_t_imag ) / sqrt(len(amp_t_imag)))
@@ -236,9 +258,6 @@ if coherent:
         staterr= staterr_t + staterr_l
 
         print tvals[t], xs, max_xs, min_xs, staterr/(16.0*pi)
-
-
-
 
 
 # Incoherent xs

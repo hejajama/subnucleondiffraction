@@ -81,7 +81,7 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         {
             // We have so large r, that basically n=1 and c blows up, these should not matter
             // as wave function cuts these out anyway, but we can just set amplitude to 1
-            return 0.0;
+            return 1.0;
         }
         
         double tp = 1.0/(2.0*M_PI*4.0)*std::exp(- tmpb*tmpb / (2.0*4.0));

@@ -109,6 +109,8 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     helper.t = t;
     helper.polarization=pol;
 
+    
+    
     // Do MC integral over impact parameters and dipole sizes
     
     // Currently hardcoded parameters for jpsi and gold:

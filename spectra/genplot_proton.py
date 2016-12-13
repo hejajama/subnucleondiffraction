@@ -36,9 +36,10 @@ minx=0.0
 maxx=2.50
 miny=0.02
 maxy=1.5e3
+#maxy=60
 
 show_coherent = True
-show_incoherent = False
+show_incoherent = True
 
 #maxx=3
 
@@ -133,12 +134,12 @@ files = [
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_fixedx", r"Fixed, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"Lumpy $(B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2})$", Linestyle(0), 'black', "", 1.0, "black"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
-         ["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"Lumpy", Linestyle(0), 'red', "", 1.0, "red"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
+         #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"Lumpy", Linestyle(0), 'red', "", 1.0, "red"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
          #["paper_2/ipsat_bp_3.3_bq_0.5_w_75_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          
          #smooth
-         ["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx", r"Smooth", Linestyle(2), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx", r"Smooth", Linestyle(2), 'blue', "", 1.0, "blue"],
          
          
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_fixedx", r"No geometric fluctuations", Linestyle(3), 'green', "", 1.0, "green"],
@@ -170,7 +171,8 @@ files = [
          
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift_onlyreal", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$ only real", Linestyle(1), "blue", "", 1.0, "black"],
          
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"Geometric, color charge and $Q_s$", Linestyle(0), "black", "", 1.0, "black"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
+         ["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"IP-Glasma, large geometric fluctuations", Linestyle(0), "black", "", 1.0, "black"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
+         ["ipglasma_smallfluctuations", r"IP-Glasma, small geometric fluctuations", Linestyle(1), "red", "", 1.0, "red"],
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(1), "blue", "", 1.0, "blue"],
          #["paper_2/ipglasma_bp_2.0_bq_0.5_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.5\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(2), "red", "", 1.0, "red"],
          
@@ -199,84 +201,89 @@ files = [
 
 style=-1
 color=-1
-for f in files:
-    color = color + 1
-    style = style + 1
-    xdata=[]
-    ydata=[]
-    staterrs=[]
-    lower=[]
-    upper=[]
-    tmp=[]
-    fname = "proton/coherent/" +f[0]
-    print fname
-    try:
-        readfile_xy(fname, xdata, ydata)
-        scale_list(ydata, GEVSQRTONB*f[5])
-    except Exception, e:
-        print "Error with file " + fname + ": " + str(e)
-        continue
-
-    if ShowStatErrs:
+if show_coherent:
+    for f in files:
+        color = color + 1
+        style = style + 1
+        xdata=[]
+        ydata=[]
+        staterrs=[]
+        lower=[]
+        upper=[]
+        tmp=[]
+        fname = "proton/coherent/" +f[0]
+        print fname
         try:
-            readfile_xy(fname, tmp, staterrs, ycol=4)
-            scale_list(staterrs, GEVSQRTONB*f[5])
-            readfile_xy(fname, tmp, upper, ycol=2)
-            readfile_xy(fname, tmp, lower, ycol=3)
-            scale_list(lower, GEVSQRTONB*f[5])
-            scale_list(upper, GEVSQRTONB*f[5])
-        except:
-            print "Cant read staterrs for file " + fname
-            staterrs=[]
+            readfile_xy(fname, xdata, ydata)
+            scale_list(ydata, GEVSQRTONB*f[5])
+        except Exception, e:
+            print "Error with file " + fname + ": " + str(e)
+            continue
 
-    # band
-    if ShowBand and len(upper)>0:
-        p1.fill_between(xdata, lower, upper, alpha=0.2, edgecolor='#1B2ACC', facecolor='#089FFF')
+        if ShowStatErrs:
+            try:
+                readfile_xy(fname, tmp, staterrs, ycol=4)
+                scale_list(staterrs, GEVSQRTONB*f[5])
+                readfile_xy(fname, tmp, upper, ycol=2)
+                readfile_xy(fname, tmp, lower, ycol=3)
+                scale_list(lower, GEVSQRTONB*f[5])
+                scale_list(upper, GEVSQRTONB*f[5])
+            except:
+                print "Cant read staterrs for file " + fname
+                staterrs=[]
 
-    if ShowStatErrs and len(staterrs)>0:
-        p1.plot(xdata, ydata, linestyle=f[2], color=f[6], label=f[1], linewidth=lw_coh)
-        p1.fill_between(xdata, np.array(ydata)-np.array(staterrs), np.array(ydata)+np.array(staterrs), alpha=0.2, facecolor=f[3], edgecolor='none', hatch=f[4])
+        # band
+        if ShowBand and len(upper)>0:
+            p1.fill_between(xdata, lower, upper, alpha=0.2, edgecolor='#1B2ACC', facecolor='#089FFF')
 
-        #p1.errorbar(xdata, ydata, marker=datadashes[1], yerr=staterrs, label=f[1], linewidth=1.8, markersize=2, linestyle=f[2], color=Color(color))
-        totxs = scipy.integrate.simps(np.array(ydata),np.array(xdata))
-        print f[1] + " totxs " + str(totxs)
-    else:
-        #plot
-        p1.plot(xdata, ydata, linestyle=f[2], color=f[6], label=f[1], linewidth=lw_coh)
+        if ShowStatErrs and len(staterrs)>0:
+            p1.plot(xdata, ydata, linestyle=f[2], color=f[6], label=f[1], linewidth=lw_coh)
+            p1.fill_between(xdata, np.array(ydata)-np.array(staterrs), np.array(ydata)+np.array(staterrs), alpha=0.2, facecolor=f[3], edgecolor='none', hatch=f[4])
 
-        totxs = scipy.integrate.simps(np.array(ydata),np.array(xdata))
-        print f[1] + " totxs " + str(totxs)
+            #p1.errorbar(xdata, ydata, marker=datadashes[1], yerr=staterrs, label=f[1], linewidth=1.8, markersize=2, linestyle=f[2], color=Color(color))
+            totxs = scipy.integrate.simps(np.array(ydata),np.array(xdata))
+            print f[1] + " totxs " + str(totxs)
+        else:
+            #plot
+            p1.plot(xdata, ydata, linestyle=f[2], color=f[6], label=f[1], linewidth=lw_coh)
+
+            totxs = scipy.integrate.simps(np.array(ydata),np.array(xdata))
+            print f[1] + " totxs " + str(totxs)
 
 # incoh
 color = 0
-for f in files:
-    
-    style = style + 1
-    xdata=[]
-    ydata=[]
-    tmp=[]
-    staterr=[]
-    fname = "proton/incoherent/" + f[0]
-    print fname
-    try:
-        readfile_xy(fname, xdata, ydata)
-        scale_list(ydata, GEVSQRTONB*f[5])
-        readfile_xy(fname, tmp, staterr, ycol=2)
-        scale_list(staterr, GEVSQRTONB*f[5])
-    
-    except Exception, e:
-        print "Error " + str(e) + " with file " + fname
-        continue
-    
-    #p1.plot(xdata, ydata, linestyle=f[2], color=Color(color), label=r"", linewidth=1.0)
-    p1.plot(xdata, ydata, label="", linestyle=f[2], color=f[6], linewidth=lw_incoh)
-    p1.fill_between(xdata, np.array(ydata)-np.array(staterr), np.array(ydata)+np.array(staterr), alpha=0.2, edgecolor='none', facecolor=f[3], hatch=f[4])
-    color = color + 1
+if show_incoherent:
+    for f in files:
+        
+        style = style + 1
+        xdata=[]
+        ydata=[]
+        tmp=[]
+        staterr=[]
+        fname = "proton/incoherent/" + f[0]
+        print fname
+        try:
+            readfile_xy(fname, xdata, ydata)
+            scale_list(ydata, GEVSQRTONB*f[5])
+            readfile_xy(fname, tmp, staterr, ycol=2)
+            scale_list(staterr, GEVSQRTONB*f[5])
+        
+        except Exception, e:
+            print "Error " + str(e) + " with file " + fname
+            continue
+        
+        #p1.plot(xdata, ydata, linestyle=f[2], color=Color(color), label=r"", linewidth=1.0)
+        lbl = f[1]
+        if show_coherent:
+            lbl=""  # Label already printed for coherent
+        p1.plot(xdata, ydata, label=lbl, linestyle=f[2], color=f[6], linewidth=lw_incoh)
+        p1.fill_between(xdata, np.array(ydata)-np.array(staterr), np.array(ydata)+np.array(staterr), alpha=0.2, edgecolor='none', facecolor=f[3], hatch=f[4])
+        color = color + 1
 
-p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
-p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
-if w_75_data:
-    p1.plot([1,2], [-1,-2], '-', color='white', label=r"H1")
+#p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
+#p1.plot(np.NaN, np.NaN, '-', color='white', label=r"$\mathrm{}$")
+#if w_75_data:
+#    p1.plot([1,2], [-1,-2], '-', color='white', label=r"H1")
 
 if not w_75_data:
     # h1 data
@@ -286,7 +293,8 @@ if not w_75_data:
     tmp=[]
     readfile_xy("proton/coherent/exp/h1_q2_0_w_100", expx, expy)
     readfile_xy("proton/coherent/exp/h1_q2_0_w_100", tmp, experr, ycol=2)
-    p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=1, markersize=markersize_coh, label=r"Coherent H1", color=Color(1), markeredgecolor=Color(1))
+    if show_coherent:
+        p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=1, markersize=markersize_coh, label=r"Coherent H1", color=Color(1), markeredgecolor=Color(1))
 
 
     # h1 data
@@ -314,7 +322,8 @@ if not w_75_data:
     tmp=[]
     readfile_xy("proton/coherent/exp/zeus_q2_0_w_100", expx, expy)
     readfile_xy("proton/coherent/exp/zeus_q2_0_w_100", tmp, experr, ycol=2)
-    p1.errorbar(expx, expy, yerr=experr, marker=datadashes[1], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(2), markeredgecolor=Color(2),label=r"Coherent ZEUS")
+    if show_coherent:
+        p1.errorbar(expx, expy, yerr=experr, marker=datadashes[1], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(2), markeredgecolor=Color(2),label=r"Coherent ZEUS")
 
     expx=[]
     expy=[]
@@ -322,7 +331,8 @@ if not w_75_data:
     tmp=[]
     readfile_xy("proton/incoherent/exp/h1_jpsi_w_100", expx, expy)
     readfile_xy("proton/incoherent/exp/h1_jpsi_w_100", tmp, experr, ycol=2)
-    p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(1), markeredgecolor=Color(1), label=r"Total H1")
+    if show_incoherent:
+        p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(1), markeredgecolor=Color(1), label=r"Total H1")
 
 
     expx=[]
@@ -334,7 +344,8 @@ if not w_75_data:
     #scale_list(expy, 1000)
     #scale_list(pluserr, 1000)
     #scale_list(minuserr, 1000)
-    p1.errorbar(expx, expy, yerr=[minuserr,pluserr], marker=datadashes[1], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(2), markeredgecolor=Color(2), label=r"Incoherent ZEUS")
+    if show_incoherent:
+        p1.errorbar(expx, expy, yerr=[minuserr,pluserr], marker=datadashes[1], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(2), markeredgecolor=Color(2), label=r"Incoherent ZEUS")
 
     #old zeus
     expx=[]
@@ -356,16 +367,18 @@ if w_75_data:
     tmp=[]
     readfile_xy("proton/coherent/exp/h1_jpsi_w_75", expx, expy)
     readfile_xy("proton/coherent/exp/h1_jpsi_w_75", tmp, experr, ycol=2)
-    p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(0), markeredgecolor=Color(0), label=r"Coherent")
+    if show_coherent:
+        p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(0), markeredgecolor=Color(0), label=r"Coherent")
     expx=[]
     expy=[]
     experr=[]
     tmp=[]
     readfile_xy("proton/incoherent/exp/h1_jpsi_w_75", expx, expy)
     readfile_xy("proton/incoherent/exp/h1_jpsi_w_75", tmp, experr, ycol=2)
-    p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(1), markeredgecolor=Color(1), label=r"Incoherent")
+    if show_incoherent:
+        p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(1), markeredgecolor=Color(1), label=r"H1 incoherent")
 
-p1.text(0.2,0.1,"IPsat", fontsize=textsize)
+#p1.text(0.2,0.1,"IP-Glasma", fontsize=textsize)
 
 yscale("log",nonposy='clip')
 #xscale("log")
@@ -375,7 +388,7 @@ legfont = textsize-8.5 #-8
 # orig legfont + 2
 if slides:
     legfont = legfont + 3
-leg=legend(prop=dict(size=legfont+2),labelspacing=0.001,ncol=2,numpoints=1, loc=1)
+leg=legend(prop=dict(size=legfont+2),labelspacing=0.001,ncol=1,numpoints=1, loc=1)
 leg.draw_frame(False)
 
 #plt.gcf().subplots_adjust(top=0.9)

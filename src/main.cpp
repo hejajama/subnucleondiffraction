@@ -409,13 +409,13 @@ int main(int argc, char* argv[])
         double structurefun = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l+xs_t);
         
         // heavy quark contribution
-        /*((VirtualPhoton*)photon)->SetQuark(Amplitude::C);
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.4);
         cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
         double xs_t_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
         double xs_l_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, L);
         double structurefun_c = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c+xs_t_c);
-        */
-	double structurefun_c=0;
+        
+	
         cout << structurefun << " " << structurefun_c << " " << structurefun + structurefun_c << endl;
         //DIS dis(amp);
         //cout << dis.F2(Qsqr, xbj) << endl;
