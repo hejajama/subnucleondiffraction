@@ -337,7 +337,7 @@ int main(int argc, char* argv[])
     {
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
-        double tstep = 0.1;
+        double tstep = 0.025;
         for (t=0; t<=2; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);

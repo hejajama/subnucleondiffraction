@@ -18,6 +18,11 @@ const double FMGEV = 5.067731;
 using std::cout;
 using std::endl;
 
+// Hulthen:
+// Extended Hulthen: Phys. Rev. 151, 772
+enum DeuteronWaveFunction { Hulthen, ExtendedHulthen };
+const DeuteronWaveFunction DEUTERON = ExtendedHulthen;
+
 double Nucleons::Amplitude(double xpom, double q1[2], double q2[2] )
 {
     // Calculate scattering amplitude in Glauber approach
@@ -52,16 +57,18 @@ void Nucleons::InitializeTarget()
         // Sample difference
        
         double maxr = 15*FMGEV;
-        double probability_amp=0;
+        double probability=0;
     
         Vec tmp;
         do {
+            
             Vec tmpvec (2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
                         2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
                         2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr);
             tmp=tmpvec;
-            probability_amp = DeuteronWaveFunction(tmp.Len());
-        } while (gsl_rng_uniform(global_rng) > probability_amp*probability_amp);
+            probability = DeuteronWaveFunction(tmp.Len());
+            
+        } while (gsl_rng_uniform(global_rng) > probability);
         // Now vec is from proton to neutron, put origin at the center
         Vec proton = tmp*0.5;
         Vec neutron = proton*(-1);
@@ -113,6 +120,10 @@ std::string Nucleons::InfoStr()
     {
         ss << "#DipoleAmplitude: Deuteron nucleus, nucleon coordinates (" << nucleon_positions[0].GetX() << ", " << nucleon_positions[0].GetY() << ") and (" <<  nucleon_positions[1].GetX() << ", " << nucleon_positions[1].GetY() << endl;
         ss << nucleons[0]->InfoStr() << endl << nucleons[1]->InfoStr() << endl;
+        if (DEUTERON == Hulthen)
+            ss << "# Deuteron wave function: Hulthen" << endl;
+        else if (DEUTERON == ExtendedHulthen)
+            ss << "# Deuteron wave function: ExtendedHulthen" << endl;
     }
     else
     {
@@ -132,14 +143,42 @@ Nucleons::~Nucleons()
 
 /*
  * Deuteron wave function, r is a 3d vector
- * used in IP-Glasma calculations in 1304.3403, orig. ref.
+ * used in IP-Glasma calculations in 1304.3403, 
+ * orig. ref. Ann. Rev. Nucl. Part. Sci. 57, 205 (2007).
  * Probability is wavef^2
  */
 double Nucleons::DeuteronWaveFunction(double r)
 {
     if (r<1e-10)
         return 0;   // Forbid zero distance
-    double a = 0.228/FMGEV; // 0.228 1/fm = 0.228/5.068 GeV
-    double b =1.18/FMGEV;
-    return 1.0/sqrt(2.0*M_PI) * sqrt(a*b*(a+b))/(b-a) * (exp(-a*r) - exp(-b*r))/r;
+    
+    if (DEUTERON == Hulthen)
+    {
+        double a = 0.228/FMGEV; // 0.228 1/fm = 0.228/5.068 GeV
+        double b =1.18/FMGEV;
+        double probability_amp = 1.0/sqrt(2.0*M_PI) * sqrt(a*b*(a+b))/(b-a) * (exp(-a*r) - exp(-b*r))/r;
+        return probability_amp*probability_amp;
+        // Todo: maximum of this is very small, so rejection sampling does not work well
+    }
+    else if (DEUTERON == ExtendedHulthen)
+    {
+        // This parametrization is already squared, and assumes r is in fm
+        r = r / FMGEV;
+        if (r<0.02)
+            return 0;
+        //Phys. Rev. 151, 772
+        double alpha = 0.2338;
+        double Cvals[4] = {-0.63608, -6.6150, 15.2162, -8.9651};
+        double evals[4] = {5.733*alpha, 12.844*alpha, 17.331*alpha, 19.643*alpha};
+        
+        double sum=0;
+        for (int i=0; i<4; i++)
+            sum += Cvals[i]*exp(-evals[i]*r);
+        sum += exp(-alpha*r);
+        
+        return sum*sum /(r*r);   // This is always <1, so rejection sampling works
+        // Note that here the parametrization in the Ref. is for the r distribution and thus includes Jacobian, so we have to remove it by normalizing by r^2
+        // I have checked that at r>0.02fm this function is <1, thus rejection sampling works
+        // sum*sum, as we return probability which is wavef^2
+    }
 }

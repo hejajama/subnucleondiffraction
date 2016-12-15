@@ -3,7 +3,7 @@ LDFLAGS = `/opt/local/bin/gsl-config --libs` libColorDipole/libraries/libColorDi
 
 include filelist.m
 
-CXX = g++-mp-5
+CXX = /opt/local/bin/g++-mp-5
 
 all: diffraction
 
