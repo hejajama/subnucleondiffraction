@@ -14,11 +14,10 @@ using Amplitude::SQR;
 
 using namespace std;
 
-Smooth_ws_nuke::Smooth_ws_nuke()
+Smooth_ws_nuke::Smooth_ws_nuke(int A_)
 {
-    A=197;
+    A=A_;
     InitializeWSDistribution(A);
-    
 }
 
 double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )

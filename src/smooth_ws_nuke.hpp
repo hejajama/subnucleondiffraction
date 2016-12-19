@@ -13,7 +13,7 @@
 class Smooth_ws_nuke : public DipoleAmplitude
 {
 public:
-    Smooth_ws_nuke();
+    Smooth_ws_nuke(int A=197);
     double Amplitude(double xpom, double q1[2], double q2[2] );
 private:
     int A;
