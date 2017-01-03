@@ -15,7 +15,6 @@
 #include <gsl/gsl_errno.h>
 
 #include "dipole.hpp"
-#include "smooth_ws_nuke.hpp"
 #include "diffraction.hpp"
 #include "gauss_boost.hpp"
 #include "ipsat_nucleons.hpp"
@@ -57,6 +56,7 @@ int main(int argc, char* argv[])
     double t=0.1;
     int A=1;
     DGLAPDist *gd=0;  // Initialized and used if we have nucleus consisting of ipsatnucleons
+    int he3_id=-1;   // Used to set He3 configuration
     
     //double xpom=0.000959089;
     double w = 100;
@@ -86,6 +86,7 @@ int main(int argc, char* argv[])
         cout << "-satscale: print saturation scale" << endl;
         cout << "-F2 Qsqr x: calculate structure function" << endl;
         cout << "-wavef_file filename" << endl;
+        cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
         return 0;
     }
     
@@ -222,6 +223,8 @@ int main(int argc, char* argv[])
             Qsqr = StrToReal(argv[i+1]);
             xbj=StrToReal(argv[i+2]);
         }
+        else if (string(argv[i])=="-He3")
+            he3_id = StrToInt(argv[i+1]);
         else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -255,6 +258,10 @@ int main(int argc, char* argv[])
             cerr << "Q_s fluctuations not implemented for nucleus!" << endl;
             exit(1);
         }
+    }
+    if (A==3)
+    {
+        ((Nucleons*)amp)->SetHeId(he3_id);
     }
     
     amp->InitializeTarget();

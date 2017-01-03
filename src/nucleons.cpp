@@ -12,11 +12,13 @@
 #include <cmath>
 #include <sstream>
 #include <string>
+#include <fstream>
+
 
 const double FMGEV = 5.067731;
 
-using std::cout;
-using std::endl;
+using namespace std;
+
 
 // Hulthen:
 // Extended Hulthen: Phys. Rev. 151, 772
@@ -78,19 +80,69 @@ void Nucleons::InitializeTarget()
         nucleon_positions.push_back(neutron);
 
     }
-    for (int i=0; i<A; i++)
-    {   
-        nucleons[i]->InitializeTarget();
-        double maxr = 3.0*ws_ra;
+    // He 3
+    else if (A==3)
+    {
+        nucleons[0]->InitializeTarget();
+        nucleons[1]->InitializeTarget();
+        nucleons[2]->InitializeTarget();
+        // Nucleon coordinates are in file he3.dat
+        // Format: x y z x y z x y z
+        std::ifstream f("he3.dat");
         
-        Vec tmp;
-        do {
-            Vec tmpvec (2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
-                            2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
-                            2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr);
-            tmp=tmpvec;
-        } while (gsl_rng_uniform(global_rng) > WS_unnorm(tmp.Len())); // WS distribution!
-        nucleon_positions.push_back(tmp);
+        if (!f.is_open())
+        {
+            std::cerr << "Could not open file he3.dat " << std::endl;;
+            exit(1);
+            return;
+        }
+        std::string line;
+        
+        int index=-1;
+        bool found=false;
+        while(!f.eof() )
+        {
+            index++;
+            std::getline(f, line);
+            if (index != he3_id)
+                continue;
+            
+            // This is the correct line
+            found=true;
+            double x1,y1,z1,x2,y2,z2,x3,y3,z3;
+            stringstream ss(line);
+            ss>>x1; ss>>y1; ss>>z1;
+            ss>>x2; ss>>y2; ss>>z2;
+            ss>>x3; ss>>y3; ss>>z3;
+            Vec n1(x1*FMGEV,y1*FMGEV); Vec n2(x2*FMGEV,y2*FMGEV); Vec n3(x3*FMGEV,y3*FMGEV);
+            nucleon_positions.push_back(n1);
+            nucleon_positions.push_back(n2);
+            nucleon_positions.push_back(n3);
+            break;
+            
+        }
+        if (found==false)
+        {
+            cerr << "Did not found He3 config " << he3_id << endl;
+            exit(1);
+        }
+    }
+    else
+    {
+        for (int i=0; i<A; i++)
+        {   
+            nucleons[i]->InitializeTarget();
+            double maxr = 3.0*ws_ra;
+            
+            Vec tmp;
+            do {
+                Vec tmpvec (2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
+                                2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
+                                2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr);
+                tmp=tmpvec;
+            } while (gsl_rng_uniform(global_rng) > WS_unnorm(tmp.Len())); // WS distribution!
+            nucleon_positions.push_back(tmp);
+        }
     }
     
 }
@@ -102,6 +154,7 @@ Nucleons::Nucleons(std::vector<DipoleAmplitude*> nucleons_)
     nucleons=nucleons_;
     ws_delta=0.54*FMGEV;
     ws_ra = 1.12 * std::pow(A, 1.0/3.0) * FMGEV;
+    he3_id=-1;
 
 }
 
@@ -125,6 +178,11 @@ std::string Nucleons::InfoStr()
         else if (DEUTERON == ExtendedHulthen)
             ss << "# Deuteron wave function: ExtendedHulthen" << endl;
     }
+    else if (A==3)
+    {
+        ss << "#DipoleAmplitude: He3 configuration " << he3_id << endl;
+        ss << "# (" << nucleon_positions[0].GetX() << ", " << nucleon_positions[0].GetY() << "), (" <<nucleon_positions[1].GetX() << ", " << nucleon_positions[1].GetY() << "), (" << nucleon_positions[2].GetX() << ", " << nucleon_positions[2].GetY() << ")" << endl;
+     }
     else
     {
         ss << "#DipoleAmplitude: Nucleus cosisting of " << A << " nucleons, nucleon 0 info: " << endl;
@@ -181,4 +239,15 @@ double Nucleons::DeuteronWaveFunction(double r)
         // I have checked that at r>0.02fm this function is <1, thus rejection sampling works
         // sum*sum, as we return probability which is wavef^2
     }
+}
+
+
+void Nucleons::SetHeId(int i)
+{
+    if (i<0 or i>13698)
+    {
+        cerr << "He3 id " << i << " can not be used! Must be between 0 and 13698" << endl;
+        exit(1);
+    }
+    he3_id=i;
 }

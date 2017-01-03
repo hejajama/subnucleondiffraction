@@ -87,6 +87,9 @@ double inthelperf_dis_theta_b(double theta_b, void* p)
     fun.params=par;
     fun.function = inthelperf_dis_r;
     
+    
+    
+    
     double result,abserr;
     gsl_integration_workspace* ws = gsl_integration_workspace_alloc(MAXITER_INT);
     int status = gsl_integration_qag(&fun, 0, 999, 0, 0.01,

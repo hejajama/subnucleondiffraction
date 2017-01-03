@@ -22,7 +22,7 @@ public:
     
     void InitializeTarget();
     
-    
+    void SetHeId(int i);    // Set He3 id
     
     Nucleons(std::vector<DipoleAmplitude*> nucleons);
     ~Nucleons();
@@ -39,6 +39,8 @@ private:
     
     double ws_delta;
     double ws_ra;
+    
+    int he3_id; // which He3 configuration we use
     
 };
 

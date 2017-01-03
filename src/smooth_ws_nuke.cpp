@@ -6,7 +6,9 @@
 
 #include "smooth_ws_nuke.hpp"
 #include <tools/tools.hpp>
+#include <tools/interpolation.hpp>
 #include <cmath>
+#include <vector>
 
 using Amplitude::SQR;
 
@@ -18,8 +20,25 @@ Smooth_ws_nuke::Smooth_ws_nuke(int A_)
 {
     A=A_;
     InitializeWSDistribution(A);
+    
+    // Initialize interpolator
+    vector<double> bvals;
+    vector<double> tavals;
+    for (double b=0; b<100; b+=0.1)
+    {
+        bvals.push_back(b);
+        tavals.push_back(T_A(b, A));
+    }
+    T_A_interpolator = new Interpolator(bvals, tavals);
+    T_A_interpolator->SetOverflow(0);
+    T_A_interpolator->SetUnderflow(0);
+    T_A_interpolator->SetFreeze(true);
 }
 
+Smooth_ws_nuke::~Smooth_ws_nuke()
+{
+    delete T_A_interpolator;
+}
 double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
 {
         
@@ -32,7 +51,7 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
     // Take the nucleon density at the geometric center of the two quarks
     double b = std::sqrt( SQR( (q1[0]+q2[0])/2.0 ) + SQR( (q1[1]+q2[1])/2.0) );
     
-    return 1.0 - exp( -A*gdist.Gluedist(xpom, r*r) *r*r* T_A(b, A));
+    return 1.0 - exp( -A*gdist.Gluedist(xpom, r*r) *r*r* T_A_interpolator->Evaluate(b));
     
     // As T_A is normalized to unity, we get no extra normalizatino factor for it
     
