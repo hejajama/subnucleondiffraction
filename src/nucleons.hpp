@@ -32,6 +32,8 @@ public:
     
     double DeuteronWaveFunction(double r);  // Deuteron wf, r is 3d vector
     
+    std::vector<DipoleAmplitude*> GetNucleons();
+    
 private:
     int A;
     std::vector<DipoleAmplitude*> nucleons; // Todo: change to support general proton/nucleon class?

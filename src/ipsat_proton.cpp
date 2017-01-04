@@ -453,7 +453,7 @@ Ipsat_Proton::Ipsat_Proton()
 {
     gdist = new DGLAPDist();
     allocated_gdist = true;
-    ipsat = IPSAT06;
+    ipsat = IPSAT12;
     Init();
     
 }

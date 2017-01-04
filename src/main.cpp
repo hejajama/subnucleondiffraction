@@ -251,12 +251,19 @@ int main(int argc, char* argv[])
     amp->SetSkewedness(skewedness);
     if (qsfluct_sigma > 0)
     {
+        if (A==1)
+        {
         ((Ipsat_Proton*)amp)->SetQsFluctuation(qsfluct_sigma);
         ((Ipsat_Proton*)amp)->SetFluctuationShape(fluctshape);
-        if (A>1)
+        }
+        else
         {
-            cerr << "Q_s fluctuations not implemented for nucleus!" << endl;
-            exit(1);
+            std::vector<DipoleAmplitude*> nucleons = ((Nucleons*)amp)->GetNucleons();
+            for (unsigned int i=0; i<nucleons.size(); i++)
+            {
+                ((Ipsat_Proton*)nucleons[i])->SetQsFluctuation(qsfluct_sigma);
+                ((Ipsat_Proton*)nucleons[i])->SetFluctuationShape(fluctshape);
+            }
         }
     }
     if (A==3)

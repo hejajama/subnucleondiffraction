@@ -251,3 +251,8 @@ void Nucleons::SetHeId(int i)
     }
     he3_id=i;
 }
+
+std::vector<DipoleAmplitude*> Nucleons::GetNucleons()
+{
+    return nucleons;
+}
