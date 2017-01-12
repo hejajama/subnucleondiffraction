@@ -18,6 +18,7 @@
 #include "diffraction.hpp"
 #include "gauss_boost.hpp"
 #include "ipsat_nucleons.hpp"
+#include "smooth_ws_nuke.hpp"
 #include "ipsat_proton.hpp"
 #include "vector.hpp"
 #include "subnucleon_config.hpp"
@@ -77,7 +78,7 @@ int main(int argc, char* argv[])
     {
         cout << "-Q2, -W: set kinematics" << endl;
         cout << "-real, -imag: set real/imaginary part" << endl;
-        cout << "-dipole A [ipglasma,ipsatproton] [ipglasmafile, ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [albacete]" << endl;
+        cout << "-dipole A [ipglasma,ipsatproton,smoothnuke] [ipglasmafile, ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [albacete]" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points/auto" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
@@ -152,42 +153,49 @@ int main(int argc, char* argv[])
             }
             else
             {
-                // Construct nucleus
-                std::vector<DipoleAmplitude* > nucleons;
-                for (int j=0; j<A; j++)
+                if (string(argv[i+2])=="smoothnuke")
                 {
-                    if (string(argv[i+2])=="ipsatproton")
+                    amp = new Smooth_ws_nuke(A);
+                }
+                else
+                {
+                    // Construct nucleus
+                    std::vector<DipoleAmplitude* > nucleons;
+                    for (int j=0; j<A; j++)
                     {
-                        if (j==0)
-                            gd = new DGLAPDist;
-                        //Ipsat_Proton *nucleon = new Ipsat_Proton(gd);
-                        Ipsat_Proton *nucleon = new Ipsat_Proton();
-                        nucleon->SetProtonWidth(StrToReal(argv[i+3]));
-                        nucleon->SetQuarkWidth(StrToReal(argv[i+4]));
-                        if (string(argv[i+5]) == "ALBACETE")
-                            nucleon->SetShape(ALBACETE);
-                        else
+                        if (string(argv[i+2])=="ipsatproton")
                         {
-                            nucleon->SetShape(GAUSSIAN);
-                            if (argc > i+5)
+                            if (j==0)
+                                gd = new DGLAPDist;
+                            //Ipsat_Proton *nucleon = new Ipsat_Proton(gd);
+                            Ipsat_Proton *nucleon = new Ipsat_Proton();
+                            nucleon->SetProtonWidth(StrToReal(argv[i+3]));
+                            nucleon->SetQuarkWidth(StrToReal(argv[i+4]));
+                            if (string(argv[i+5]) == "ALBACETE")
+                                nucleon->SetShape(ALBACETE);
+                            else
                             {
-                                if (string(argv[i+5])=="fluxtube")
+                                nucleon->SetShape(GAUSSIAN);
+                                if (argc > i+5)
                                 {
-                                    nucleon->SetStructure(CENTER_TUBES);
-                                    nucleon->SetFluxTubeNormalization(StrToReal(argv[i+5]));
-                                }
-                                else if (string(argv[i+5]).substr(0,1)!="-")
-                                {
-                                    cerr << "Unknown ipsatproton option " << argv[i+5] << endl;
-                                    exit(1);
+                                    if (string(argv[i+5])=="fluxtube")
+                                    {
+                                        nucleon->SetStructure(CENTER_TUBES);
+                                        nucleon->SetFluxTubeNormalization(StrToReal(argv[i+5]));
+                                    }
+                                    else if (string(argv[i+5]).substr(0,1)!="-")
+                                    {
+                                        cerr << "Unknown ipsatproton option " << argv[i+5] << endl;
+                                        exit(1);
+                                    }
                                 }
                             }
-                        }
-                        nucleons.push_back(nucleon);
+                            nucleons.push_back(nucleon);
 
+                        }
                     }
-                }
-                amp = new Nucleons(nucleons);
+                    amp = new Nucleons(nucleons);
+                } // End construct nucleus
             }
             
         }
@@ -430,7 +438,7 @@ int main(int argc, char* argv[])
         double structurefun_c = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c+xs_t_c);
         
 	
-        cout << structurefun << " " << structurefun_c << " " << structurefun + structurefun_c << endl;
+        cout << xbj << " " << Qsqr << " " << structurefun << " " << structurefun_c << " " << structurefun + structurefun_c << endl;
         //DIS dis(amp);
         //cout << dis.F2(Qsqr, xbj) << endl;
         

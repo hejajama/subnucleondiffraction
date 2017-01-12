@@ -35,7 +35,7 @@ const int INTPOINTS_ZINT = 7;   // Depth of z integral subintervals when project
 
 double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
 {
-    // quark transveser coodinates are now nucleons[i].GetX() and GetY()
+    // quark transverse coodinates are now nucleons[i].GetX() and GetY()
     Vec q(q1[0], q1[1]);
     Vec qbar(q2[0],q2[1]);
     
@@ -843,7 +843,7 @@ std::string Ipsat_Proton::InfoStr()
     }
     ss << "# Proton (Gaussian) radius " << std::sqrt(2.0*B_p) << " GeV^-1, B_p=" << B_p << " ";
     if (shape == GAUSSIAN)
-        ss << "Gaussian distribution exp(-b^2/(2B_p)";
+        ss << "Gaussian distribution exp(-b^2/(2B_p))";
     else if (shape == EXPONENTIAL)
         ss << "Exponential distribution, exp(-b/B)";
     
@@ -871,7 +871,7 @@ std::string Ipsat_Proton::InfoStr()
         ss << " Enabled";
     else
         ss << "Disabled";
-    ss << endl << "# ln Q_s^2 fluctuation width: " << Qs_fluctuation_sigma;
+    ss << endl << "# ln Q_s^2 fluctuation width: " << Qs_fluctuation_sigma << endl;
     return ss.str();
 }
 

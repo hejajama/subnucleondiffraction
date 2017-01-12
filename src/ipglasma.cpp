@@ -157,7 +157,7 @@ IPGlasma::IPGlasma(std::string file)
         // Datafile step is 0.02 fm
         // Once we have load all points, we will sift all coordinates such that 0 is at the center
         
-        double step = 0.04; // standard 128x128
+        double step = 0.02; // standard 128x128
 	//double step = 0.0025;
 	//double step=0.08;
         //double step = 0.007;

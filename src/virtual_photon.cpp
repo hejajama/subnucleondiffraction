@@ -37,8 +37,11 @@ VirtualPhoton::VirtualPhoton()
  * Transversially polarized component of the overlap
  */
 
+//const double RSQR_QSQR_LIMIT = 200000;
+
 double VirtualPhoton::PsiSqr_T(double Qsqr, double r, double z)
 {
+    //if (r*r > RSQR_QSQR_LIMIT / Qsqr) return 0;
     double result=0;
     for (unsigned int f=0; f<e_f.size(); f++)     // Sum quar flavors
     {
@@ -60,6 +63,7 @@ double VirtualPhoton::PsiSqr_T(double Qsqr, double r, double z)
 
 double VirtualPhoton::PsiSqr_L(double Qsqr, double r, double z)
 {
+    //if (r*r > RSQR_QSQR_LIMIT / Qsqr) return 0;
     double result=0;
     for (unsigned int f=0; f<e_f.size(); f++)     // Sum quar flavors
     {
