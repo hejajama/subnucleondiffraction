@@ -60,6 +60,7 @@ dir = dir + "/real/"
 
 include_imag = True
 if not os.path.exists(imagdir):
+    print >> sys.stderr, "WARNING! No imaginary part, are you sure????"
     include_imag = False
 fnames=[]
 
@@ -93,7 +94,7 @@ for f in files:
         if int(parse[-1]) > maxnconfs:
             continue
     except ValueError:
-        print "# WTF file " + fname_real
+        print >> sys.stderr, "# WTF file " + fname_real
         continue
 
     try:
@@ -113,7 +114,17 @@ for f in files:
     # assume that all files go to largest t
     if tvals == []:
         tvals = tvals_real
-    
+    else:
+        # Test that t vals are equal
+        for i in range(len(tvals)):
+            if i < len(tvals_real):
+                if tvals[i] != tvals_real[i]:
+                    print >> sys.stderr, "T vals don't match! Compare these lists:"
+                    print >> sys.stderr, tvals
+                    print >> sys.stderr, tvals_real
+                    print>> sys.stderr,  "Fname: " + fname_real + " " + fname_imag
+                    sys.exit(-1)
+
     # Save amplitude values as a function of t
     tmp_realparts = []
     tmp_imagparts=[]
@@ -196,6 +207,7 @@ if coherent:
                 correction_l = corrections_l[t]
     
     
+    
         for conf in range(len(realparts)):
             # check if the calculations is done at high t
             if len(realparts[conf]) <= t or len(imagparts[conf])<=t:
@@ -221,6 +233,10 @@ if coherent:
                 continue
             nconfs += 1
         
+        if (len(xs_t)==0):
+            print >> sys.stderr, "No data at tindex " + str(t) + ", skipping..."
+            continue
+        
         transverse =  sqr(mean(amp_t_real)) + sqr(mean(amp_t_imag))
         longitudinal =sqr(mean(amp_l_real)) + sqr(mean(amp_l_imag))
         
@@ -244,6 +260,7 @@ if coherent:
         
         
         # err = max/min
+        
         max_xs_t =correction_t*(max(xs_t))
         max_xs_l =correction_l*(max(xs_l))
         min_xs_t =correction_t*(min(xs_t))
@@ -278,7 +295,9 @@ if coherent == False:
             real_t.append(rc[t][0])
             imag_l.append(ic[t][1])
             imag_t.append(ic[t][0])
-        
+        if (len(real_t)==0):
+            print >> sys.stderr, "No data at tindex " + str(t) + ", skipping..."
+            continue
         var_real_t = np.var(real_t)
         var_real_l = np.var(real_l)
         var_imag_t = np.var(imag_t)
@@ -292,6 +311,7 @@ if coherent == False:
         jackknife_xs_t_imag=[]
         jackknife_xs_l_real=[]
         jackknife_xs_l_imag=[]
+        error=False
         for skip_i in range(len(realparts)):
             i=0
             tmplist_t_r = []
@@ -306,7 +326,9 @@ if coherent == False:
                         tmplist_l_r.append(rc[t][1])
                         tmplist_l_i.append(ic[t][1])
                     except:
-                        print >> sys.stderr, "Error at t=" + str(t) #+ ", rc " + str(rc) +", ic " + str(ic)
+                        if error==False:
+                            print >> sys.stderr, "Error at t=" + str(t) #+ ", rc " + str(rc) +", ic " + str(ic)
+                        error=True
                 i=i+1
             
             jackknife_xs_t_real.append( np.var(tmplist_t_r))
@@ -329,7 +351,9 @@ if coherent == False:
             var_l_real += sqr( jackknife_xs_l_real[i] - var_real_l)
             var_l_imag += sqr( jackknife_xs_l_imag[i] - var_imag_l)
 
-        
+
+        diffsum_t = var_t_real + var_t_imag
+        diffsum_l = var_l_real + var_l_imag
 
 
         coef = (len(jackknife_xs_t_real)-1.0)/len(jackknife_xs_t_real)
@@ -349,7 +373,10 @@ if coherent == False:
 
 # TODO: ASSUMING NOW ONLY TRANSVERSE!!!!
         #err = correction_t * sqrt( var_t / len(jackknife_xs_t_real)) / (16.0*pi)
-        err = (correction_t * sqrt(var_t_real/len(jackknife_xs_t_real)) + correction_t*sqrt(var_t_imag/len(jackknife_xs_t_real)))/(16.0*pi)
+        #err = (correction_t * sqrt(var_t_real/len(jackknife_xs_t_real)) + correction_t*sqrt(var_t_imag/len(jackknife_xs_t_real)))/(16.0*pi)
+        n = len(jackknife_xs_t_real)
+        err = correction_t * ( sqrt(var_t_real/(n*(n-1))) + sqrt(var_t_imag/(n*(n-1))) )
+        
 
         print tvals[t], correction_t * xs_t + correction_l*xs_l, err
 
