@@ -1,0 +1,27 @@
+# Parameters for J/Psi and \gamma^* wave function overlap
+# 
+# Model: Gaus-LC
+# Parameters are taken from an article by Kowalski, Motyka 
+# and Watt, see arXiv: hep-ph/0606272v2
+#
+# Syntax of this file is the following:
+# Lines starting with # are comments
+# Parameters are given as a pair key:value
+# Values are in units of GeV^n and possible keys are:
+# e_f, m_f, M_V, N_T, N_L, R_T, R_L and del
+#
+#
+#e_f: Effective charge: 2/3
+e_f:0.66666666
+#N_T, N_L, R_T, R_L: Normalization for transversial/lognitudial components
+N_T:1.23
+N_L:0.83
+#sqrt(6.5)
+R_T:2.5495097
+#sqrt(3)
+R_L:1.7320508
+m_f:1.4
+M_V:3.097
+# delta: 0 or 1: one part of the wave functio is multiplied by delta
+del:0
+

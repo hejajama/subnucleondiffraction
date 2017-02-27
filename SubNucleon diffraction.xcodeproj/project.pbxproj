@@ -71,6 +71,8 @@
 		12F69EFA1BE162F00045E7DD /* wilsonline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = wilsonline.hpp; path = src/wilsonline.hpp; sourceTree = "<group>"; };
 		12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipglasma.cpp; path = src/ipglasma.cpp; sourceTree = "<group>"; };
 		12F69EFD1BE16FE10045E7DD /* ipglasma.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ipglasma.hpp; path = src/ipglasma.hpp; sourceTree = "<group>"; };
+		132CC8E41E6474D800F69393 /* gaus_lc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gaus_lc.cpp; path = src/gaus_lc.cpp; sourceTree = "<group>"; };
+		132CC8E51E6474D800F69393 /* gaus_lc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gaus_lc.h; path = src/gaus_lc.h; sourceTree = "<group>"; };
 		1349C3F51C29CF1500B8EBA7 /* dipxs_intb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dipxs_intb.cpp; path = tools/dipxs_intb.cpp; sourceTree = "<group>"; };
 		1349C3F61C29CF1500B8EBA7 /* dipxs_intb.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dipxs_intb.hpp; path = tools/dipxs_intb.hpp; sourceTree = "<group>"; };
 		1349C3F81C29F38B00B8EBA7 /* satscale.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = satscale.cpp; path = tools/satscale.cpp; sourceTree = "<group>"; };
@@ -113,6 +115,8 @@
 		12B5191B1BD9765200230988 = {
 			isa = PBXGroup;
 			children = (
+				132CC8E41E6474D800F69393 /* gaus_lc.cpp */,
+				132CC8E51E6474D800F69393 /* gaus_lc.h */,
 				13E399CC1CFF6A9B002471F5 /* virtual_photon.cpp */,
 				13E399CD1CFF6A9B002471F5 /* virtual_photon.hpp */,
 				138FE4A61C7BC85F0078E11F /* average_amplitude.cpp */,

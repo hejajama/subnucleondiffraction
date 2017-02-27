@@ -17,6 +17,7 @@
 #include "dipole.hpp"
 #include "diffraction.hpp"
 #include "gauss_boost.hpp"
+#include "gaus_lc.h"
 #include "ipsat_nucleons.hpp"
 #include "smooth_ws_nuke.hpp"
 #include "ipsat_proton.hpp"
@@ -44,6 +45,14 @@ enum MODE
     SATURATION_SCALE    // Print saturation scale on a g gripd
 };
 
+enum WAVEF
+{
+    GAUSLC,
+    BOOSTEDGAUSSIAN
+};
+
+WAVEF wavef_model = BOOSTEDGAUSSIAN;
+
 int MCpoints(double t);  // Automatic mc points
 
 
@@ -65,7 +74,7 @@ int main(int argc, char* argv[])
     double qsfluct_sigma=0;
     Fluctuation_shape fluctshape = LOCAL_FLUCTUATIONS;
     bool auto_mcintpoints = false;
-    std::string wavef_file = "gauss-boosted.dat";
+    std::string wavef_file = "";
     
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2016" << endl;
@@ -87,11 +96,13 @@ int main(int argc, char* argv[])
         cout << "-satscale: print saturation scale" << endl;
         cout << "-F2 Qsqr x: calculate structure function" << endl;
         cout << "-wavef_file filename" << endl;
+        cout << "-wavef gauslc/boostedgaussian" << endl;
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
         return 0;
     }
     
     MODE mode = AMPLITUDE_DT;
+    
     
     for (int i=1; i<argc; i++)
     {
@@ -113,6 +124,19 @@ int main(int argc, char* argv[])
             REAL_PART = true;
         else if (string(argv[i])=="-imag")
             REAL_PART = false;
+        else if (string(argv[i])=="-wavef")
+        {
+            if (string(argv[i+1])=="gauslc")
+                wavef_model = GAUSLC;
+            else if (string(argv[i+1])=="boostedgaussian")
+                wavef_model = BOOSTEDGAUSSIAN;
+            else
+            {
+                cerr << "Unknown wave function " << argv[i+1] << endl;
+                exit(1);
+                
+            }
+        }
         else if (string(argv[i])=="-dipole")
         {
             A = StrToInt(argv[i+1]);
@@ -250,9 +274,20 @@ int main(int argc, char* argv[])
     global_rng = gsl_rng_alloc(gsl_rng_default);
 
     
-    
-    BoostedGauss wavef(wavef_file);
-    
+    WaveFunction *wavef;
+    if (wavef_model == GAUSLC)
+    {
+        if (wavef_file == "") wavef_file = "gaus-lc.dat";
+        wavef = new GausLC(wavef_file);
+        cout << "# " << *(GausLC*)wavef << endl;
+    }
+    else if (wavef_model == BOOSTEDGAUSSIAN)
+    {
+        if (wavef_file == "") wavef_file = "gauss-boosted.dat";
+        wavef = new BoostedGauss(wavef_file);
+        cout << "# " << *(BoostedGauss*)wavef << endl;
+    }
+
     
     
     
@@ -282,14 +317,14 @@ int main(int argc, char* argv[])
     amp->InitializeTarget();
     
 
-    Diffraction diff(*amp, wavef);
+    Diffraction diff(*amp, *wavef);
     
     
     cout << "# " << InfoStr() << endl;
-    cout << "# " << wavef << endl;
+    //cout << "# " << *wavef << endl;
     
     double mp = 0.938;
-    double mjpsi = wavef.MesonMass();
+    double mjpsi = wavef->MesonMass();
     
     
     if (mode == PRINT_NUCLEUS)
@@ -359,8 +394,8 @@ int main(int argc, char* argv[])
     {
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
-        double tstep = 0.025;
-        for (t=0; t<=2; t+=tstep)
+        double tstep = 0.001; //upc _harva: 0.001
+        for (t=0; t<=1.6; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.01)
@@ -382,8 +417,10 @@ int main(int argc, char* argv[])
             cout.precision(10);
             cout << trans  << " " << lng << endl;
             
-            if (t > 0.5)
-                tstep = 0.1;
+            if (t>0.08)
+                tstep = 0.015;
+            if (t>=0.4 )
+                tstep = 0.05;
 
         }
     }
@@ -451,6 +488,7 @@ int main(int argc, char* argv[])
 
     
     delete amp;
+    delete wavef;
     
     if (gd != 0)
         delete gd;
@@ -488,10 +526,10 @@ string InfoStr()
 
 int MCpoints(double t)
 {
-    if (t<1)
-        return 2e7;
-    else if (t<2)
-        return 5e7;
+    if (t<0.1)
+        return 2e5;
+    else if (t<0.4)
+        return 3e5;
     else
-        return 1e8;
+        return 5e5;
 }
