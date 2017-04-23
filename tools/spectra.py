@@ -116,14 +116,20 @@ for f in files:
         tvals = tvals_real
     else:
         # Test that t vals are equal
+        ok=True
         for i in range(len(tvals)):
             if i < len(tvals_real):
                 if tvals[i] != tvals_real[i]:
-                    print >> sys.stderr, "T vals don't match! Compare these lists:"
-                    print >> sys.stderr, tvals
-                    print >> sys.stderr, tvals_real
-                    print>> sys.stderr,  "Fname: " + fname_real + " " + fname_imag
-                    sys.exit(-1)
+                    print >> sys.stderr, "T vals don't match! Skipping file " + fname_real #Compare these lists:"
+                    #print >> sys.stderr, tvals
+                    #print >> sys.stderr, tvals_real
+                    #print>> sys.stderr,  "Fname: " + fname_real + " " + fname_imag
+                    #sys.exit(-1)
+                    ok=False
+        if not ok:
+            continue
+
+
 
     # Save amplitude values as a function of t
     tmp_realparts = []
@@ -375,8 +381,10 @@ if coherent == False:
         #err = correction_t * sqrt( var_t / len(jackknife_xs_t_real)) / (16.0*pi)
         #err = (correction_t * sqrt(var_t_real/len(jackknife_xs_t_real)) + correction_t*sqrt(var_t_imag/len(jackknife_xs_t_real)))/(16.0*pi)
         n = len(jackknife_xs_t_real)
-        err = correction_t * ( sqrt(var_t_real/(n*(n-1))) + sqrt(var_t_imag/(n*(n-1))) )
+        err = correction_t * ( sqrt(var_t_real/(n*(n-1))) + sqrt(var_t_imag/(n*(n-1))) )/(16.0*pi)
         
 
         print tvals[t], correction_t * xs_t + correction_l*xs_l, err
 
+
+    print>> sys.stderr, "Done with dir " + dir + ", #configurations(t=0) " + str(len(realparts)) + "  #points " + str(len(tvals)) + ", maxt " + str(tvals[-1])

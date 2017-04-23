@@ -394,7 +394,7 @@ int main(int argc, char* argv[])
     {
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
-        double tstep = 0.001; //upc _harva: 0.001
+        double tstep = 0.025; //upc _harva: 0.001
         for (t=0; t<=1.6; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
@@ -454,8 +454,9 @@ int main(int argc, char* argv[])
     else if (mode == F2)
     {
         cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm sum " << endl;
+        double orig_x = xbj;
         WaveFunction * photon = new VirtualPhoton();;
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT);
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT, 0.1);
         cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
         
         amp->SetSkewedness(false);
@@ -463,19 +464,20 @@ int main(int argc, char* argv[])
         
         // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
         // Note* 4pi, as convention in BoostedGaussian and VirtualPhoton classes are different!!!
-        double xs_t = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
-        double xs_l = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, L);
+        double xs_t = 4.0*M_PI*f2.ScatteringAmplitudeRotationalSymmetry(xbj, Qsqr, 0, T);
+        double xs_l = 4.0*M_PI*f2.ScatteringAmplitudeRotationalSymmetry(xbj, Qsqr, 0, L);
         double structurefun = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l+xs_t);
         
         // heavy quark contribution
         ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.4);
+        xbj = xbj * (1.0 + 4.0*1.4*1.4 / Qsqr);
         cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
-        double xs_t_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
-        double xs_l_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, L);
+        double xs_t_c = 4.0*M_PI*f2.ScatteringAmplitudeRotationalSymmetry(xbj, Qsqr, 0, T);
+        double xs_l_c = 4.0*M_PI*f2.ScatteringAmplitudeRotationalSymmetry(xbj, Qsqr, 0, L);
         double structurefun_c = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c+xs_t_c);
         
 	
-        cout << xbj << " " << Qsqr << " " << structurefun << " " << structurefun_c << " " << structurefun + structurefun_c << endl;
+        cout << orig_x << " " << Qsqr << " " << structurefun << " " << structurefun_c << " " << structurefun + structurefun_c << endl;
         //DIS dis(amp);
         //cout << dis.F2(Qsqr, xbj) << endl;
         

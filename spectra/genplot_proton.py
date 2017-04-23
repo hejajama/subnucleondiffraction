@@ -75,7 +75,7 @@ files = [
          #["test/ipglasma_bp_3.0_bq_0.3_fluct_qsmu_0.7", "$Q_s \mu = 0.7$, qsfluct", Linestyle(0), 'black', "",1.0,"black"],
          #["test/ipglasma_bp_3.0_bq_0.3_fluct_qsmu_1", "$Q_s \mu = 1.0$, qsfluct", Linestyle(1), 'blue', "",1.0,"blue"],
         
-         ["tmp/protonfluct_nocorrections_w_94", "protnofluct w 94", Linestyle(0), 'black', "", 1.0, "black"],
+         #["tmp/protonfluct_nocorrections_w_94", "protnofluct w 94", Linestyle(0), 'black', "", 1.0, "black"],
          
          
          ## lumpy
@@ -135,7 +135,7 @@ files = [
          
          #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"Lumpy $(B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2})$", Linestyle(0), 'black', "", 1.0, "black"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
          #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"Lumpy", Linestyle(0), 'red', "", 1.0, "red"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
-         ["paper_2/ipsat_bp_3.3_bq_0.5_w_75_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat_bp_3.3_bq_0.5_w_75_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          
          #smooth
@@ -171,7 +171,7 @@ files = [
          
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift_onlyreal", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$ only real", Linestyle(1), "blue", "", 1.0, "black"],
          
-         #["paper_2/ipglasma_bp_4.0_m04_n065_w_75_q2_0", r"Color charge fluctuations ", Linestyle(2), "red", "", 1.0, "red"],
+         ["paper_2/ipglasma_bp_4.0_m04_n065_w_75_q2_0", r"Round proton, color charge fluctuations ", Linestyle(0), "black", "", 1.0, "black"],
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"+ geometric and $Q_s$ fluctuations", Linestyle(0), "black", "", 1.0, "black"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
          #["ipglasma_smallfluctuations", r"IP-Glasma, small geometric fluctuations", Linestyle(1), "red", "", 1.0, "red"],
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(1), "blue", "", 1.0, "blue"],
@@ -381,6 +381,13 @@ if w_75_data:
         p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_incoh, fillstyle='none', color=Color(1), markeredgecolor=Color(1), label=r"H1 incoherent")
 
 #p1.text(0.2,0.1,"IP-Glasma", fontsize=textsize)
+#fluct
+#p1.annotate("Incoherent", xy=(1.5,15), rotation=-7, fontsize=15)
+#p1.annotate("Coherent", xy=(1.,3.5), rotation=-30, fontsize=15)
+
+#round
+p1.annotate("Incoherent", xy=(1.7,0.4), rotation=-7, fontsize=15)
+p1.annotate("Coherent", xy=(1.,2), rotation=-30, fontsize=15)
 
 yscale("log",nonposy='clip')
 #xscale("log")

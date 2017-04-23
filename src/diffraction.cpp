@@ -132,7 +132,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     }
     
     lower[0]=lower[1]=lower[2]=lower[3]=0;
-    upper[0] = 60  ; //1*5.068; //100; // Max b
+    upper[0] = 100  ; //1*5.068; //100; // Max b
     upper[1] = 2.0*M_PI;
     upper[2] = 10*5.068;//20; //0.5*5.068;  // Max r
     upper[3] = 2.0*M_PI;
@@ -325,7 +325,7 @@ double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qs
     f.function = inthelperf_amplitude_rotationalsym_b;
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
     double result,error;
-    int status = gsl_integration_qag(&f, 0, 20, 0, 0.01, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
+    int status = gsl_integration_qag(&f, 0, 100, 0, 0.001, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
     
     if (status)
         cerr << "#bint failed, result " << result << " relerror " << error << " t " <<t << endl;
@@ -373,7 +373,7 @@ double inthelperf_amplitude_rotationalsym_b(double b, void* p)
     f.function = inthelperf_amplitude_rotationalsym_r;
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
     double result,error;
-    int status = gsl_integration_qag(&f, 0, 20, 0, 0.01, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
+    int status = gsl_integration_qag(&f, 0, 50, 0, 0.001, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
     
     if (status)
         cerr << "#Rint failed, result " << result << " relerror " << error << " b " << b << " t " << par->t << endl;
@@ -396,7 +396,7 @@ double inthelperf_amplitude_rotationalsym_r(double r, void* p)
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
     double result,error;
     double eps=1e-4;
-    int status = gsl_integration_qags(&f, 0+eps, 1.0-eps, 0, 0.01, INTPOINTS_ROTSYM, w, &result, &error);
+    int status = gsl_integration_qags(&f, 0+eps, 1.0-eps, 0, 0.001, INTPOINTS_ROTSYM, w, &result, &error);
     
     
     if (status)
