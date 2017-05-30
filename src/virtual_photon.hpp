@@ -76,7 +76,9 @@ class VirtualPhoton : public WaveFunction {
          * @param mass quark mass, optional, default values used if not given
          */
         void SetQuark(Amplitude::Parton p, double mass=-1);
-        
+    
+        void AddQuark(Amplitude::Parton p, double mass=-1);
+    
         
     private:
         // Parameters

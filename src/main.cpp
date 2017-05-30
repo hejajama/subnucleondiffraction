@@ -453,10 +453,10 @@ int main(int argc, char* argv[])
     
     else if (mode == F2)
     {
-        cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm sum " << endl;
+        cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm sum F_L(light) F_L(charm) F_L(sum)" << endl;
         double orig_x = xbj;
         WaveFunction * photon = new VirtualPhoton();;
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT, 0.1);
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT, 0.14);
         cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
         
         amp->SetSkewedness(false);
@@ -467,6 +467,7 @@ int main(int argc, char* argv[])
         double xs_t = 4.0*M_PI*f2.ScatteringAmplitudeRotationalSymmetry(xbj, Qsqr, 0, T);
         double xs_l = 4.0*M_PI*f2.ScatteringAmplitudeRotationalSymmetry(xbj, Qsqr, 0, L);
         double structurefun = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l+xs_t);
+        double fl_light =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*xs_l;
         
         // heavy quark contribution
         ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.4);
@@ -475,9 +476,10 @@ int main(int argc, char* argv[])
         double xs_t_c = 4.0*M_PI*f2.ScatteringAmplitudeRotationalSymmetry(xbj, Qsqr, 0, T);
         double xs_l_c = 4.0*M_PI*f2.ScatteringAmplitudeRotationalSymmetry(xbj, Qsqr, 0, L);
         double structurefun_c = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c+xs_t_c);
+        double fl_c =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c);
         
 	
-        cout << orig_x << " " << Qsqr << " " << structurefun << " " << structurefun_c << " " << structurefun + structurefun_c << endl;
+        cout << orig_x << " " << Qsqr << " " << structurefun << " " << structurefun_c << " " << structurefun + structurefun_c << " " << fl_light << " " << fl_c << " " << fl_c + fl_light << endl;
         //DIS dis(amp);
         //cout << dis.F2(Qsqr, xbj) << endl;
         

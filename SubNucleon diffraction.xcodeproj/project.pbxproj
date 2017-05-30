@@ -78,7 +78,9 @@
 		1349C3F81C29F38B00B8EBA7 /* satscale.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = satscale.cpp; path = tools/satscale.cpp; sourceTree = "<group>"; };
 		137168431C9C3E76002C9873 /* basis_expansion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = basis_expansion.cpp; path = tools/basis_expansion.cpp; sourceTree = "<group>"; };
 		1380AA6A1C57CAF000F8E9C8 /* spectra.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = spectra.py; path = tools/spectra.py; sourceTree = "<group>"; };
+		1385C42A1ECC2CB600ABE2EE /* sigmar_chisqr.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = sigmar_chisqr.py; path = tools/sigmar_chisqr.py; sourceTree = "<group>"; };
 		138FE4A61C7BC85F0078E11F /* average_amplitude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = average_amplitude.cpp; path = tools/average_amplitude.cpp; sourceTree = "<group>"; };
+		13954C451ECACDE6004B676C /* f2fit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = f2fit.cpp; path = tools/f2fit.cpp; sourceTree = "<group>"; };
 		13E399CC1CFF6A9B002471F5 /* virtual_photon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = virtual_photon.cpp; path = src/virtual_photon.cpp; sourceTree = "<group>"; };
 		13E399CD1CFF6A9B002471F5 /* virtual_photon.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = virtual_photon.hpp; path = src/virtual_photon.hpp; sourceTree = "<group>"; };
 		13E399CE1CFF6B61002471F5 /* dis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dis.cpp; path = src/dis.cpp; sourceTree = "<group>"; };
@@ -115,6 +117,8 @@
 		12B5191B1BD9765200230988 = {
 			isa = PBXGroup;
 			children = (
+				1385C42A1ECC2CB600ABE2EE /* sigmar_chisqr.py */,
+				13954C451ECACDE6004B676C /* f2fit.cpp */,
 				132CC8E41E6474D800F69393 /* gaus_lc.cpp */,
 				132CC8E51E6474D800F69393 /* gaus_lc.h */,
 				13E399CC1CFF6A9B002471F5 /* virtual_photon.cpp */,

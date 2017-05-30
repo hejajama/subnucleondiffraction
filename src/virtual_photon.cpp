@@ -18,10 +18,10 @@ using namespace Amplitude;
 
 const int Nc=3;
 
-const double ZINTACCURACY=0.001;
+const double ZINTACCURACY=0.0001;
 const int MAXITER_ZINT=500;
-const double MINZ=0.00001;  // Integration limits
-const double MAXZ=0.9999;
+const double MINZ=1e-8;  // Integration limits
+const double MAXZ=1.0-MINZ;
 
 VirtualPhoton::VirtualPhoton()
 {
@@ -116,7 +116,7 @@ double VirtualPhoton::PsiSqr_T_intz(double Qsqr, double r)
     int_helper.params=&zintpar;
     
     gsl_integration_workspace* ws = gsl_integration_workspace_alloc(MAXITER_ZINT);
-    int status = gsl_integration_qag(&int_helper, 1e-10, 1.0-1e-10, 0, ZINTACCURACY,
+    int status = gsl_integration_qag(&int_helper, MINZ, MAXZ, 0, ZINTACCURACY,
         MAXITER_ZINT, GSL_INTEG_GAUSS51, ws, &result, &abserr);
     gsl_integration_workspace_free(ws);
 
@@ -139,7 +139,7 @@ double VirtualPhoton::PsiSqr_L_intz(double Qsqr, double r)
     int_helper.params=&zintpar;
     
     gsl_integration_workspace* ws = gsl_integration_workspace_alloc(MAXITER_ZINT);
-    int status = gsl_integration_qag(&int_helper, 1e-10, 1.0-1e-10, 0, ZINTACCURACY,
+    int status = gsl_integration_qag(&int_helper, MINZ, MAXZ, 0, ZINTACCURACY,
         MAXITER_ZINT, GSL_INTEG_GAUSS51, ws, &result, &abserr);
     gsl_integration_workspace_free(ws);
     
@@ -173,9 +173,15 @@ void VirtualPhoton::SetQuark(Parton p, double mass)
 	// Clear 
 	e_f.clear();
 	m_f.clear();
-	double m;
-	switch(p)
-	{
+	
+    AddQuark(p, mass);
+}
+
+void VirtualPhoton::AddQuark(Parton p, double mass)
+{
+    double m;
+    switch(p)
+    {
         case LIGHT:
             m=0.14;
             if (mass>=0)
@@ -183,39 +189,38 @@ void VirtualPhoton::SetQuark(Parton p, double mass)
             m_f.push_back(m);
             e_f.push_back(2.0/3.0);
             m_f.push_back(m);
-			e_f.push_back(-1.0/3.0);
+            e_f.push_back(-1.0/3.0);
             m_f.push_back(m);
-			e_f.push_back(-1.0/3.0);
+            e_f.push_back(-1.0/3.0);
             break;
-		case U:
-			m_f.push_back(0.14);
+        case U:
+            m_f.push_back(0.14);
             if (mass>=0) m_f[0]=mass;
-			e_f.push_back(2.0/3.0);
-			break;
-		case D:
-			m_f.push_back(0.14);
+            e_f.push_back(2.0/3.0);
+            break;
+        case D:
+            m_f.push_back(0.14);
             if (mass>=0) m_f[0]=mass;
-			e_f.push_back(-1.0/3.0);
-			break;
-		case S:
-			m_f.push_back(0.14);
+            e_f.push_back(-1.0/3.0);
+            break;
+        case S:
+            m_f.push_back(0.14);
             if (mass>=0) m_f[0]=mass;
-			e_f.push_back(-1.0/3.0);
-			break;
-		case C:
-			m_f.push_back(1.27);
+            e_f.push_back(-1.0/3.0);
+            break;
+        case C:
+            m_f.push_back(1.27);
             if (mass>=0) m_f[0]=mass;
-			e_f.push_back(2.0/3.0);
-			break;
-		case B:
-			m_f.push_back(4.2);
+            e_f.push_back(2.0/3.0);
+            break;
+        case B:
+            m_f.push_back(4.2);
             if (mass>=0) m_f[0]=mass;
-			e_f.push_back(-1.0/3.0);
-			break;
-		default:
-			cerr << "Unknown parton " << p << " at " << LINEINFO << endl;
-	}
-
+            e_f.push_back(-1.0/3.0);
+            break;
+        default:
+            cerr << "Unknown parton " << p << " at " << LINEINFO << endl;
+    }
 }
 
 std::string VirtualPhoton::GetParamString()
