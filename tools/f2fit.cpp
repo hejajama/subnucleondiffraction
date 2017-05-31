@@ -43,7 +43,7 @@ using namespace std;
 using namespace Amplitude;
 
 double x0 = 0.01;
-const double ds = 0.0004;
+double ds = 0.0004;
 gsl_rng* global_rng;
 
 double mean(vector<double> &v)
@@ -60,9 +60,9 @@ int main(int argc, char* argv[])
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
     cout << "# F2 fitter" << endl;
-    if (argc < 6)
+    if (argc < 7)
     {
-        cout << "Syntax: " << argv[0] << " jimwlkdir step maxstep heradata alphas config" << endl;
+        cout << "Syntax: " << argv[0] << " jimwlkdir step maxstep heradata alphas config ds"  << endl;
         return 0;
     }
     
@@ -73,7 +73,11 @@ int main(int argc, char* argv[])
     string herafile = argv[4];
     double quarkmass = 1.4;
     int averages = StrToInt(argv[6]);
-    
+    ds = StrToReal(argv[7]);
+   
+    cout << "# Command: " ; for (unsigned int i=0; i<argc; i++) cout << argv[i] << " ";
+    cout << endl;
+ 
     bool fixed_coupling = false;
     double minx=0;
     if (alphas > 0)
@@ -125,7 +129,7 @@ int main(int argc, char* argv[])
     
     
     
-    cout << "# Q^2 [GeV^2]  x  y  HERA-\\sigma_r  HERA-err theory-\\sigma_r(light c b) " << endl;
+    cout << "# Q^2 [GeV^2]  x  y  HERA-\\sigma_r  HERA-err theory-\\sigma_r " << endl;
     // Compute reduced cross section
     for (unsigned int i=0; i<xvals.size(); i++)
     {

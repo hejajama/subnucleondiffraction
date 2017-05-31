@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
     IPGlasma glasma(fname);
     bhelper helper;
     helper.glasma = &glasma;
+	helper.b=0; helper.theta_b=0;
     //helper.b=b;
     
     Ipsat_Proton ipsat;
@@ -54,12 +55,13 @@ int main(int argc, char* argv[])
     ipsat.InitializeTarget();
     
     gsl_function f;
-    f.function = &bhelperf;  // do a circle around the proton
-    f.params = &helper;
+    //f.function = &bhelperf;  // do a circle around the proton
+    f.function = &rhelperf;
+	f.params = &helper;
     
     cout << "# r [1/GeV]  N(x=" << argv[2] << ", y=+/- r/2),  <N(r, " << MINB << "<b<"<<MAXB << "), IPsat N(r,b=" << argv[2] << ")" << endl;
     
-    for (double r=1e-3; r<20; r*=1.2)
+    for (double r=5e-3; r<40; r*=1.1)
     {
         double x1[2]={StrToReal(argv[2]),r/2.0}; double x2[2]={StrToReal(argv[2]),-r/2.0};
         double fixedresult = glasma.Amplitude(1e-3,x1,x2);
@@ -67,15 +69,16 @@ int main(int argc, char* argv[])
         helper.r = r;
         gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS);
         double result,error;
-        int status = gsl_integration_qag(&f, MINB, MAXB, 1e-5, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
+        //int status = gsl_integration_qag(&f, MINB, MAXB, 1e-5, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
+		int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 1e-5, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
         
         //if (status)
           //  cerr << "#bint failed (" << gsl_strerror (status) << ", result  " << result << " relerror " << error/result << " r " <<r  << endl;
         
         
         gsl_integration_workspace_free(w);
-        
-        result = result / (2.0*M_PI*M_PI*(MAXB-MINB)*(MAXB-MINB));
+  		result /= (2.0*M_PI);     
+ //       result = result / (2.0*M_PI*M_PI*(MAXB-MINB)*(MAXB-MINB));
         
         // IPsat comparison
 	double b = StrToReal(argv[2]);

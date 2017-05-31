@@ -151,7 +151,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     {
         gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
         gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result, &error);
-        cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
+        //cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
         gsl_monte_miser_free(s);
     }
     else if (MCINT == VEGAS)

@@ -7,6 +7,7 @@
 
 #include "ipglasma.hpp"
 #include <string>
+#include <gsl/gsl_randist.h>
 #include <fstream>
 #include <sstream>
 #include <tools/config.hpp>
@@ -17,6 +18,7 @@ using namespace Amplitude;
 
 using std::cout;
 using std::endl;
+extern gsl_rng *global_rng;
 
 const int NC=3;
 
@@ -29,12 +31,50 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
 {
     
     // Out of grid? Return 0 (probably very large dipole)
+
     if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
         or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
         or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
         or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
             return 0;
-    
+  
+	// schwinger
+
+	if (q1[0] < xcoords[0]) q1[0] = xcoords[0];
+	if (q1[1] < xcoords[0]) q1[1] = xcoords[0];
+	if (q2[0] < xcoords[0]) q2[0] = xcoords[0];
+	if (q2[1] < xcoords[0]) q2[1] = xcoords[0];
+	if (q1[0] > xcoords[xcoords.size()-1]) q1[0] = xcoords[xcoords.size()-1];
+	if (q2[0] > xcoords[xcoords.size()-1]) q2[0] = xcoords[xcoords.size()-1];
+	if (q1[1] > xcoords[xcoords.size()-1]) q1[1] = xcoords[xcoords.size()-1];
+        if (q2[1] > xcoords[xcoords.size()-1]) q2[1] = xcoords[xcoords.size()-1]; 
+
+   double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
+    double b = sqrt( pow( (q1[0]+q2[0])/2.0, 2.0) + pow((q1[1]+q2[1])/2,2.0) );
+    //if (r > 0.5 * 5.068)
+//	return exp(-b*b/(2*4.0));
+/*
+	// Kind of schwinger
+    if (r > 0.3 * 5.068 )
+    {	
+ 	double q3[2];
+	
+	// Put new quark randomly between q1 and q2, calculate weighted
+	// mean with weign in [0.3, 0.7]
+	double w = gsl_rng_uniform(global_rng)*0.7+0.3;
+
+	q3[0] = (w*q1[0]+(1.0-w)*q2[0])/1.0;
+	q3[1] = (w*q1[1]+(1.0-w)*q2[1])/1.0;
+
+	double s1 = 1.0 - Amplitude(xpom, q1, q3);
+	double s2 = 1.0 - Amplitude(xpom, q2, q3);
+	if (s1 < 0) s1 = 0; if (s1>1) s1=1;
+	if (s2<0) s2=0; if (s2>1) s2=1;
+	//cout << "r " << r << " Schwinger gives " << s1 << " and " << s2 << endl;
+	return 1.0 - s1*s2;
+
+    }
+*/
     // First find corresponding grid indeces
     WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
     WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
@@ -54,6 +94,7 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
     std::complex<double > amp =  1.0 - 1.0/NC * prod.Trace();
     
     double result = amp.real();
+    if (result < 0) return 0;
     return result;
     if (result > 1)
         return 1;
@@ -157,7 +198,7 @@ IPGlasma::IPGlasma(std::string file)
         // Datafile step is 0.02 fm
         // Once we have load all points, we will sift all coordinates such that 0 is at the center
         
-        double step = 0.02; // standard 128x128
+        double step = 0.01; // standard 128x128
 	//double step = 0.0025;
 	//double step=0.08;
         //double step = 0.007;
@@ -219,7 +260,7 @@ IPGlasma::IPGlasma(std::string file)
     // Of course this is symmetric and we could just as well swap xind and yind
 
     
-    std::cout <<"# Loaded " << wilsonlines.size() << " Wilson lines from file " << file << ", grid size " << xcoords.size() << " x " << ycoords.size() << " grid range [" << xcoords[0] << ", " << xcoords[xcoords.size()-1] << "]" << " step size " << xcoords[1]-xcoords[0] << " GeV^-1" << std::endl;
+    //std::cout <<"# Loaded " << wilsonlines.size() << " Wilson lines from file " << file << ", grid size " << xcoords.size() << " x " << ycoords.size() << " grid range [" << xcoords[0] << ", " << xcoords[xcoords.size()-1] << "]" << " step size " << xcoords[1]-xcoords[0] << " GeV^-1" << std::endl;
 
         
     
