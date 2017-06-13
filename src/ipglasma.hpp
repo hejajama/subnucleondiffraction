@@ -32,6 +32,8 @@ public:
     double XStep(); // Grid spacing in x
     
     std::vector<double> &GetXCoordinates();
+
+    void SetSchwinger(bool s, double rc=0);
     
 
 private:
@@ -40,6 +42,9 @@ private:
     std::vector< double > xcoords;
     std::vector< double > ycoords;
     std::vector< WilsonLine  > wilsonlines;
+
+    bool schwinger; // true if we use schwinger mechanism
+    double schwinger_rc; // Use Schwinger for dipoles larger than schwinger_rc
     
     std::string datafile;
     

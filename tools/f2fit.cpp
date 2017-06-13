@@ -55,14 +55,15 @@ double mean(vector<double> &v)
 
 int main(int argc, char* argv[])
 {
-    MCINTPOINTS=1e5;
+    MCINTPOINTS=3e5; 
+    FACTORIZE_ZINT=false;
     gsl_set_error_handler(&ErrHandler);
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
     cout << "# F2 fitter" << endl;
-    if (argc < 7)
+    if (argc < 8)
     {
-        cout << "Syntax: " << argv[0] << " jimwlkdir step maxstep heradata alphas config ds"  << endl;
+        cout << "Syntax: " << argv[0] << " jimwlkdir step maxstep heradata alphas config ds schwinger"  << endl;
         return 0;
     }
     
@@ -74,6 +75,7 @@ int main(int argc, char* argv[])
     double quarkmass = 1.4;
     int averages = StrToInt(argv[6]);
     ds = StrToReal(argv[7]);
+    double schwinger = StrToReal(argv[8]);
    
     cout << "# Command: " ; for (unsigned int i=0; i<argc; i++) cout << argv[i] << " ";
     cout << endl;
@@ -90,7 +92,7 @@ int main(int argc, char* argv[])
     }
     
     bool scale_x = false;   // scale bjorken x to take into account the quark mass
-    bool include_light = true;
+    bool include_light = false;
     
     int points=0;
     double chisqr=0;
@@ -172,6 +174,11 @@ int main(int argc, char* argv[])
             
             IPGlasma dipole_upper(fname_upper.str());
             IPGlasma dipole_lower(fname_lower.str());
+            if (schwinger >= 0)
+            {
+                dipole_upper.SetSchwinger(true, schwinger);
+                dipole_lower.SetSchwinger(true, schwinger);
+            }
             
             Diffraction f2upper(dipole_upper, photon);
             Diffraction f2lower(dipole_lower, photon);
