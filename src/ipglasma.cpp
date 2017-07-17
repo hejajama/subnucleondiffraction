@@ -53,7 +53,10 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
             if (q2[1] > xcoords[xcoords.size()-1]) q2[1] = xcoords[xcoords.size()-1]; 
 
             double b = sqrt( pow( (q1[0]+q2[0])/2.0, 2.0) + pow((q1[1]+q2[1])/2,2.0) );
-	    // Kind of schwinger
+	    
+            // Dipole schwinger
+	   
+            // Kind of schwinger
  	    double q3[2];
 	
 	    // Put new quark randomly between q1 and q2, calculate weighted
@@ -69,7 +72,60 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
 	    if (s2<0) s2=0; if (s2>1) s2=1;
 	    //cout << "r " << r << " Schwinger gives " << s1 << " and " << s2 << endl;
 	    return 1.0 - s1*s2;
+		
+	  // Quadrupole schwinger
+/* 
+	   int splits = 2 * int(r / schwinger_rc) + 1;
+           double w = 1.0 / ((double)splits);
+		cout << "test, rpoints (" << q1[0] << ", " << q1[1] << ") and (" << q2[0] << ", " << q2[1] << ")" << endl;
+	   std::vector<WilsonLine> wlines;
+           for (unsigned int i=0; i<splits+1; i++)
+           {
+		double xy[2];
+		xy[0] = i*w*q2[0] + (1.0 - i*w)*q1[0];
+		xy[1] = i*w*q2[1] + (1.0 - i*w)*q1[1];
+		cout << "New point " << xy[0] << " " << xy[1] << endl;
+		WilsonLine tmp = GetWilsonLine(xy[0], xy[1]);
+		if (i % 2 == 1)
+			tmp = tmp.HermitianConjugate();
+		wlines.push_back(tmp);
+	    }
+            WilsonLine r;
+	    r = wlines[0];
+	    for (int i=1; i<wlines.size(); i++)
+{
+	//cout << "Product " << i << endl;
+		r = r * wlines[i];	
+}	
 
+	cout << "Trace " <<  1.0 - r.Trace().real()/NC << endl;
+*/
+
+
+/*
+	  
+	    double q3[2]; double q4[2];
+	    q3[0] = 0.333333 * q2[0] + (1.0 - 0.333333) * q1[0];
+	    q3[1] = 0.333333 * q2[1] + (1.0 - 0.333333) * q1[1];
+            q4[0] = 0.666666 * q2[0] + (1.0 - 0.666666) * q1[0];
+	    q4[1] = 0.6666666 * q2[1] + (1.0 - 0.666666) * q1[1];
+
+	    WilsonLine w1 = GetWilsonLine(q1[0], q1[1]);
+            WilsonLine w2 = GetWilsonLine(q2[0], q2[1]);
+	    w2 = w2.HermitianConjugate();
+            WilsonLine w3 = GetWilsonLine(q3[0], q3[1]);
+            WilsonLine w4 = GetWilsonLine(q4[0], q4[1]);
+	    w3 = w3.HermitianConjugate();
+
+	    WilsonLine p;
+            p = w1 * w3 * w4 * w2;
+
+	//	cout << "old points (" << q1[0] << ", " << q1[1] << "), (" << q3[0] << ", " << q3[1] << "), and (" << q4[0] << ", " << q4[1] << ")  (" << q2[0] << ", " << q2[1] << ")";
+	//	cout << " trace " << 1.0 - p.Trace().real()/NC << endl;
+            return 1.0 - p.Trace().real()/NC;
+
+	*/		
+		
      }
     // First find corresponding grid indeces
     WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
@@ -194,7 +250,7 @@ IPGlasma::IPGlasma(std::string file)
         // Datafile step is 0.02 fm
         // Once we have load all points, we will sift all coordinates such that 0 is at the center
         
-        double step = 0.005; // standard 128x128
+        double step = 0.01; // 0.006666666; // standard 128x128
 	//double step = 0.0025;
 	//double step=0.08;
         //double step = 0.007;

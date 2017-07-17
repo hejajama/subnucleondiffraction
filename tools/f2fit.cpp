@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
     int maxstep = StrToInt(argv[3]);
     double alphas = StrToReal(argv[5]);
     string herafile = argv[4];
-    double quarkmass = 1.4;
+    double quarkmass = 1.27;
     int averages = StrToInt(argv[6]);
     ds = StrToReal(argv[7]);
     double schwinger = StrToReal(argv[8]);
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
         cout << "# x range in fit: " << x0 << " - " << minx << ", # of configs" << averages << endl;
     }
     
-    bool scale_x = false;   // scale bjorken x to take into account the quark mass
+    bool scale_x = true;   // scale bjorken x to take into account the quark mass
     bool include_light = false;
     
     int points=0;
@@ -137,10 +137,12 @@ int main(int argc, char* argv[])
     {
         double x = xvals[i];
         double sqrts = std::sqrt( qsqrvals[i]/(x * yvals[i]) );
-        
+       
         if (scale_x)
             x = x   * (1.0 + 4.0*SQR(quarkmass)/qsqrvals[i]);
         
+	if (x > 0.01)
+		continue;
         // Calculate reduced xs below and above, and interpolate
         // Fixed coupling: step = alphas*ln(x0/x) / (pi^2 * ds)
         int steps_upper = 0;
