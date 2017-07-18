@@ -147,14 +147,15 @@ int main(int argc, char* argv[])
         // Fixed coupling: step = alphas*ln(x0/x) / (pi^2 * ds)
         int steps_upper = 0;
         int steps_lower = 0;
-        int evolsteps;
-        
+        double evolsteps;
+         
         if (fixed_coupling)
         {
             evolsteps = alphas * log(x0/x)/ (M_PI*M_PI*ds);
-            steps_lower = evolsteps - evolsteps%step;
-            steps_upper = evolsteps + (step - evolsteps%step);
-            //cout << " Evolsteps " << evolsteps << " lower " << steps_lower << " upper " << steps_upper << endl;
+			int evolstepsint = (int)(evolsteps + 0.5);
+            steps_lower = evolsteps - (double)(evolstepsint%step) + 0.5;
+            steps_upper = evolsteps + (double)(step - evolstepsint%step) + 0.5;
+            cout << " Evolsteps " << evolsteps << " lower " << steps_lower << " upper " << steps_upper << endl;
         }
         
         VirtualPhoton photon;
