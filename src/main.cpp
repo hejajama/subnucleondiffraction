@@ -482,8 +482,8 @@ int main(int argc, char* argv[])
         double fl_light =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*xs_l;
         
         // heavy quark contribution
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.4);
-        xbj = xbj * (1.0 + 4.0*1.4*1.4 / Qsqr);
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.27);
+//        xbj = xbj * (1.0 + 4.0*1.27*1.27 / Qsqr);
         cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
         double xs_t_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
         double xs_l_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, L);

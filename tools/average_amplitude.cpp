@@ -60,8 +60,8 @@ int main(int argc, char* argv[])
     ipsat.InitializeTarget();
     
     gsl_function f;
-    //f.function = &bhelperf_theta;  // do a circle around the proton
-    f.function = &rhelperf;
+    f.function = &bhelperf_theta;  // do a circle around the proton
+    //f.function = &rhelperf;
 	f.params = &helper;
     
     cout << "# r [1/GeV]  N(x=" << argv[2] << ", y=+/- r/2),  <N(r, " << MINB << "<b<"<<MAXB << "), IPsat N(r,b=" << argv[2] << ")" << endl;
@@ -82,9 +82,9 @@ int main(int argc, char* argv[])
         
         
         gsl_integration_workspace_free(w);
-  		result /= (2.0*M_PI);     
-        //result = result / (2.0*M_PI*M_PI*(MAXB-MINB)*(MAXB-MINB));
-	//result = result / (2.0*M_PI*2.0*M_PI);
+  		//result /= (2.0*M_PI);     
+        //jresult = result / (2.0*M_PI*M_PI*(MAXB-MINB)*(MAXB-MINB));
+		result = result / (2.0*M_PI*2.0*M_PI);
         
         // IPsat comparison
 	double b = StrToReal(argv[2]);
