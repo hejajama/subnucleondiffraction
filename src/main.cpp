@@ -405,10 +405,10 @@ int main(int argc, char* argv[])
     {
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
-        double tstep = 0.025; //upc _harva: 0.001
-        for (t=0; t<=1.6; t+=tstep)
+        double tstep = 0.01; //upc _harva: 0.001
+        for (t=0; t<=1.5; t+=tstep)
         {
-            double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
+            double xpom = (mjpsi*mjpsi+Qsqr)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.01)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
@@ -428,10 +428,10 @@ int main(int argc, char* argv[])
             cout.precision(10);
             cout << trans  << " " << lng << endl;
             
-            if (t>0.08)
-                tstep = 0.015;
-            if (t>=0.4 )
-                tstep = 0.05;
+        //    if (t>0.08)
+        //        tstep = 0.015;
+            //if (t>=0.4 )
+            //    tstep = 0.05;
 
         }
     }

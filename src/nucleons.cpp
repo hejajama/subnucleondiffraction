@@ -23,7 +23,7 @@ using namespace std;
 // Hulthen:
 // Extended Hulthen: Phys. Rev. 151, 772
 enum DeuteronWaveFunction { Hulthen, ExtendedHulthen };
-const DeuteronWaveFunction DEUTERON = ExtendedHulthen;
+const DeuteronWaveFunction DEUTERON = Hulthen;
 
 double Nucleons::Amplitude(double xpom, double q1[2], double q2[2] )
 {

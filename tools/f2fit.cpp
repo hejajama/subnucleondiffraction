@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     }
     
     bool scale_x = true;   // scale bjorken x to take into account the quark mass
-    bool include_light = false;
+    bool include_light = true;
     
     int points=0;
     double chisqr=0;
