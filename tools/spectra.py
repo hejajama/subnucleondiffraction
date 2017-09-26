@@ -23,6 +23,7 @@ corrections_file=""  # if set, read corrections from separated file
 maxnconfs = 99999999 # can limit number of configs
 
 coherent = True
+incoh_uncertainty = False
 
 for i in range(len(sys.argv)):
     if sys.argv[i]=="-dir":
@@ -101,6 +102,9 @@ for f in files:
         tmplist=[]
         readfile_xy(fname_real,tvals_real, transverse_real)
         readfile_xy(fname_real, tmplist, longitudinal_real, ycol=2)
+        if (len(tvals_real) < 5):
+            print >> sys.stderr, "Skip file " + fname_real+  " due to too few points (" + str(len(tvals_real)) +")"
+            continue
         if include_imag:
             readfile_xy(fname_imag,tvals_imag, transverse_imag)
             readfile_xy(fname_imag, tmplist, longitudinal_imag, ycol=2)
@@ -319,29 +323,34 @@ if coherent == False:
         jackknife_xs_l_imag=[]
         error=False
         for skip_i in range(len(realparts)):
-            i=0
-            tmplist_t_r = []
-            tmplist_t_i = []
-            tmplist_l_r = []
-            tmplist_l_i = []
-            for rc,ic in zip(realparts, imagparts):
-                if i != skip_i:
-                    try:
-                        tmplist_t_r.append(rc[t][0])
-                        tmplist_t_i.append(ic[t][0])
-                        tmplist_l_r.append(rc[t][1])
-                        tmplist_l_i.append(ic[t][1])
-                    except:
-                        if error==False:
-                            print >> sys.stderr, "Error at t=" + str(t) #+ ", rc " + str(rc) +", ic " + str(ic)
-                        error=True
-                i=i+1
-            
-            jackknife_xs_t_real.append( np.var(tmplist_t_r))
-            jackknife_xs_t_imag.append( np.var(tmplist_t_i))
-            jackknife_xs_l_real.append( np.var(tmplist_l_r))
-            jackknife_xs_l_imag.append( np.var(tmplist_l_i))
-            
+            if incoh_uncertainty:
+                i=0
+                tmplist_t_r = []
+                tmplist_t_i = []
+                tmplist_l_r = []
+                tmplist_l_i = []
+                for rc,ic in zip(realparts, imagparts):
+                    if i != skip_i:
+                        try:
+                            tmplist_t_r.append(rc[t][0])
+                            tmplist_t_i.append(ic[t][0])
+                            tmplist_l_r.append(rc[t][1])
+                            tmplist_l_i.append(ic[t][1])
+                        except:
+                            if error==False:
+                                print >> sys.stderr, "Error at t=" + str(t) #+ ", rc " + str(rc) +", ic " + str(ic)
+                            error=True
+                    i=i+1
+                
+                jackknife_xs_t_real.append( np.var(tmplist_t_r))
+                jackknife_xs_t_imag.append( np.var(tmplist_t_i))
+                jackknife_xs_l_real.append( np.var(tmplist_l_r))
+                jackknife_xs_l_imag.append( np.var(tmplist_l_i))
+            else:
+                jackknife_xs_t_real.append( 0 )
+                jackknife_xs_t_imag.append( 0 )
+                jackknife_xs_l_real.append(0)
+                jackknife_xs_l_imag.append(0)
         # Error estimate
         #err_t = np.std(jackknife_xs_t)/sqrt(len(jackknife_xs_t))/(16.0*pi)
         #err_l = np.std(jackknife_xs_l)/sqrt(len(jackknife_xs_l))/(16.0*pi)
@@ -377,7 +386,8 @@ if coherent == False:
                 correction_t = corrections_t[t]
                 correction_l = corrections_l[t]
 
-# TODO: ASSUMING NOW ONLY TRANSVERSE!!!!
+        # TODO: INCOHERENT ERROR CALCULATION ONLY ONLY FOR TRANSVERSE NOW!!!!
+        # Anyway incoherent uncertainty is very small...
         #err = correction_t * sqrt( var_t / len(jackknife_xs_t_real)) / (16.0*pi)
         #err = (correction_t * sqrt(var_t_real/len(jackknife_xs_t_real)) + correction_t*sqrt(var_t_imag/len(jackknife_xs_t_real)))/(16.0*pi)
         n = len(jackknife_xs_t_real)

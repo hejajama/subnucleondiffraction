@@ -32,12 +32,16 @@ public:
     
     void SetNumOfAverages(int n);
     
+    void SetZLimit(double zl) { zlimit = zl; }
+    
     DipoleAmplitude* GetDipole();
     WaveFunction* GetWaveFunction();
 private:
     DipoleAmplitude* dipole;
     WaveFunction* wavef;
     int num_of_averages;
+    
+    double zlimit;
     
     double beta;
     

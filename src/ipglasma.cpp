@@ -193,14 +193,10 @@ IPGlasma::IPGlasma(std::string file)
         ss >> y;
         
         // Datafile is in fm, but we want to use GeVs in this code
-        //x*= FMGEV;
-        //y *= FMGEV;
-        // Datafile step is 0.02 fm
         // Once we have load all points, we will sift all coordinates such that 0 is at the center
         
-        double step = 0.01; // standard 128x128
-	//double step = 0.0025;
-	//double step=0.08;
+        double step = 0.005; // 1024^2, L=5.12 fm
+
         //double step = 0.007;
         x = step*x*FMGEV;
         y = step*y*FMGEV;

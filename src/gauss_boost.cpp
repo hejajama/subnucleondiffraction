@@ -21,8 +21,7 @@ using namespace Amplitude;
 
 const REAL ZINTACCURACY=ZINT_RELACCURACY;
 const int MAXITER_ZINT=ZINT_INTERVALS;
-const REAL MINZ=0.00001;  // Integration limits
-const REAL MAXZ=0.9999;
+
 //const double ALPHA_e = 1.0/137.035999679;
 //const double e = sqrt(4.0*M_PI*ALPHA_e);
 
@@ -35,7 +34,8 @@ BoostedGauss::BoostedGauss(REAL e_f_, REAL N_T_, REAL N_L_, REAL R_,
     N_T=N_T_; N_L=N_L_;
     R=R_;
     delta=delta_; 
-     
+    MINZ=0.00001;  // Integration limits
+    MAXZ=0.9999;
 }
 
 /* Constructor to read parameters from a file
@@ -100,6 +100,7 @@ REAL BoostedGauss::PsiSqr_T(REAL Qsqr, REAL r, REAL z)
         - (SQR(z)+SQR(1.0-z))*epstmp*gsl_sf_bessel_K1(epstmp*r)*Psi_T_DR(r,z);
     result *= e_f*e*NC/(M_PI*z*(1.0-z));
     
+    //result *= exp(-r*r / (5.068*5.068*1.5*1.5));
     return result;
 }
 
@@ -114,6 +115,7 @@ REAL BoostedGauss::PsiSqr_L(REAL Qsqr, REAL r, REAL z)
     result = M_V*Psi_L(r,z)+delta/(M_V*z*(1.0-z))*(SQR(m_f)*Psi_L(r,z)
         - 1.0/r*Psi_L_DR(r,z) - Psi_L_D2R(r,z));
     result *= e_f*e*NC/M_PI*2*sqrt(Qsqr)*z*(1.0-z)*gsl_sf_bessel_K0(epstmp*r);
+//result *= exp(-r*r / (5.068*5.068*1.5*1.5));
     return result;
 }
 
@@ -196,7 +198,8 @@ REAL BoostedGauss::PsiSqr_L_intz(REAL Qsqr, REAL r)
             << __LINE__ << ": Result " << result << ", abserror: " << abserr <<
             std::endl;
 
-    result*=1/(4.0*M_PI); // Normalization
+    result*=1.0/(4.0*M_PI); // Normalization
+//    result *= exp(-r*r / (5.068*5.068*1.5*1.5));
     return result;
 }
 
