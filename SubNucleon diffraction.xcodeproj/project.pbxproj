@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */; };
 		1217F7821C0509E50008A90C /* nucleons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1217F7801C0509E50008A90C /* nucleons.cpp */; };
 		1217F7851C11EA830008A90C /* sample_color_charges.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1217F7831C11EA830008A90C /* sample_color_charges.cpp */; };
 		123E8F881BFA76F700681374 /* ipsat_proton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 123E8F861BFA76F700681374 /* ipsat_proton.cpp */; };
@@ -38,8 +37,6 @@
 		120170121BDA7EE600A440E4 /* gdist_dglap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gdist_dglap.cpp; path = src/gdist_dglap.cpp; sourceTree = "<group>"; };
 		120170131BDA7EE600A440E4 /* gdist_dglap.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gdist_dglap.hpp; path = src/gdist_dglap.hpp; sourceTree = "<group>"; };
 		120170181BDA883A00A440E4 /* SubNucleonDiffraction */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SubNucleonDiffraction; sourceTree = BUILT_PRODUCTS_DIR; };
-		120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipsat_nucleons.cpp; path = src/ipsat_nucleons.cpp; sourceTree = "<group>"; };
-		120170241BDAA9F100A440E4 /* ipsat_nucleons.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ipsat_nucleons.hpp; path = src/ipsat_nucleons.hpp; sourceTree = "<group>"; };
 		12117B6B1BDE537700D2BF9A /* vector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vector.cpp; path = src/vector.cpp; sourceTree = "<group>"; };
 		12117B6C1BDE537700D2BF9A /* vector.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = vector.hpp; path = src/vector.hpp; sourceTree = "<group>"; };
 		1217F7801C0509E50008A90C /* nucleons.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = nucleons.cpp; path = src/nucleons.cpp; sourceTree = "<group>"; };
@@ -130,10 +127,8 @@
 				138FE4A61C7BC85F0078E11F /* average_amplitude.cpp */,
 				12117B6B1BDE537700D2BF9A /* vector.cpp */,
 				12117B6C1BDE537700D2BF9A /* vector.hpp */,
-				120170231BDAA9F100A440E4 /* ipsat_nucleons.cpp */,
 				12F69EFC1BE16FE10045E7DD /* ipglasma.cpp */,
 				12F69EFD1BE16FE10045E7DD /* ipglasma.hpp */,
-				120170241BDAA9F100A440E4 /* ipsat_nucleons.hpp */,
 				1217F7801C0509E50008A90C /* nucleons.cpp */,
 				1217F7811C0509E50008A90C /* nucleons.hpp */,
 				123E8F861BFA76F700681374 /* ipsat_proton.cpp */,
@@ -257,7 +252,6 @@
 				13E8924D1D63B62000DA2C38 /* modified_ipsat.cpp in Sources */,
 				1217F7851C11EA830008A90C /* sample_color_charges.cpp in Sources */,
 				1217F7821C0509E50008A90C /* nucleons.cpp in Sources */,
-				120170251BDAA9F100A440E4 /* ipsat_nucleons.cpp in Sources */,
 				1349C3F71C29CF1500B8EBA7 /* dipxs_intb.cpp in Sources */,
 				12F504E61BECEFA3005540EF /* subnucleon_config.cpp in Sources */,
 				138FE4A71C7BC85F0078E11F /* average_amplitude.cpp in Sources */,

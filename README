@@ -1,0 +1,57 @@
+Subnucleondiffraction code
+H. Mäntysaari and B. Schenke
+<mantysaari@bnl.gov>, 2015-2017
+
+References:
+H. Mäntysaari, B. Schenke
+Phys.Rev. D94 (2016) no.3, 034042 
+Phys.Rev.Lett. 117 (2016) no.5, 052301
+
+As this code uses some general helpers I have written, the following
+files must be available from the following paths related to the main directory:
+../amplitudelib_v2/tools/tools.{cpp,hpp}
+../amplitudelib_v2/tools/interpolation.{cpp,hpp}
+
+
+How to compile:
+
+Modify Makefile such that CXXFLAGS, LDFLAGS and CXX variables 
+point to correct locations (gsl-config and C++ compiler)
+
+Compile libColorDipole (IPsat parametrization from Phys.Rev. D87 (2013) no.3, 034002)
+For instructions, see libColorDipole/README, or just 
+make TEST_DIPOLE FC=gfortran
+Note that FC specifies the fortran compiler, if you don't use GCC, change that. 
+Also, in that case you have to change the -lgfortran flag in the subnucleondiffraction Makefile
+
+After libColorDipole is complied, the main code can be compiled by typing
+make
+
+How to run:
+See ./diffraction -help
+Examples
+GSL_RNG_SEED=1 ./diffraction -dipole 1 ipsatproton 3.3 0.7 -real -Q2 0 -W 75 -mcintpoints 1e5
+Calculates diffractive scattering amplitude (real part, imaginary part: use -imag instead of -real)
+Q2 and W are clear, and 10^5 points are used in (adaptive) Monte Carlo integration
+
+Using a heavy nucleus instead of proton, replace 1 -> 197 (Au) or any other A>3, and Woods-Saxon
+is used.
+
+Random seed is set by GSL_RNG_SEED enviromental variable. One MUST use the same RNG_SEED when calculating real and 
+imaginary parts!
+
+IP-Glasma input (file containing N^2 wilson lines) is used as follows:
+-dipole 1 ipglasma FILENAME
+The step size in fm is set in file src/ipglasma.cpp (double step=0.005; corresponds to step size 0.005fm)
+
+
+In order to calculate coherent and incoherent cross sections, calculate real and imaginary parts to files
+somedirectory/real/spectra_0, somedirectory/real/spectra_1, somedirectory/real/spectra_2
+and 
+somedirectory/imag/spectra_0, somedirectory/imag/spectra_2, somedirecotyr/imag_spectra_3
+and so on (last number corresponds to a given configuration)
+
+Then coherent cross section is calculated as
+python tools/spectra.py -dir somedirectory/ -coherent
+and incohernet cross section as
+python tools/spectra.py -dir somedirectory/ -incoherent

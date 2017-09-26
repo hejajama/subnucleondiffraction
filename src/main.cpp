@@ -18,7 +18,6 @@
 #include "diffraction.hpp"
 #include "gauss_boost.hpp"
 #include "gaus_lc.h"
-#include "ipsat_nucleons.hpp"
 #include "smooth_ws_nuke.hpp"
 #include "ipsat_proton.hpp"
 #include "vector.hpp"
