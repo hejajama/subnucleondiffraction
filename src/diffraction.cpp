@@ -239,17 +239,17 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     double ry = r*sin(theta_r);
     
     // q and antiq positions
-    //double tmpz = z;
-    //z=0.5;
+    double tmpz = z;
+    z=0.5; // Do not use z when calcualting antiquark/quark positions, just b is geometric mean
     if (FACTORIZE_ZINT)
-        std::cerr << "Check FACTORIZE_ZINT code!" << std::endl;
-        //z=0.5;      // Use b as geometric average, decouple zintegral
+    //    std::cerr << "Check FACTORIZE_ZINT code!" << std::endl;
+        z=0.5;      // Use b as geometric average, decouple zintegral
     
     
     double qx = bx + z*rx; double qy = by + z*ry;
     double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
     
-    //z = tmpz;
+    z = tmpz;
 
     double res = 0;
     
@@ -267,8 +267,13 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     if (FACTORIZE_ZINT)
     {
-        res *= wavef->PsiSqr_T_intz(Qsqr, r);   // Note: 4pi factor is in PsiSqr_T_intz function!
-        
+        if (pol == T)
+            res *= wavef->PsiSqr_T_intz(Qsqr, r)/(4.0*M_PI);   // Note: 4pi factor is in PsiSqr_T_intz function!
+        else 
+            res *= wavef->PsiSqr_L_intz(Qsqr, r)/(4.0*M_PI);	// BUt not in VirtualPhoton, which is used here        
+
+	res *= amp_real; 	/// include only real part
+	
         if (REAL_PART)
             res *= std::cos( b*delta*std::cos(theta_b));    // Neglect z now
         else

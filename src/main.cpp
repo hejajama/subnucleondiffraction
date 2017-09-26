@@ -75,6 +75,8 @@ int main(int argc, char* argv[])
     Fluctuation_shape fluctshape = LOCAL_FLUCTUATIONS;
     bool auto_mcintpoints = false;
     std::string wavef_file = "";
+    bool schwinger = false;
+    double schwinger_rc = 0;
     
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2016" << endl;
@@ -98,6 +100,7 @@ int main(int argc, char* argv[])
         cout << "-wavef_file filename" << endl;
         cout << "-wavef gauslc/boostedgaussian" << endl;
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
+        cout << "-schwinger r_c" << endl;
         return 0;
     }
     
@@ -257,6 +260,11 @@ int main(int argc, char* argv[])
         }
         else if (string(argv[i])=="-He3")
             he3_id = StrToInt(argv[i+1]);
+        else if (string(argv[i])=="-schwinger")
+        {
+            schwinger = true; 
+            schwinger_rc = StrToReal(argv[i+1]);
+        }
         else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -314,6 +322,9 @@ int main(int argc, char* argv[])
         ((Nucleons*)amp)->SetHeId(he3_id);
     }
     
+
+    if (schwinger) ((IPGlasma*)amp)->SetSchwinger(true, schwinger_rc);
+
     amp->InitializeTarget();
     
 
@@ -394,13 +405,11 @@ int main(int argc, char* argv[])
     {
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
-        double tstep = 0.025; //upc _harva: 0.001
-        Vec tmpb(0,0);
-        double qs_x0 = amp->SaturationScale(0.01, tmpb);
-        for (t=0; t<=1.6; t+=tstep)
+
+        double tstep = 0.01;
+        for (t=0; t<=1.5; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
-            
             if (xpom > 0.01)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
@@ -420,13 +429,14 @@ int main(int argc, char* argv[])
             cout.precision(10);
             cout << trans  << " " << lng << endl;
             
+
             // Larger t step probably useful at large t
             /*
             if (t>0.08)
                 tstep = 0.015;
             if (t>=0.4 )
                 tstep = 0.05;
-            */
+                */
         }
     }
     else if (mode == CORRECTIONS)
@@ -458,6 +468,7 @@ int main(int argc, char* argv[])
     
     else if (mode == F2)
     {
+	FACTORIZE_ZINT=true;
         cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm sum F_L(light) F_L(charm) F_L(sum)" << endl;
         double orig_x = xbj;
         WaveFunction * photon = new VirtualPhoton();;
@@ -469,14 +480,14 @@ int main(int argc, char* argv[])
         
         // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
         // Note* 4pi, as convention in BoostedGaussian and VirtualPhoton classes are different!!!
-        double xs_t = 4.0*M_PI*f2.ScatteringAmplitudeRotationalSymmetry(xbj, Qsqr, 0, T);
-        double xs_l = 4.0*M_PI*f2.ScatteringAmplitudeRotationalSymmetry(xbj, Qsqr, 0, L);
+        double xs_t = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
+        double xs_l = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, L);
         double structurefun = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l+xs_t);
         double fl_light =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*xs_l;
         
         // heavy quark contribution
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.4);
-        xbj = xbj * (1.0 + 4.0*1.4*1.4 / Qsqr);
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.27);
+//        xbj = xbj * (1.0 + 4.0*1.27*1.27 / Qsqr);
         cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
         double xs_t_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
         double xs_l_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, L);

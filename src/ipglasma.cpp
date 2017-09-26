@@ -38,43 +38,99 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
         or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
             return 0;
   
-	// schwinger
 
-	if (q1[0] < xcoords[0]) q1[0] = xcoords[0];
-	if (q1[1] < xcoords[0]) q1[1] = xcoords[0];
-	if (q2[0] < xcoords[0]) q2[0] = xcoords[0];
-	if (q2[1] < xcoords[0]) q2[1] = xcoords[0];
-	if (q1[0] > xcoords[xcoords.size()-1]) q1[0] = xcoords[xcoords.size()-1];
-	if (q2[0] > xcoords[xcoords.size()-1]) q2[0] = xcoords[xcoords.size()-1];
-	if (q1[1] > xcoords[xcoords.size()-1]) q1[1] = xcoords[xcoords.size()-1];
-        if (q2[1] > xcoords[xcoords.size()-1]) q2[1] = xcoords[xcoords.size()-1]; 
+    double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
 
-   double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
-    double b = sqrt( pow( (q1[0]+q2[0])/2.0, 2.0) + pow((q1[1]+q2[1])/2,2.0) );
-    //if (r > 0.5 * 5.068)
-//	return exp(-b*b/(2*4.0));
-/*
-	// Kind of schwinger
-    if (r > 0.3 * 5.068 )
-    {	
- 	double q3[2];
+	// Smaller dipole than the grid
+	if (r < std::abs( xcoords[1] - xcoords[0])) 
+			return 0;	
 	
-	// Put new quark randomly between q1 and q2, calculate weighted
-	// mean with weign in [0.3, 0.7]
-	double w = gsl_rng_uniform(global_rng)*0.7+0.3;
+    if (schwinger and r > schwinger_rc)
+    {
+	    if (q1[0] < xcoords[0]) q1[0] = xcoords[0];
+	    if (q1[1] < xcoords[0]) q1[1] = xcoords[0];
+	    if (q2[0] < xcoords[0]) q2[0] = xcoords[0];
+	    if (q2[1] < xcoords[0]) q2[1] = xcoords[0];
+	    if (q1[0] > xcoords[xcoords.size()-1]) q1[0] = xcoords[xcoords.size()-1];
+	    if (q2[0] > xcoords[xcoords.size()-1]) q2[0] = xcoords[xcoords.size()-1];
+	    if (q1[1] > xcoords[xcoords.size()-1]) q1[1] = xcoords[xcoords.size()-1];
+            if (q2[1] > xcoords[xcoords.size()-1]) q2[1] = xcoords[xcoords.size()-1]; 
 
-	q3[0] = (w*q1[0]+(1.0-w)*q2[0])/1.0;
-	q3[1] = (w*q1[1]+(1.0-w)*q2[1])/1.0;
+            double b = sqrt( pow( (q1[0]+q2[0])/2.0, 2.0) + pow((q1[1]+q2[1])/2,2.0) );
+	    
+            // Dipole schwinger
+	   
+            // Kind of schwinger
+ 	    double q3[2];
+	
+	    // Put new quark randomly between q1 and q2, calculate weighted
+	    // mean with weign in [0.3, 0.7]
+	    double w = gsl_rng_uniform(global_rng)*0.7+0.3;
 
-	double s1 = 1.0 - Amplitude(xpom, q1, q3);
-	double s2 = 1.0 - Amplitude(xpom, q2, q3);
-	if (s1 < 0) s1 = 0; if (s1>1) s1=1;
-	if (s2<0) s2=0; if (s2>1) s2=1;
-	//cout << "r " << r << " Schwinger gives " << s1 << " and " << s2 << endl;
-	return 1.0 - s1*s2;
+	    q3[0] = (w*q1[0]+(1.0-w)*q2[0])/1.0;
+	    q3[1] = (w*q1[1]+(1.0-w)*q2[1])/1.0;
 
-    }
+	    double s1 = 1.0 - Amplitude(xpom, q1, q3);
+	    double s2 = 1.0 - Amplitude(xpom, q2, q3);
+	    if (s1 < 0) s1 = 0; if (s1>1) s1=1;
+	    if (s2<0) s2=0; if (s2>1) s2=1;
+	    //cout << "r " << r << " Schwinger gives " << s1 << " and " << s2 << endl;
+	    return 1.0 - s1*s2;
+		
+	  // Quadrupole schwinger
+/* 
+	   int splits = 2 * int(r / schwinger_rc) + 1;
+           double w = 1.0 / ((double)splits);
+		cout << "test, rpoints (" << q1[0] << ", " << q1[1] << ") and (" << q2[0] << ", " << q2[1] << ")" << endl;
+	   std::vector<WilsonLine> wlines;
+           for (unsigned int i=0; i<splits+1; i++)
+           {
+		double xy[2];
+		xy[0] = i*w*q2[0] + (1.0 - i*w)*q1[0];
+		xy[1] = i*w*q2[1] + (1.0 - i*w)*q1[1];
+		cout << "New point " << xy[0] << " " << xy[1] << endl;
+		WilsonLine tmp = GetWilsonLine(xy[0], xy[1]);
+		if (i % 2 == 1)
+			tmp = tmp.HermitianConjugate();
+		wlines.push_back(tmp);
+	    }
+            WilsonLine r;
+	    r = wlines[0];
+	    for (int i=1; i<wlines.size(); i++)
+{
+	//cout << "Product " << i << endl;
+		r = r * wlines[i];	
+}	
+
+	cout << "Trace " <<  1.0 - r.Trace().real()/NC << endl;
 */
+
+
+/*
+	  
+	    double q3[2]; double q4[2];
+	    q3[0] = 0.333333 * q2[0] + (1.0 - 0.333333) * q1[0];
+	    q3[1] = 0.333333 * q2[1] + (1.0 - 0.333333) * q1[1];
+            q4[0] = 0.666666 * q2[0] + (1.0 - 0.666666) * q1[0];
+	    q4[1] = 0.6666666 * q2[1] + (1.0 - 0.666666) * q1[1];
+
+	    WilsonLine w1 = GetWilsonLine(q1[0], q1[1]);
+            WilsonLine w2 = GetWilsonLine(q2[0], q2[1]);
+	    w2 = w2.HermitianConjugate();
+            WilsonLine w3 = GetWilsonLine(q3[0], q3[1]);
+            WilsonLine w4 = GetWilsonLine(q4[0], q4[1]);
+	    w3 = w3.HermitianConjugate();
+
+	    WilsonLine p;
+            p = w1 * w3 * w4 * w2;
+
+	//	cout << "old points (" << q1[0] << ", " << q1[1] << "), (" << q3[0] << ", " << q3[1] << "), and (" << q4[0] << ", " << q4[1] << ")  (" << q2[0] << ", " << q2[1] << ")";
+	//	cout << " trace " << 1.0 - p.Trace().real()/NC << endl;
+            return 1.0 - p.Trace().real()/NC;
+
+	*/		
+		
+     }
     // First find corresponding grid indeces
     WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
     WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
@@ -197,7 +253,6 @@ IPGlasma::IPGlasma(std::string file)
         
         double step = 0.005; // 1024^2, L=5.12 fm
 
-        //double step = 0.007;
         x = step*x*FMGEV;
         y = step*y*FMGEV;
         
@@ -255,7 +310,7 @@ IPGlasma::IPGlasma(std::string file)
     // wilsonlines[ xcoords.size()*xind + yind]
     // Of course this is symmetric and we could just as well swap xind and yind
 
-    
+   SetSchwinger(false); 
     //std::cout <<"# Loaded " << wilsonlines.size() << " Wilson lines from file " << file << ", grid size " << xcoords.size() << " x " << ycoords.size() << " grid range [" << xcoords[0] << ", " << xcoords[xcoords.size()-1] << "]" << " step size " << xcoords[1]-xcoords[0] << " GeV^-1" << std::endl;
 
         
@@ -283,10 +338,17 @@ std::string IPGlasma::InfoStr()
 {
     std::stringstream ss;
     ss << "# IPGlasma loaded from file " << datafile ;
+    if (schwinger) ss << ", schwinger mechanism included, rc=" << schwinger_rc << " GeV^-1";
     return ss.str();
 }
 
 std::vector<double> &IPGlasma::GetXCoordinates()
 {
     return xcoords;
+}
+
+void IPGlasma::SetSchwinger(bool s, double rc)
+{
+    schwinger = s;
+    schwinger_rc = rc;
 }
