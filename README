@@ -40,6 +40,10 @@ is used.
 Random seed is set by GSL_RNG_SEED enviromental variable. One MUST use the same RNG_SEED when calculating real and 
 imaginary parts!
 
+Round proton is "ipsatproton 0 4"
+Q_s fluctautoins for constituent quarks are set as:
+-qsfluct 0.5 -qsfluctshape quarks 
+
 IP-Glasma input (file containing N^2 wilson lines) is used as follows:
 -dipole 1 ipglasma FILENAME
 The step size in fm is set in file src/ipglasma.cpp (double step=0.005; corresponds to step size 0.005fm)
@@ -55,3 +59,15 @@ Then coherent cross section is calculated as
 python tools/spectra.py -dir somedirectory/ -coherent
 and incohernet cross section as
 python tools/spectra.py -dir somedirectory/ -incoherent
+
+The output of coherent cross section is
+t dsigma/dt [GeV^-4]  maximum_dsigma/dt   minimum_dsigma_dt  statistical_uncertainty
+and for the incoherent xs
+t dsigma/dt [GeV^-4]  statistical_uncertainty
+
+
+
+In order to calculate total gamma-p (or gamma-A) cross section, one can calulate F2 as follows
+GSL_RNG_SEED=1 ./diffraction -dipole 1 ipsatproton 0 4 -F2 Qsqr xbj
+The output is
+x   Q^2   F_2,light  F_2,charm   F_2,total   F_L,light  F_L,charm   F_L,tot 
