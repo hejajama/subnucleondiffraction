@@ -84,7 +84,7 @@ double AverageAmplitude_b(double b, void* p)
     
     //cout << "b=" << b << " avg " <<result / (2.0 * M_PI) << endl;
     
-    return result / (2.0 * M_PI)- N0;
+    return result / (2.0 * M_PI) - N0;
 
     
 }
@@ -119,7 +119,6 @@ int main(int argc, char* argv[])
     F.params = &par;
     gsl_root_fsolver_set (s, &F, x_lo, x_hi);
     double r;
-	
     do
     {
         iter++;
@@ -130,19 +129,12 @@ int main(int argc, char* argv[])
         status = gsl_root_test_interval (x_lo, x_hi,
                                          0, 0.001);
         
+        if (status == GSL_SUCCESS)
+            printf ("Converged:\n");
     }
     while (status == GSL_CONTINUE && iter < max_iter);
     
     cout << r << endl;
-    
-/*    
-    for (double b=0; b<15; b+=0.1)
-    {
-        double average_n = AverageAmplitude_b(b, &par);
-        cout << b << " " << average_n << endl;
-    }
-    
- */   
     
     
 }

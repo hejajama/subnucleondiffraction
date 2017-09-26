@@ -139,7 +139,8 @@ files = [
          
          
          #smooth
-         #["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx", r"Smooth", Linestyle(2), 'blue', "", 1.0, "blue"],
+         ["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_qsfluct_avgfluct1_fixedx", r"Lumpy", Linestyle(0), 'black', "", 1.0, "black"],
+         ["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx", r"Smooth", Linestyle(2), 'blue', "", 1.0, "blue"],
          
          
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_fixedx", r"No geometric fluctuations", Linestyle(3), 'green', "", 1.0, "green"],
@@ -166,13 +167,13 @@ files = [
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0), "black", "", 1.0, "black"],
          
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m02_n07_w_75_q2_0_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.2\,\mathrm{GeV}$", Linestyle(1), "blue", "", 1.0, "blue"],
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift", r"Geometric and color charge", Linestyle(1), "blue", "", 1.0, "blue"], # $B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$
+         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift", r"Geometric and color charge fluctuations", Linestyle(1), "blue", "", 1.0, "blue"], # $B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m06_n07_w_75_q2_0_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.6\,\mathrm{GeV}$", Linestyle(3), "red", "", 1.0, "red"],
          
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift_onlyreal", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$ only real", Linestyle(1), "blue", "", 1.0, "black"],
          
-         ["paper_2/ipglasma_bp_4.0_m04_n065_w_75_q2_0", r"Round proton, color charge fluctuations ", Linestyle(0), "black", "", 1.0, "black"],
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"+ geometric and $Q_s$ fluctuations", Linestyle(0), "black", "", 1.0, "black"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
+         #["paper_2/ipglasma_bp_4.0_m04_n065_w_75_q2_0", r"Round proton, color charge fluctuations ", Linestyle(0), "black", "", 1.0, "black"],
+         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"+  $Q_s$ fluctuations", Linestyle(0), "black", "", 1.0, "black"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
          #["ipglasma_smallfluctuations", r"IP-Glasma, small geometric fluctuations", Linestyle(1), "red", "", 1.0, "red"],
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(1), "blue", "", 1.0, "blue"],
          #["paper_2/ipglasma_bp_2.0_bq_0.5_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.5\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(2), "red", "", 1.0, "red"],
@@ -370,7 +371,7 @@ if w_75_data:
     readfile_xy("proton/coherent/exp/h1_jpsi_w_75", expx, expy)
     readfile_xy("proton/coherent/exp/h1_jpsi_w_75", tmp, experr, ycol=2)
     if show_coherent:
-        p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(0), markeredgecolor=Color(0), label=r"Coherent")
+        p1.errorbar(expx, expy, yerr=experr, marker=datadashes[2], linestyle='None', linewidth=0.7, markersize=markersize_coh, color=Color(0), markeredgecolor=Color(0), label=r"H1 coherent")
     expx=[]
     expy=[]
     experr=[]
@@ -382,12 +383,12 @@ if w_75_data:
 
 #p1.text(0.2,0.1,"IP-Glasma", fontsize=textsize)
 #fluct
-#p1.annotate("Incoherent", xy=(1.5,15), rotation=-7, fontsize=15)
+p1.annotate("Incoherent", xy=(1.5,15), rotation=-7, fontsize=15)
 #p1.annotate("Coherent", xy=(1.,3.5), rotation=-30, fontsize=15)
 
 #round
-p1.annotate("Incoherent", xy=(1.7,0.4), rotation=-7, fontsize=15)
-p1.annotate("Coherent", xy=(1.,2), rotation=-30, fontsize=15)
+#p1.annotate("Incoherent", xy=(1.7,0.4), rotation=-7, fontsize=15)
+p1.annotate("Coherent", xy=(1.2,0.19), rotation=-45, fontsize=15)
 
 yscale("log",nonposy='clip')
 #xscale("log")
@@ -397,7 +398,7 @@ legfont = textsize-8.5 #-8
 # orig legfont + 2
 if slides:
     legfont = legfont + 3
-leg=legend(prop=dict(size=legfont+2),labelspacing=0.001,ncol=1,numpoints=1, loc=1)
+leg=legend(prop=dict(size=legfont+2),labelspacing=0.001,ncol=2,numpoints=1, loc=1)
 leg.draw_frame(False)
 
 #plt.gcf().subplots_adjust(top=0.9)

@@ -45,7 +45,9 @@ class BoostedGauss : public WaveFunction {
         std::string GetParamString();
 
         REAL MesonMass();
-        
+    
+        void ZLimit(double zlim) { MINZ = zlim; MAXZ = 1.0-zlim; }
+    
         
     private:
         // Parameters
@@ -57,7 +59,7 @@ class BoostedGauss : public WaveFunction {
         int S;      // S=1 is J/Psi etc.
         int delta;  // There are two different longitudial wave functions,
                     // delta=0 or delta=1
-        
+        double MINZ,MAXZ;
 };
 
 std::ostream& operator<<(std::ostream& os, BoostedGauss& ic);

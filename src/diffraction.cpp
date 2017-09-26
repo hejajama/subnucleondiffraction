@@ -23,6 +23,7 @@ Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
     dipole=&dipole_;
     wavef=&wavef_;
     num_of_averages = 1;
+    zlimit=0.000001;
 }
 
 
@@ -127,7 +128,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     {
         lower = new double[5];
         upper = new double[5];
-        lower[4]=0.000001; // Min z
+        lower[4]=zlimit; // Min z
         upper[4]=1.0 - lower[4];    // Max z
     }
     
