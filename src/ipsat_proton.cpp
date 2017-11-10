@@ -16,6 +16,7 @@
 #include <sstream>
 #include <algorithm>
 #include "subnucleon_config.hpp"
+#include "mz_ipsat/dipoleamplitude.hpp"
 
 // IPsat 2012
 extern "C" {
@@ -101,11 +102,17 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         }
         return 1.0 - std::exp( GetQsFluctuation(b.GetX(),b.GetY())*skew*c * 1.0/quarks.size()*tpsum);
     }
+    else if (ipsat == MZ)
+    {
+        return mzipsat->N(r.Len(), xpom, b.Len());
+            
+    }
     else
     {
         std::cerr << "UNKNOWN IPSAT VERSION!" << std::endl;
         exit(1);
     }
+    return 0;
     
 }
 
@@ -435,7 +442,6 @@ void Ipsat_Proton::SetQsFluctuation(double s)
 
 void Ipsat_Proton::Init()
 {
-    saturation=true;
     B_p = 0.0; // GeV^-2
     B_q = 4.0;
     shape = GAUSSIAN;
@@ -454,6 +460,31 @@ Ipsat_Proton::Ipsat_Proton()
     gdist = new DGLAPDist();
     allocated_gdist = true;
     ipsat = IPSAT12;
+    saturation=true;
+    
+                                           // (4.939286653112, 1.1, 0.009631194037871, 3.058791613883, 1.342035015621);
+    Init();
+    
+}
+Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
+{
+    allocated_gdist = false;
+    
+    if (version == MZ)
+    {
+        ipsat = MZ;
+        //mzipsat = new MZ_ipsat::DipoleAmplitude(2.146034445992, 1.1, 0.09665075464199, 2.103826220003, 1.351650642298);
+        //mzipsat->SetSaturation(true);
+        //saturation = true;
+        mzipsat = new MZ_ipsat::DipoleAmplitude(4.939286653112, 1.1, -0.009631194037871, 3.058791613883, 1.342035015621);
+        mzipsat->SetSaturation(false);
+        saturation=false;
+        
+    }
+    else if (version == IPSAT12)
+    {
+        ipsat = IPSAT12;
+    }
     Init();
     
 }
@@ -462,6 +493,7 @@ Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
     gdist = gd;
     allocated_gdist = false;
     ipsat = IPSAT06;
+    saturation=true;
 
     Init();
 }
@@ -470,6 +502,9 @@ Ipsat_Proton::~Ipsat_Proton()
 {
     if (allocated_gdist)
         delete gdist;
+    
+    if (ipsat == MZ)
+        delete mzipsat;
     gsl_integration_workspace_free(intworkspace_zint);
 }
 
@@ -500,6 +535,10 @@ double Ipsat_Proton::xg(double x, double r)
         
         return -2.0*3.0/ (M_PI*M_PI * as* r*r * 1.0/(2.0*M_PI*4.0))*exp;
         
+    }
+    else
+    {
+        cerr << "Ipsat version not implemented ffor Ipsat_Proton::xg" << endl;
     }
     
 }
@@ -866,6 +905,8 @@ std::string Ipsat_Proton::InfoStr()
         ss << "IPsat version: 2006 (KMW)";
     else if (ipsat == IPSAT12)
         ss << "IPsat version: 2012";
+    else if (ipsat == MZ)
+        ss << "MZipsat fit";
     ss << ". Skewedness in dipole amplitude: ";
     if (skewedness)
         ss << " Enabled";

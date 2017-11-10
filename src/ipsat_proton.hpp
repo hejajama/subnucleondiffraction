@@ -16,6 +16,7 @@
 #include "vector.hpp"
 #include "gdist_dglap.hpp"
 #include "vector.hpp"
+#include "mz_ipsat/dipoleamplitude.hpp"
 
 // How are the hotspots distributed
 enum Proton_shape
@@ -35,7 +36,8 @@ enum Structure
 enum Ipsat_version
 {
     IPSAT06,    // KMW hep-ph/0606272
-    IPSAT12     // Rezaeian et al, 1212.2974
+    IPSAT12,     // Rezaeian et al, 1212.2974
+    MZ
 };
 
 enum Fluctuation_shape
@@ -61,6 +63,7 @@ public:
     
     Ipsat_Proton();
     Ipsat_Proton(DGLAPDist *gd);    // Use global gdist
+    Ipsat_Proton(Ipsat_version version);
     ~Ipsat_Proton();
     
     std::vector<Vec>& GetQuarks();
@@ -139,6 +142,8 @@ private:
     
     
     Ipsat_version ipsat;
+    
+    MZ_ipsat::DipoleAmplitude *mzipsat;
     
     bool skewedness;    // Enable skewedness in dipole amplitude, multiplies xg
     

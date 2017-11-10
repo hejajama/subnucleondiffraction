@@ -23,7 +23,7 @@ Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
     dipole=&dipole_;
     wavef=&wavef_;
     num_of_averages = 1;
-    zlimit=0.000001;
+    zlimit=0.00000001;
 }
 
 
