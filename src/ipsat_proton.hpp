@@ -37,7 +37,8 @@ enum Ipsat_version
 {
     IPSAT06,    // KMW hep-ph/0606272
     IPSAT12,     // Rezaeian et al, 1212.2974
-    MZ
+    MZSAT,
+    MZNONSAT
 };
 
 enum Fluctuation_shape
@@ -54,6 +55,9 @@ public:
     double Amplitude(double xpom, double q1[2], double q2[2] );
     
     double Amplitude(double xpom, Vec q1, Vec q2);  // this is also in DipoleAmplitude, a bit overlap...
+    
+    double Amplitude_bint(double xpom, double r);
+    double Amplitude_sqr_bint(double xpom, double r);
     
     double xg(double x, double r);
     double LogDerivative_xg(double x, double r); // d ln xg / d ln (1/x)

@@ -102,7 +102,7 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         }
         return 1.0 - std::exp( GetQsFluctuation(b.GetX(),b.GetY())*skew*c * 1.0/quarks.size()*tpsum);
     }
-    else if (ipsat == MZ)
+    else if (ipsat == MZSAT or ipsat==MZNONSAT)
     {
         return mzipsat->N(r.Len(), xpom, b.Len());
             
@@ -470,12 +470,16 @@ Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
 {
     allocated_gdist = false;
     
-    if (version == MZ)
+    if (version == MZSAT)
     {
-        ipsat = MZ;
-        //mzipsat = new MZ_ipsat::DipoleAmplitude(2.146034445992, 1.1, 0.09665075464199, 2.103826220003, 1.351650642298);
-        //mzipsat->SetSaturation(true);
-        //saturation = true;
+        ipsat = MZSAT;
+        mzipsat = new MZ_ipsat::DipoleAmplitude(2.146034445992, 1.1, 0.09665075464199, 2.103826220003, 1.351650642298);
+        mzipsat->SetSaturation(true);
+        saturation = true;
+    }
+    else if (version == MZNONSAT)
+    {
+        ipsat=MZNONSAT;
         mzipsat = new MZ_ipsat::DipoleAmplitude(4.939286653112, 1.1, -0.009631194037871, 3.058791613883, 1.342035015621);
         mzipsat->SetSaturation(false);
         saturation=false;
@@ -503,7 +507,7 @@ Ipsat_Proton::~Ipsat_Proton()
     if (allocated_gdist)
         delete gdist;
     
-    if (ipsat == MZ)
+    if (ipsat == MZSAT or ipsat==MZNONSAT)
         delete mzipsat;
     gsl_integration_workspace_free(intworkspace_zint);
 }
@@ -905,7 +909,7 @@ std::string Ipsat_Proton::InfoStr()
         ss << "IPsat version: 2006 (KMW)";
     else if (ipsat == IPSAT12)
         ss << "IPsat version: 2012";
-    else if (ipsat == MZ)
+    else if (ipsat == MZSAT or ipsat==MZNONSAT)
         ss << "MZipsat fit";
     ss << ". Skewedness in dipole amplitude: ";
     if (skewedness)
@@ -987,3 +991,25 @@ void Ipsat_Proton::SetQuarkCenterOfMassToOrigin(bool s)
 {
     origin_at_center_of_mass = s;
 }
+
+double Ipsat_Proton::Amplitude_bint(double xpom, double r)
+{
+    if (ipsat == MZSAT or ipsat==MZNONSAT)
+        return mzipsat->N_bint(r, xpom);
+    
+    cerr << "Amplitude_bint only impelmented for MZfit" << endl;
+    return 0;
+        
+}
+
+double Ipsat_Proton::Amplitude_sqr_bint(double xpom, double r)
+{
+    if (ipsat == MZSAT or ipsat==MZNONSAT)
+        return mzipsat->N_sqr_bint(r, xpom);
+    
+    cerr << "Amplitude_bint only impelmented for MZfit" << endl;
+    return 0;
+    
+}
+
+

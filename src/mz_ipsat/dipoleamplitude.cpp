@@ -107,7 +107,7 @@ double DipoleAmplitude::N_bint(double r, double xbj)
     double musqr =mu0*mu0 + C / (r*r);
     if (!saturation)
     {
-        return 2.0 * M_PI * B_p * N(r, 0, xbj);
+        return 2.0 * M_PI * B_p * N(r, xbj, 0);
     }
     
 
@@ -151,6 +151,61 @@ double DipoleAmplitude::N_bint(double r, double xbj)
     return 2.0*M_PI*result; //2pi from angular integral
     
 }
+
+double DipoleAmplitude::N_sqr_bint(double r, double xbj)
+{
+    cerr << "TODO: we probably don't even need sqr_bint, and it is not tested!" << endl;
+    double musqr =mu0*mu0 + C / (r*r);
+    if (!saturation)
+    {
+        // int d^2 b N(r)^2 = pi * B * N(r, b=0)
+        return M_PI * B_p * N(r, xbj, 0)*N(r, xbj, 0);
+    }
+    
+    
+    
+    double a = M_PI*M_PI / (2.0 * Nc) * r*r * Alphas_xg(xbj, musqr)  / (2.0 * M_PI * B_p);
+    if (a==0) // Basically so small r that xg =0 as we are outside the dglap evolution grid
+        return 0;
+    
+    gsl_sf_result res2a;
+    gsl_sf_result resa;
+    int res1 = gsl_sf_expint_Ei_e(-a, &resa);
+    int res2 = gsl_sf_expint_Ei_e(-2.0*a, &res2a);
+    
+    
+    
+    if (!res1 and !res2)
+    {
+        return 2.0*M_PI*B_p * ( M_EULER + res2a.val - 2.0*resa.val + std::log(a/2.0));
+    }
+    else
+    {
+        cerr << "Problem with expint functions in N_sqr_bint!" << endl;
+        return 0;
+    }
+    /*
+     gsl_function fun; fun.function=inthelperf_bint;
+     inthelper_bint par;
+     par.r=r; par.x=xbj;
+     par.ipsat = this;
+     fun.params=&par;
+     
+     double acc = 0.00001;
+     
+     double result,abserr;
+     gsl_integration_workspace* ws = gsl_integration_workspace_alloc(500);
+     int status = gsl_integration_qag(&fun, 0, 999, 0, acc,
+     500, GSL_INTEG_GAUSS51, ws, &result, &abserr);
+     if (status)
+     cerr << "bintegral failed in IPsat::DipoleAmplitude_bit with r=" << r <<", result " << result << " relerror " << abserr/result << endl;
+     gsl_integration_workspace_free(ws);
+     
+     return 2.0*M_PI*result; //2pi from angular integral
+     */
+    
+}
+
 
 double DipoleAmplitude::Tp(double b)
 {
