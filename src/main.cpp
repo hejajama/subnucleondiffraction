@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
             {
                 if (string(argv[i+2])=="ipsatproton")
                 {
-                    amp = new Ipsat_Proton;
+                    amp = new Ipsat_Proton(IPSAT12);
                     ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+3]));
                     ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+4]));
                     if (string(argv[i+5]) == "ALBACETE")
@@ -405,11 +405,11 @@ int main(int argc, char* argv[])
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
-        double tstep = 0.01;
-        for (t=0; t<=1.5; t+=tstep)
+        double tstep = 0.02;
+        for (t=0; t<=2.1; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
-            if (xpom > 0.01)
+            if (xpom > 0.02)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
                 //continue;
@@ -468,10 +468,10 @@ int main(int argc, char* argv[])
     else if (mode == F2)
     {
 	FACTORIZE_ZINT=true;
-        cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm sum F_L(light) F_L(charm) F_L(sum)" << endl;
+        cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm tot F_L(light) F_L(charm) F_L(tot)" << endl;
         double orig_x = xbj;
         WaveFunction * photon = new VirtualPhoton();;
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT, 0.14);
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT, 0.03);
         cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
         
         amp->SetSkewedness(false);
@@ -485,16 +485,38 @@ int main(int argc, char* argv[])
         double fl_light =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*xs_l;
         
         // heavy quark contribution
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.4);
-//        xbj = xbj * (1.0 + 4.0*1.4*1.4 / Qsqr);
-        cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
-        double xs_t_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
-        double xs_l_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, L);
-        double structurefun_c = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c+xs_t_c);
-        double fl_c =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c);
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.35165);
+        double xbj_c = xbj * (1.0 + 4.0*1.35165*1.35165 / Qsqr);
+        double xs_t_c = 0;
+        double xs_l_c = 0;
+        double fl_c = 0;
+        double structurefun_c = 0;
+        if (xbj_c < 0.01)
+        {
+            cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
+            xs_t_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj_c, Qsqr, 0, T);
+            xs_l_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj_c, Qsqr, 0, L);
+            structurefun_c = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c+xs_t_c);
+            fl_c =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c);
+        }
         
+        // b quark contribution
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::B, 4.75);
+        double xbj_b = xbj * (1.0 + 4.0*4.75*4.75 / Qsqr);
+        double xs_t_b = 0;
+        double xs_l_b = 0;
+        double structurefun_b = 0;
+        double fl_b = 0;
+        if (xbj_b < 0.01)
+        {
+            cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
+            xs_t_b = 4.0*M_PI*f2.ScatteringAmplitude(xbj_b, Qsqr, 0, T);
+            xs_l_b = 4.0*M_PI*f2.ScatteringAmplitude(xbj_b, Qsqr, 0, L);
+            structurefun_b = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_b+xs_t_b);
+            fl_b =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c);
+        }
 	
-        cout << orig_x << " " << Qsqr << " " << structurefun << " " << structurefun_c << " " << structurefun + structurefun_c << " " << fl_light << " " << fl_c << " " << fl_c + fl_light << endl;
+        cout << orig_x << " " << Qsqr << " " << structurefun << " " << structurefun_c << " " << structurefun + structurefun_c + structurefun_b << " " << fl_light << " " << fl_c << " " << fl_c + fl_light + fl_b<< endl;
         
         delete photon;
     }

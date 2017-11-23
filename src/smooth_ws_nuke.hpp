@@ -9,6 +9,7 @@
 
 #include "dipole.hpp"
 #include "gdist_dglap.hpp"
+#include "mz_ipsat/dipoleamplitude.hpp"
 #include <tools/interpolation.hpp>
 #include <string>
 #include <sstream>
@@ -24,6 +25,7 @@ private:
     int A;
     DGLAPDist gdist;
     Interpolator *T_A_interpolator;
+    MZ_ipsat::DipoleAmplitude *mzipsat;
     
 };
 

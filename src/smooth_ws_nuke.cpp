@@ -5,6 +5,7 @@
  */
 
 #include "smooth_ws_nuke.hpp"
+#include "mz_ipsat/dipoleamplitude.hpp"
 #include <tools/tools.hpp>
 #include <tools/interpolation.hpp>
 #include <cmath>
@@ -21,12 +22,15 @@ int IPSAT12_NUKE_PAR = 2;    // m_c=1.4 GeV
 
 using Amplitude::SQR;
 
-
+const double NC=3.0;
 
 using namespace std;
 
 Smooth_ws_nuke::Smooth_ws_nuke(int A_)
 {
+    mzipsat = new MZ_ipsat::DipoleAmplitude(2.146034445992, 1.1, 0.09665075464199, 2.103826220003, 1.351650642298);
+    mzipsat->SetSaturation(true);
+    
     A=A_;
     InitializeWSDistribution(A);
     
@@ -52,13 +56,14 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
 {
         
     // Very crude toy model: neglet different positions for quarks, only take impact parameter dependence from the Woods Saxon
-    // This is very roughly like the ipsat model where we replace proton T_p by T_A, and drop all the constants at this point
-    // Note: close to center this is roughly one and drops to zero at the edges
+    // Basically KT hep-ph/0304189 Eq. (41)
     
     double r = std::sqrt( SQR(q1[0]-q2[0]) + SQR(q1[1]-q2[1]) );
     
     // Take the nucleon density at the geometric center of the two quarks
     double b = std::sqrt( SQR( (q1[0]+q2[0])/2.0 ) + SQR( (q1[1]+q2[1])/2.0) );
+    
+    return 1.0 - std::exp( -r*r * M_PI*M_PI / (2.0 * NC) * mzipsat->Alphas_xg(xpom, mzipsat->MuSqr(r)) * A * T_A_interpolator->Evaluate(b));
     
     
    /* if (ipsat == IPSAT06)
@@ -67,6 +72,7 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
     }
     else if (ipsat == IPSAT12)
     {*/
+    /*
         // dipole_amplitude(xBj, r, b, parameterSet) gives amplitude 2(1 - exp(c*T(p)))
         // We have to calculate "gluedist" as in case of ipsat06
         double tmpb=0;
@@ -97,12 +103,12 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
             }
             else
             skew = Skewedness(skew_lambda);
-        }*/
+        }
     
         return 1.0 - std::exp( A *T_A_interpolator->Evaluate(b) * c ); // c contains the - sign
     //}
 
-    
+    */
     
     
     // As T_A is normalized to unity, we get no extra normalizatino factor for it
