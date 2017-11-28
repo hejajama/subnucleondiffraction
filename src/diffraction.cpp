@@ -348,7 +348,6 @@ double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qs
 
 double Diffraction::ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z, Polarization pol)
 {
-    // TODO only for F_2 now!
     // Set quark and antiquark on x axis around impact parameter
     // As amplitude does not depend on angle, this is ok here.
     Vec q1(b+r/2.0,0);
@@ -357,21 +356,21 @@ double Diffraction::ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, 
     //double overlap =wavef->PsiSqr_tot(Qsqr, r, z)/(4.0*M_PI);
     double overlap=0;
     if (pol == T){
-        overlap = wavef->PsiSqr_T_intz(Qsqr, r)/(4.0*M_PI);
-        //overlap = wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI);
+        //overlap = wavef->PsiSqr_T_intz(Qsqr, r)/(4.0*M_PI);
+        overlap = wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI);
     }
     else if (pol == L)
     {
-        overlap = wavef->PsiSqr_L_intz(Qsqr, r)/(4.0*M_PI);
-        //overlap = wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
+        //overlap = wavef->PsiSqr_L_intz(Qsqr, r)/(4.0*M_PI);
+        overlap = wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
     }
     else
         cerr << "Unknown polarization in Diffraction::ScatteringAmplitudeRotationalSymmetryIntegrand! " << endl;
 
     // Bessel integrals INCLUDING jacobian
-    //double delta = std::sqrt(t);
-    //double bessel = 2.0*M_PI*b*gsl_sf_bessel_J0(b*delta)*2.0*M_PI*r*gsl_sf_bessel_J0((1.0-z)*r*delta);
-    double bessel=2.0*M_PI*b*2.0*M_PI*r*1.0;
+    double delta = std::sqrt(t);
+    double bessel = 2.0*M_PI*b*gsl_sf_bessel_J0(b*delta)*2.0*M_PI*r*gsl_sf_bessel_J0((1.0-z)*r*delta);
+    //double bessel=2.0*M_PI*b*2.0*M_PI*r*1.0;
     
     return amp*overlap*bessel;
 }
@@ -385,7 +384,7 @@ double inthelperf_amplitude_rotationalsym_b(double b, void* p)
     f.function = inthelperf_amplitude_rotationalsym_r;
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
     double result,error;
-    int status = gsl_integration_qag(&f, 1e-6, (50), 0, 0.0001, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
+    int status = gsl_integration_qag(&f, std::log(1e-6), std::log(50), 0, 0.0001, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
     
     if (status)
         cerr << "#Rint failed, result " << result << " relerror " << error << " b " << b << " t " << par->t << endl;
@@ -400,11 +399,11 @@ double inthelperf_amplitude_rotationalsym_b(double b, void* p)
 
 double inthelperf_amplitude_rotationalsym_r(double lnr, void* p)
 {
-    double r = lnr; //exp(lnr);
+    double r = exp(lnr);
     Inthelper_amplitude *par = (Inthelper_amplitude*)p;
     par->r = r;
     // factorize z integral
-    return inthelperf_amplitude_rotationalsym_z(0.5, par);
+    //return inthelperf_amplitude_rotationalsym_z(0.5, par);
     
     gsl_function f;
     f.params = par;

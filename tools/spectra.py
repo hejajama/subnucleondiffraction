@@ -11,7 +11,7 @@ def sqr(x):
     return x*x
 
 
-sys.path.append("/Users/heikki/lib/")
+sys.path.append("/Users/hejajama/lib/")
 sys.path.append("/nashome2/hejajama/lib/")
 from matplotlibhelper import *
 import numpy as np

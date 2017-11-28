@@ -76,6 +76,7 @@ int main(int argc, char* argv[])
     std::string wavef_file = "";
     bool schwinger = false;
     double schwinger_rc = 0;
+    int rng_offset=0;
     
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2016" << endl;
@@ -264,6 +265,8 @@ int main(int argc, char* argv[])
             schwinger = true; 
             schwinger_rc = StrToReal(argv[i+1]);
         }
+        else if (string(argv[i])=="-rng_offset")
+            rng_offset = StrToInt(argv[i+1]);
         else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -277,8 +280,13 @@ int main(int argc, char* argv[])
     
     
     // Initialize global random number generator
+    const gsl_rng_type * rngtype;
     gsl_rng_env_setup();
-    global_rng = gsl_rng_alloc(gsl_rng_default);
+    long int seed =  gsl_rng_default_seed +rng_offset;
+    cout << "# initializing rng seed to: " << seed << endl;
+    rngtype = gsl_rng_default;
+    global_rng = gsl_rng_alloc(rngtype);
+    gsl_rng_set(global_rng, seed);
 
     
     WaveFunction *wavef;
@@ -419,10 +427,10 @@ int main(int argc, char* argv[])
                 MCINTPOINTS = MCpoints(t);
             
             cout.precision(5);
-            double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
+            double trans = diff.ScatteringAmplitudeRotationalSymmetry(xpom, Qsqr, t, T);
             double lng = 0;
             if (Qsqr > 0)
-                lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
+                lng = diff.ScatteringAmplitudeRotationalSymmetry(xpom, Qsqr, t, L);
 
             cout << t << " ";
             cout.precision(10);
