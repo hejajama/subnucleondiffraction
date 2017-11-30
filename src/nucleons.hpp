@@ -13,6 +13,12 @@
 #include "vector.hpp"
 #include "gdist_dglap.hpp"
 
+enum DeuteronStructure
+{
+    NUCLEONS,   // Independent p and n
+    TUBE    // Connect nucleons by a tube
+};
+
 class Nucleons : public DipoleAmplitude
 {
 public:
@@ -32,7 +38,12 @@ public:
     
     double DeuteronWaveFunction(double r);  // Deuteron wf, r is 3d vector
     
+    double DeuteronTubeDensity(Vec b);  // Model deuteron as a Gaussian tube
+    
     std::vector<DipoleAmplitude*> GetNucleons();
+    
+    DeuteronStructure GetDeuteronStructure() { return deuteron_structure; }
+    void SetDeuteronStructure(DeuteronStructure d) { deuteron_structure = d; }
     
 private:
     int A;
@@ -41,6 +52,8 @@ private:
     
     double ws_delta;
     double ws_ra;
+    
+    DeuteronStructure deuteron_structure;
     
     int he3_id; // which He3 configuration we use
     

@@ -35,6 +35,14 @@ double Nucleons::Amplitude(double xpom, double q1[2], double q2[2] )
     double smat=1;
     Vec qv1(q1[0],q1[1]);
     Vec qv2(q2[0],q2[1]);
+    Vec b = qv1 + qv2;
+    b = b * 0.5;
+    Vec r= qv2 - qv1;
+    if (A==2)
+    {
+        double tp_deuteron = DeuteronTubeDensity(b);
+        return ((Ipsat_Proton*)nucleons[0])->Amplitude_Tp(xpom, r.Len(), tp_deuteron );
+    }
     for (int i=0; i<A; i++)
     {
         // Calculate the quark and antiquark coordinates in the frame where the nucleon i is at the origin
@@ -52,7 +60,7 @@ void Nucleons::InitializeTarget()
     nucleon_positions.clear();
     
     // Handle special cases
-    if (A==2)
+    if (A==2 and deuteron_structure == TUBE)
     {
         nucleons[0]->InitializeTarget();
         nucleons[1]->InitializeTarget();
@@ -74,8 +82,8 @@ void Nucleons::InitializeTarget()
         // Now vec is from proton to neutron, put origin at the center
         Vec proton = tmp*0.5;
         Vec neutron = proton*(-1);
-        proton.SetZ(0);
-        neutron.SetZ(0);
+        //proton.SetZ(0);
+        //neutron.SetZ(0);
         nucleon_positions.push_back(proton);
         nucleon_positions.push_back(neutron);
 
@@ -155,6 +163,7 @@ Nucleons::Nucleons(std::vector<DipoleAmplitude*> nucleons_)
     ws_delta=0.54*FMGEV;
     ws_ra = 1.12 * std::pow(A, 1.0/3.0) * FMGEV;
     he3_id=-1;
+    deuteron_structure = NUCLEONS;
 
 }
 
@@ -177,6 +186,10 @@ std::string Nucleons::InfoStr()
             ss << "# Deuteron wave function: Hulthen" << endl;
         else if (DEUTERON == ExtendedHulthen)
             ss << "# Deuteron wave function: ExtendedHulthen" << endl;
+        if (deuteron_structure == NUCLEONS)
+            ss << "# Deuteron = proton + neutron " << endl;
+        else
+            ss << "# Deuteron = tube connecting p and n" << endl;
     }
     else if (A==3)
     {
@@ -241,6 +254,74 @@ double Nucleons::DeuteronWaveFunction(double r)
     }
 }
 
+struct inthelper_deuteron_z
+{
+    Vec b;
+    Vec nucleon1;
+    Vec nucleon2;
+    double B_p;
+};
+double inthelperf_deuteron_z(double z, void* p)
+{
+    inthelper_deuteron_z* par = (inthelper_deuteron_z*)p;
+    par->b.SetZ(z);
+    
+    // Distance from the line connecting quarks
+    Vec q1_to_q2 = par->nucleon2- par->nucleon1;
+    Vec q2_to_q1 = par->nucleon1 - par->nucleon2;
+    Vec q1_to_point = par->b - par->nucleon1;
+    Vec q2_to_point = par->b - par->nucleon2;
+    // Test if we are in between
+    // Study projections q1->point on direction q1->q2, must be positive
+    // similarly q2->point projected on q2->q1 must be positive
+    double proj1 = q1_to_point*q1_to_q2;
+    double proj2 = q2_to_point*q2_to_q1;
+    if (proj1>0 and proj2>0)
+    {
+        double dsqr_line = ( q1_to_point.LenSqr() * q1_to_q2.LenSqr() -pow( q1_to_point*q1_to_q2, 2.0 )) / q1_to_q2.LenSqr() ;
+        double density = std::exp(-dsqr_line / (2.0*par->B_p)) * 1.0 / (2.0*std::sqrt(2.0) * pow(par->B_p * M_PI, 3.0/2.0));
+        return density;
+    }
+    else
+    {
+        double dsqr = std::min( q1_to_point.LenSqr(), q2_to_point.LenSqr());
+        return std::exp(-dsqr / (2.0*par->B_p)) * 1.0 / (2.0*std::sqrt(2.0) * pow(par->B_p * M_PI, 3.0/2.0));
+    }
+    
+    
+}
+double Nucleons::DeuteronTubeDensity(Vec b)
+{
+    // Connect p and n by a Gaussian tube
+    
+    // small optimization if we are faaar away
+    Vec d1 = b - nucleon_positions[0]; d1.SetZ(0);
+    Vec d2 = b - nucleon_positions[1]; d2.SetZ(0);
+    if (d1.LenSqr() > 25*25 and d2.LenSqr() > 25*25)
+        return 0;
+    
+    
+        inthelper_deuteron_z helper;
+        helper.b = b;
+        helper.B_p=4;
+        helper.nucleon1  = Vec( nucleon_positions[0].GetX(), nucleon_positions[0].GetY(), nucleon_positions[0].GetZ());
+        helper.nucleon2  = Vec( nucleon_positions[1].GetX(), nucleon_positions[1].GetY(), nucleon_positions[1].GetZ());
+        const int INTPOINTS_ZINT = 5;
+        gsl_function f;
+        f.function = &inthelperf_deuteron_z;
+        f.params = &helper;
+        double tuberesult,error;
+        gsl_integration_workspace * w =  gsl_integration_workspace_alloc (INTPOINTS_ZINT);
+        gsl_integration_qag (&f, -40, 40, 0, 0.02, INTPOINTS_ZINT, GSL_INTEG_GAUSS15,
+                             w, &tuberesult, &error);
+        gsl_integration_workspace_free(w);
+        // return with some reasonable normalization
+    
+        return tuberesult*0.43;
+    
+    //return std::max(tuberesult, endresult);
+    
+}
 
 void Nucleons::SetHeId(int i)
 {

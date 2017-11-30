@@ -148,8 +148,45 @@ double Ipsat_Proton::Density(Vec b)
     
 }
 
-
-
+double Ipsat_Proton::Amplitude_Tp(double xpom, double r, double tp)  // Dipole ampliutde at fixed tp
+{
+    if (ipsat == IPSAT12)
+    {
+        if (!saturation)
+        {
+            std::cerr << "Nonsat is not defined for ipsat2012" << std::endl;
+            exit(1);
+        }
+        // dipole_amplitude(xBj, r, b, parameterSet) gives amplitude 2(1 - exp(c*T(p)))
+        // We have to calculate "gluedist" as in case of ipsat06
+        double tmpb=0;
+        // par 1: m_c=1.27,   2: m_c=1.4
+        double n = dipole_amplitude_(&xpom, &r, &tmpb, &IPSAT12_PAR)/2.0;
+        
+        double c = std::log(1.0-n);
+        
+        if (std::isnan(c) or std::isinf(c))
+        {
+            // We have so large r, that basically n=1 and c blows up, these should not matter
+            // as wave function cuts these out anyway, but we can just set amplitude to 1
+            return 1.0;
+        }
+        
+        double tp0 = 1.0/(2.0*M_PI*4.0)*std::exp(- tmpb*tmpb / (2.0*4.0));
+        c /= tp0;
+        c *= tp;
+        
+        return 1.0 - std::exp(c);
+    }
+    else
+    {
+        cerr << "Ipsat_Proton::Amplitude_Tp is only defined for IPSAT12" << endl;
+        exit(1);
+    }
+    
+    return -1;
+    
+}
 
 
 void Ipsat_Proton::InitializeTarget()

@@ -56,6 +56,8 @@ public:
     
     double Amplitude(double xpom, Vec q1, Vec q2);  // this is also in DipoleAmplitude, a bit overlap...
     
+    double Amplitude_Tp(double xpom, double r, double tp);  // Dipole ampliutde at fixed tp
+    
     double Amplitude_bint(double xpom, double r);
     double Amplitude_sqr_bint(double xpom, double r);
     

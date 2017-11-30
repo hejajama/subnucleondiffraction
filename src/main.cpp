@@ -222,6 +222,7 @@ int main(int argc, char* argv[])
                         }
                     }
                     amp = new Nucleons(nucleons);
+                    ((Nucleons*) amp)->SetDeuteronStructure(NUCLEONS);
                 } // End construct nucleus
             }
             
@@ -334,6 +335,7 @@ int main(int argc, char* argv[])
 
     amp->InitializeTarget();
     
+    
 
     Diffraction diff(*amp, *wavef);
     
@@ -343,7 +345,7 @@ int main(int argc, char* argv[])
     
     double mp = 0.938;
     double mjpsi = wavef->MesonMass();
-    
+
     
     if (mode == PRINT_NUCLEUS)
     {
@@ -427,10 +429,10 @@ int main(int argc, char* argv[])
                 MCINTPOINTS = MCpoints(t);
             
             cout.precision(5);
-            double trans = diff.ScatteringAmplitudeRotationalSymmetry(xpom, Qsqr, t, T);
+            double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
             double lng = 0;
             if (Qsqr > 0)
-                lng = diff.ScatteringAmplitudeRotationalSymmetry(xpom, Qsqr, t, L);
+                lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
 
             cout << t << " ";
             cout.precision(10);
@@ -574,9 +576,9 @@ string InfoStr()
 int MCpoints(double t)
 {
     if (t<0.1)
-        return 2e5;
-    else if (t<0.4)
-        return 3e5;
+        return 5e6;
+    else if (t<0.6)
+        return 1e7;
     else
-        return 5e5;
+        return 1e8;
 }
