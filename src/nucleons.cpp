@@ -38,7 +38,7 @@ double Nucleons::Amplitude(double xpom, double q1[2], double q2[2] )
     Vec b = qv1 + qv2;
     b = b * 0.5;
     Vec r= qv2 - qv1;
-    if (A==2)
+    if (A==2 and deuteron_structure == TUBE)
     {
         double tp_deuteron = DeuteronTubeDensity(b);
         return ((Ipsat_Proton*)nucleons[0])->Amplitude_Tp(xpom, r.Len(), tp_deuteron );
@@ -60,7 +60,7 @@ void Nucleons::InitializeTarget()
     nucleon_positions.clear();
     
     // Handle special cases
-    if (A==2 and deuteron_structure == TUBE)
+    if (A==2)
     {
         nucleons[0]->InitializeTarget();
         nucleons[1]->InitializeTarget();

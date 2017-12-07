@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
                         }
                     }
                     amp = new Nucleons(nucleons);
-                    ((Nucleons*) amp)->SetDeuteronStructure(NUCLEONS);
+                    ((Nucleons*) amp)->SetDeuteronStructure(TUBE);
                 } // End construct nucleus
             }
             
@@ -495,8 +495,8 @@ int main(int argc, char* argv[])
         double fl_light =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*xs_l;
         
         // heavy quark contribution
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.35165);
-        double xbj_c = xbj * (1.0 + 4.0*1.35165*1.35165 / Qsqr);
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.4);
+        double xbj_c = xbj * (1.0 + 4.0*1.4*1.4 / Qsqr);
         double xs_t_c = 0;
         double xs_l_c = 0;
         double fl_c = 0;
@@ -517,7 +517,7 @@ int main(int argc, char* argv[])
         double xs_l_b = 0;
         double structurefun_b = 0;
         double fl_b = 0;
-        if (xbj_b < 0.01)
+        if (xbj_b < 0.01 and false)
         {
             cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
             xs_t_b = 4.0*M_PI*f2.ScatteringAmplitude(xbj_b, Qsqr, 0, T);
