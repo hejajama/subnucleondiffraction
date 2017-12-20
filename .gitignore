@@ -1,0 +1,17 @@
+*.o
+SubNucleon diffraction.xcodeproj/
+plots
+nonforward
+spectra
+*.DS_Store
+tmp
+*.pyc
+*.dSYM*
+jimwlkfit
+eic_f2
+f2
+dipole_amplitude
+data
+protons
+images
+proton_samples

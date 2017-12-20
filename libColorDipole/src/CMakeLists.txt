@@ -1,0 +1,45 @@
+add_library(
+	ColorDipole
+	STATIC
+	bmats.f 
+	debug.f 
+	gluonEvolve.f 
+	mbits.f mchar.f 
+	obsolete.f 
+	ome.f 
+	pij_lo.f 
+	pij_nlo.f 
+	qcdalf.f 
+	qcdcvol.f 
+	qcdevol.f 
+	qcdfast.f 
+	qcdgrd.f 
+	qcdini.f 
+	qcdpdf.f 
+	qcdspl.f 
+	qcdstore.f 
+	qcdthrs.f 
+	qcdutil.f 
+	qcdwfun.f 
+	qcdwgtq.f 
+	qcdwgtu.f 
+	qpolint.f 
+	store.f 
+	usrcvol.f 
+	usrerr.f 
+	usrevol.f 
+	usrfast.f 
+	usrgrd.f 
+	usrini.f 
+	usrpdf.f 
+	usrwgt.f 
+	utils.f 
+	vogelsang.f 
+	wgplg.f 
+	xa2hgp.f 
+	xpij2p.f 
+	xpns2p.f 
+	sigma_dipole.f
+)
+
+include_directories(${CMAKE_SOURCE_DIR}/libColorDipole/inc/)

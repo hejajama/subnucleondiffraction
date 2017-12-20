@@ -26,6 +26,7 @@
 #include "nucleons.hpp"
 #include "dis.hpp"
 #include "virtual_photon.hpp"
+#include "gitsha1.h"
 
 using namespace std;
 
@@ -79,7 +80,8 @@ int main(int argc, char* argv[])
     int rng_offset=0;
     
     
-    cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2016" << endl;
+    cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2017" << endl;
+    cout << "# Git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__ << endl; 
     cout << "# Command: ";
     for (int i=1; i<argc; i++)
         cout << argv[i] << " ";
