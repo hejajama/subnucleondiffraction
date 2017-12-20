@@ -82,6 +82,9 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         {
             // We have so large r, that basically n=1 and c blows up, these should not matter
             // as wave function cuts these out anyway, but we can just set amplitude to 1
+            //
+            // NOTE: When you calculate F_2, be very careful! This may have significant effect
+            // Also, in case of light mesons, there could be some effect!
             return 1.0;
         }
         

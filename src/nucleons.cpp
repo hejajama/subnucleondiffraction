@@ -297,7 +297,7 @@ double Nucleons::DeuteronTubeDensity(Vec b)
     // small optimization if we are faaar away
     Vec d1 = b - nucleon_positions[0]; d1.SetZ(0);
     Vec d2 = b - nucleon_positions[1]; d2.SetZ(0);
-    if (d1.LenSqr() > 25*25 and d2.LenSqr() > 25*25)
+    if (d1.LenSqr() > 30*30 and d2.LenSqr() > 30*30)
         return 0;
     
     
@@ -312,11 +312,15 @@ double Nucleons::DeuteronTubeDensity(Vec b)
         f.params = &helper;
         double tuberesult,error;
         gsl_integration_workspace * w =  gsl_integration_workspace_alloc (INTPOINTS_ZINT);
-        gsl_integration_qag (&f, -40, 40, 0, 0.02, INTPOINTS_ZINT, GSL_INTEG_GAUSS15,
+        int status = gsl_integration_qag (&f, -40, 40, 0, 0.01, INTPOINTS_ZINT, GSL_INTEG_GAUSS15,
                              w, &tuberesult, &error);
         gsl_integration_workspace_free(w);
         // return with some reasonable normalization
     
+        if (status)
+            cerr << "Tube z integral failed, res " << tuberesult << " relerr " << error/tuberesult << endl;
+    
+	// best normalization is 0.46???
         return tuberesult*0.43;
     
     //return std::max(tuberesult, endresult);
