@@ -1,0 +1,28 @@
+# Parameters for rho and \gamma^* wave function overlap
+# 
+# Model: Boosted gaussian 
+# Parameters are taken from an article by Kowalski, Motyka 
+# and Watt, see arXiv: hep-ph/0606272v2
+#
+# Syntax of this file is the following:
+# Lines starting with # are comments
+# Parameters are given as a pair key:value
+# Values are in units of GeV^n and possible keys are:
+# e_f, m_f, M_V, N_T, N_L, R, S alpha and del
+#
+#
+#e_f: Effective charge: 1/sqrt(2)
+e_f:0.70710678
+#N_T, N_L, R_T, R_L: Normalization for transversial/lognitudial components
+N_T:0.911
+N_L:0.853
+#sqrt(12.9)
+R:3.59165
+m_f:0.14
+M_V:0.776
+# delta: 0 or 1: one part of the wave functio is multiplied by delta
+del:1
+# State S=n, J/Psi is S=1
+S:1
+# alpha needed for higher S states, no effect for S=1
+alpha:0
