@@ -1,5 +1,13 @@
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/gitsha1.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp" @ONLY)
 
+add_library(
+	mzipsat
+	STATIC
+	mz_ipsat/dipoleamplitude.cpp
+	mz_ipsat/dglap_cpp/AlphaStrong.cpp
+	mz_ipsat/dglap_cpp/EvolutionLO.cpp
+	)
+
 add_executable(
 	subnucleondiffraction	
 	dipole.cpp
@@ -18,9 +26,6 @@ add_executable(
 	dis.cpp
 	smooth_ws_nuke.cpp
 	gaus_lc.cpp
-	mz_ipsat/dipoleamplitude.cpp
-	mz_ipsat/dglap_cpp/AlphaStrong.cpp
-	mz_ipsat/dglap_cpp/EvolutionLO.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp
 	)
 
@@ -32,6 +37,7 @@ target_link_libraries(
 	PRIVATE
 	amplitude
 	ColorDipole
+	mzipsat
 	GSL::gsl
 	GSL::gslcblas
 )

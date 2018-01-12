@@ -21,7 +21,7 @@ include_directories("../amplitudelib_v2/")
 
 add_subdirectory(libColorDipole/src/)
 add_subdirectory(src)
-
+add_subdirectory(tools)
 
 set_target_properties(subnucleondiffraction PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" )
