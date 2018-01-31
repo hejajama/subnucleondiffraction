@@ -96,10 +96,15 @@ struct Inthelper_amplitude
     double b;
     double theta_b;
     double z;
+
+    
     Polarization polarization;
 };
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par);
+
+bool DIJET = true;
+
 
 double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Polarization pol)
 {
@@ -119,7 +124,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     // Dipole size up to 10 GeV^-1
     // MC integration parameters: b, theta_b, r, theta_r, Z
     double *lower, *upper;
-    if (FACTORIZE_ZINT)
+    if (FACTORIZE_ZINT or DIJET)
     {
         lower = new double[4];
         upper = new double[4];
@@ -141,7 +146,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     gsl_monte_function F;
     F.f = &Inthelperf_amplitude_mc;
     F.dim = 4;
-    if (!FACTORIZE_ZINT)
+    if (FACTORIZE_ZINT == false and DIJET==false)
         F.dim = 5;
     F.params = &helper;
     
@@ -192,7 +197,7 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
     
     double z = 0.5;// Put z=0.5 as it sets b to the geometric average of quarks
     
-    if (!FACTORIZE_ZINT)
+    if (!FACTORIZE_ZINT and !DIJET)
         z = vec[4];
         
     return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z, helper->polarization);
@@ -222,6 +227,7 @@ double Inthelperf_amplitude_z(double z, void* p)
     
     return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z);
 }
+
 
 double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol)
 { 
@@ -263,6 +269,41 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
     std::complex<double> amp(amp_real, amp_imag);
     //amp = amp.real();   // Disable possible imag part for now
+    
+    
+    if (DIJET)
+    {
+        double pt0  =2;
+        double pt1 = 3;
+        double dphi = t;
+        double Q2=10;
+        double z0=0.5; double z1=0.5;
+        double eps = std::sqrt(Q2*z0*z1);
+        // Construct dot product
+        // Note that now all angles are measured w.r.t. p0, which is set to point along the x axis
+        // b . (p0 + p1)
+        double b_dot_p0plusp1 = b*pt0*cos(theta_b) + b*pt1*cos(dphi - theta_b);
+        double r_dot_p0minusp1 =r*pt0*cos(theta_r) - b*pt1*cos(dphi - theta_r);
+        
+
+        
+        std::complex<double> imag(0,1);
+        std::complex<double> exponent = std::exp( -imag* ( b_dot_p0plusp1 + r_dot_p0minusp1/2.0 )  );
+        
+        
+        // L
+        //complex<double> result = r*b*exponent * amp * gsl_sf_bessel_K0(eps*r);
+        
+        // T
+        complex<double> result = r*b*exponent * amp * eps*r*gsl_sf_bessel_K1(eps*r) * r*sin(theta_r)/(r*r);
+        
+        if (REAL_PART)
+            return result.real();
+        else
+            return result.imag();
+        
+        
+    }
     
     
     if (FACTORIZE_ZINT)
