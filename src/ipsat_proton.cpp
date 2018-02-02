@@ -64,6 +64,8 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
     }
     else if (ipsat == IPSAT12)
     {
+        
+        
         if (!saturation)
         {
             std::cerr << "Nonsat is not defined for ipsat2012" << std::endl;
@@ -71,10 +73,13 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         }
         // dipole_amplitude(xBj, r, b, parameterSet) gives amplitude 2(1 - exp(c*T(p)))
         // We have to calculate "gluedist" as in case of ipsat06
-        double tmpb=0;  double tmpr = r.Len();
+        double tmpb=b.Len(); //0;
+        double tmpr = r.Len();
+        
         // par 1: m_c=1.27,   2: m_c=1.4
         double n = dipole_amplitude_(&xpom, &tmpr, &tmpb, &IPSAT12_PAR)/2.0;
         
+        if (n>=1) return 1; if (n<=0) return 0;
         
         double c = std::log(1.0-n);
         
@@ -90,6 +95,13 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         
         double tp = 1.0/(2.0*M_PI*4.0)*std::exp(- tmpb*tmpb / (2.0*4.0));
         c /= tp;
+        
+        // now c ~ pi^2/(2Nc) as*xg * r^2
+        double lqcd_amir=0.156;
+        double musqr_amir =4.0/(tmpr*tmpr) + 1.51;
+        double as_amir = 12.0*M_PI / ( (33.0 - 2.0*4.0)*log(musqr_amir / (lqcd_amir*lqcd_amir)) );
+        return -c * 2.0*3.0 / (M_PI*M_PI) / as_amir / (tmpr*tmpr);
+        
         
         double skew=1.0; // now c contains xg that is modified by skewedness correction if enabled
         if (skewedness and tmpr < MAXR_SKEW)

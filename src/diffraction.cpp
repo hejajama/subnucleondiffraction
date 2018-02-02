@@ -157,7 +157,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     {
         gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
         gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result, &error);
-        //cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
+        cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
         gsl_monte_miser_free(s);
     }
     else if (MCINT == VEGAS)
@@ -276,9 +276,10 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         double pt0  =2;
         double pt1 = 3;
         double dphi = t;
-        double Q2=10;
+        double Q2=Qsqr;
         double z0=0.5; double z1=0.5;
-        double eps = std::sqrt(Q2*z0*z1);
+        double mq=0.14;
+        double eps = std::sqrt(Q2*z0*z1+mq*mq);
         // Construct dot product
         // Note that now all angles are measured w.r.t. p0, which is set to point along the x axis
         // b . (p0 + p1)
@@ -290,12 +291,22 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         std::complex<double> imag(0,1);
         std::complex<double> exponent = std::exp( -imag* ( b_dot_p0plusp1 + r_dot_p0minusp1/2.0 )  );
         
-        
+        complex<double> result;
         // L
-        //complex<double> result = r*b*exponent * amp * gsl_sf_bessel_K0(eps*r);
+        if (pol == L)
+        {
+            result = r*b*exponent * amp * gsl_sf_bessel_K0(eps*r);
+        }
         
         // T
-        complex<double> result = r*b*exponent * amp * eps*r*gsl_sf_bessel_K1(eps*r) * r*sin(theta_r)/(r*r);
+        if (pol == T)
+        {
+            if (dijet_component == X)
+                 result = r*b*exponent * amp * eps*r*gsl_sf_bessel_K1(eps*r) * r*sin(theta_r)/(r*r);
+            else
+                result = r*b*exponent * amp * eps*r*gsl_sf_bessel_K1(eps*r) * r*cos(theta_r)/(r*r);
+            
+        }
         
         if (REAL_PART)
             return result.real();

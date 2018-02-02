@@ -13,6 +13,12 @@
 
 using namespace Amplitude;
 
+enum DIJET_COMPONENT
+{
+    X,
+    Y
+};
+
 class Diffraction
 {
 public:
@@ -36,6 +42,9 @@ public:
     
     DipoleAmplitude* GetDipole();
     WaveFunction* GetWaveFunction();
+    
+    void SetDijetComponent(DIJET_COMPONENT c) { dijet_component=c; }
+    DIJET_COMPONENT GetDijetComponent() { return dijet_component; }
 private:
     DipoleAmplitude* dipole;
     WaveFunction* wavef;
@@ -44,6 +53,8 @@ private:
     double zlimit;
     
     double beta;
+    
+    DIJET_COMPONENT dijet_component;
     
 };
 #endif /* diffraction_hpp */

@@ -347,6 +347,13 @@ int main(int argc, char* argv[])
     
     double mp = 0.938;
     double mjpsi = wavef->MesonMass();
+    
+    for (double r=1e-8; r<50; r*=1.1)
+    {
+        double q1[2]={-r/2,0}; double q2[2] = {r/2.0, 0};
+        cout << r << " " << amp->Amplitude(0.01, q1, q2) << endl;
+    }
+    exit(1);
 
     
     if (mode == PRINT_NUCLEUS)
@@ -431,6 +438,8 @@ int main(int argc, char* argv[])
                 MCINTPOINTS = MCpoints(t);
             
             cout.precision(5);
+            
+            /*
             double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
             double lng = 0;
             if (Qsqr > 0)
@@ -439,8 +448,21 @@ int main(int argc, char* argv[])
             cout << t << " ";
             cout.precision(10);
             cout << trans  << " " << lng << endl;
+            */
             
+            /*
+            diff.SetDijetComponent(X);
+            double xcomp =diff.ScatteringAmplitude(xpom, Qsqr, t, T);
+            diff.SetDijetComponent(Y);
+            double ycomp =diff.ScatteringAmplitude(xpom, Qsqr, t, T);
 
+            cout << t << " " << xcomp << " " << ycomp << endl;
+             */
+            
+            // L
+            double xcomp =diff.ScatteringAmplitude(xpom, Qsqr, t, L);
+            cout << t << " " << xcomp << endl;
+            
             // Larger t step probably useful at large t
             /*
             if (t>0.08)
