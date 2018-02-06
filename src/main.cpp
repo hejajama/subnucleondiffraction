@@ -348,13 +348,6 @@ int main(int argc, char* argv[])
     double mp = 0.938;
     double mjpsi = wavef->MesonMass();
     
-    for (double r=1e-8; r<50; r*=1.1)
-    {
-        double q1[2]={-r/2,0}; double q2[2] = {r/2.0, 0};
-        cout << r << " " << amp->Amplitude(0.01, q1, q2) << endl;
-    }
-    exit(1);
-
     
     if (mode == PRINT_NUCLEUS)
     {
@@ -424,8 +417,8 @@ int main(int argc, char* argv[])
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
-        double tstep = 0.1;
-        for (t=0; t<=6.28; t+=tstep)
+        double tstep = 0.05;
+        for (t=1.5; t<=2.0*M_PI - 1.5; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.02)

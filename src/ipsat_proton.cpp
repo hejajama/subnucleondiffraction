@@ -81,6 +81,8 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         
         if (n>=1) return 1; if (n<=0) return 0;
         
+        return n;
+        
         double c = std::log(1.0-n);
         
         if (std::isnan(c) or std::isinf(c))
@@ -97,10 +99,11 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         c /= tp;
         
         // now c ~ pi^2/(2Nc) as*xg * r^2
+        /*
         double lqcd_amir=0.156;
         double musqr_amir =4.0/(tmpr*tmpr) + 1.51;
         double as_amir = 12.0*M_PI / ( (33.0 - 2.0*4.0)*log(musqr_amir / (lqcd_amir*lqcd_amir)) );
-        return -c * 2.0*3.0 / (M_PI*M_PI) / as_amir / (tmpr*tmpr);
+        return -c * 2.0*3.0 / (M_PI*M_PI) / as_amir / (tmpr*tmpr);*/
         
         
         double skew=1.0; // now c contains xg that is modified by skewedness correction if enabled

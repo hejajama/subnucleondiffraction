@@ -284,6 +284,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         // Note that now all angles are measured w.r.t. p0, which is set to point along the x axis
         // b . (p0 + p1)
         double b_dot_p0plusp1 = b*pt0*cos(theta_b) + b*pt1*cos(dphi - theta_b);
+        // r . (p0 - p1)
         double r_dot_p0minusp1 =r*pt0*cos(theta_r) - b*pt1*cos(dphi - theta_r);
         
 
