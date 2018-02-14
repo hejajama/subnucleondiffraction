@@ -220,16 +220,33 @@ WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
 
 IPGlasma::IPGlasma(std::string file)
 {
+    int load = LoadData(file, 5.12/512.0);     // By default assume lattice spacing 0.01fm, or 5.12fm 512^2 lattice
+
+    if (load<0)
+        exit(1);
+}
+
+IPGlasma::IPGlasma(std::string file, double step)
+{
+   int load =LoadData(file, step);
+    
+    if (load<0)
+        exit(1);
+}
+
+
+int IPGlasma::LoadData(std::string fname, double step)
+{
     // Load data
-    datafile = file;
+    datafile=fname;
+    
     // Syntax: x y [fm/indeces] matrix elements Re Im for elements (0,0), (0,1), (0,2), (1,0), ...
-    std::ifstream f(file.c_str());
+    std::ifstream f(fname.c_str());
     
     if (!f.is_open())
     {
-        std::cerr << "Could not open file " << file << " " << LINEINFO << std::endl;;
-        exit(1);
-        return;
+        std::cerr << "Could not open file " << fname << " " << LINEINFO << std::endl;;
+        return -1;
     }
     std::string line;
     
@@ -251,7 +268,6 @@ IPGlasma::IPGlasma(std::string file)
         // Datafile is in fm, but we want to use GeVs in this code
         // Once we have load all points, we will sift all coordinates such that 0 is at the center
         
-        double step = 5.12/1024; // 1024^2, L=5.12 fm
 
         x = step*x*FMGEV;
         y = step*y*FMGEV;
@@ -302,6 +318,12 @@ IPGlasma::IPGlasma(std::string file)
     }
     f.close();
     
+    if (xcoords.size() != ycoords.size())
+    {
+        cerr << "xcoords.size() != ycoords.size(), probably uncomplete input data? " << LINEINFO << endl;
+        return -1;
+    }
+    
 
     
     // Now, given that we have a point (x,y), we can find the index xind such that
@@ -311,10 +333,10 @@ IPGlasma::IPGlasma(std::string file)
     // Of course this is symmetric and we could just as well swap xind and yind
 
    SetSchwinger(false); 
-    //std::cout <<"# Loaded " << wilsonlines.size() << " Wilson lines from file " << file << ", grid size " << xcoords.size() << " x " << ycoords.size() << " grid range [" << xcoords[0] << ", " << xcoords[xcoords.size()-1] << "]" << " step size " << xcoords[1]-xcoords[0] << " GeV^-1" << std::endl;
+   // std::cout <<"# Loaded " << wilsonlines.size() << " Wilson lines from file " << datafile << ", grid size " << xcoords.size() << " x " << ycoords.size() << " grid range [" << xcoords[0] << ", " << xcoords[xcoords.size()-1] << "]" << " step size " << xcoords[1]-xcoords[0] << " GeV^-1" << std::endl;
 
         
-    
+    return 0;
 }
 
 double IPGlasma::MinX()
@@ -337,7 +359,7 @@ double IPGlasma::XStep()
 std::string IPGlasma::InfoStr()
 {
     std::stringstream ss;
-    ss << "# IPGlasma loaded from file " << datafile ;
+    ss << "# IPGlasma loaded from file " << datafile << " lattice " << xcoords.size() << "^2 range [" << xcoords[0]/5.068 << ", " << xcoords[xcoords.size()-1]/5.068 << "] fm" ;
     if (schwinger) ss << ", schwinger mechanism included, rc=" << schwinger_rc << " GeV^-1";
     return ss.str();
 }

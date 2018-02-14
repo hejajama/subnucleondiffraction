@@ -16,6 +16,9 @@ class IPGlasma : public DipoleAmplitude {
 public:
     
     IPGlasma(std::string fname);
+    IPGlasma(std::string fname, double step);
+    
+    int LoadData(std::string fname, double step);
     
     // Evaluate dipole ampltitude, qaurks at coordinates x1 and x2
     // Array points are x and y coordinates

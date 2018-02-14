@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
     {
         cout << "-Q2, -W: set kinematics" << endl;
         cout << "-real, -imag: set real/imaginary part" << endl;
-        cout << "-dipole A [ipglasma,ipsatproton,smoothnuke] [ipglasmafile, ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [albacete]" << endl;
+        cout << "-dipole A [ipglasma,ipsatproton,smoothnuke] [ipglasmafile ipglasmastep (fm), ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [albacete]" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points/auto" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
                     }
                 }
                 else if (string(argv[i+2])=="ipglasma")
-                    amp = new IPGlasma(argv[i+3]);
+                    amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]));
                 else
                 {
                     cerr << "Unknown dipole " << argv[i+1] << endl;
@@ -417,8 +417,8 @@ int main(int argc, char* argv[])
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
-        double tstep = 0.02;
-        for (t=0; t<=2.1; t+=tstep)
+        double tstep = 0.05;
+        for (t=0; t<=1.5; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.02)
