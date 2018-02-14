@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     }
     
     bool scale_x = true;   // scale bjorken x to take into account the quark mass
-    bool include_light = true;
+    bool include_light = false;
     
     int points=0;
     double chisqr=0;
@@ -296,7 +296,7 @@ int main(int argc, char* argv[])
 	    
         // Interpolate in s ~ ln 1/x
         double sigmar_c = sigmar_lower_c + (evolsteps_c-(double)(steps_lower_c)) / ((double)(steps_upper_c - steps_lower_c)) * (sigmar_upper_c - sigmar_lower_c);
-		//cout << "sigmar_lower " << sigmar_lower_c << " upper " << sigmar_upper_c << endl;        
+		cout << "#sigmar_lower " << sigmar_lower_c << " upper " << sigmar_upper_c << endl;        
 
         cout << qsqrvals[i] << " " << xvals[i] << " " << yvals[i] << " " << expvals[i] << " " << experrors[i] << " " << sigmar + sigmar_c << endl;
 
