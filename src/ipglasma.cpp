@@ -235,6 +235,7 @@ IPGlasma::IPGlasma(std::string file, double step)
 }
 
 
+// Note that here step is in fm!
 int IPGlasma::LoadData(std::string fname, double step)
 {
     // Load data

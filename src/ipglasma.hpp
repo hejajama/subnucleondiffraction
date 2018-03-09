@@ -16,6 +16,7 @@ class IPGlasma : public DipoleAmplitude {
 public:
     
     IPGlasma(std::string fname);
+    // Specify the step size, note that here step is in fm!
     IPGlasma(std::string fname, double step);
     
     int LoadData(std::string fname, double step);
