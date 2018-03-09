@@ -417,8 +417,8 @@ int main(int argc, char* argv[])
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
-        double tstep = 0.05;
-        for (t=1.5; t<=2.0*M_PI - 1.5; t+=tstep)
+        double tstep = 0.1;
+        for (t=0.04159 ; t<=M_PI; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.02)
@@ -453,6 +453,7 @@ int main(int argc, char* argv[])
              */
             
             // L
+            xpom=1e-4;
             double xcomp =diff.ScatteringAmplitude(xpom, Qsqr, t, L);
             cout << t << " " << xcomp << endl;
             

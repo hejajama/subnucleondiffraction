@@ -273,8 +273,8 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     if (DIJET)
     {
-        double pt0  =2;
-        double pt1 = 3;
+        double pt0  =1;
+        double pt1 = 1;
         double dphi = t;
         double Q2=Qsqr;
         double z0=0.5; double z1=0.5;
@@ -285,7 +285,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         // b . (p0 + p1)
         double b_dot_p0plusp1 = b*pt0*cos(theta_b) + b*pt1*cos(dphi - theta_b);
         // r . (p0 - p1)
-        double r_dot_p0minusp1 =r*pt0*cos(theta_r) - b*pt1*cos(dphi - theta_r);
+        double r_dot_p0minusp1 =r*pt0*cos(theta_r) - r*pt1*cos(dphi - theta_r);
         
 
         
