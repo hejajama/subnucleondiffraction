@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 {
     gsl_set_error_handler(&ErrHandler); // Do not let code to crash if an error occurs, we should
     // have error handling everywhere!
-    
+double maxr=99;    
     double Qsqr=0;
     double xbj=0; // x for F2
     double t=0.1;
@@ -261,6 +261,8 @@ int main(int argc, char* argv[])
             Qsqr = StrToReal(argv[i+1]);
             xbj=StrToReal(argv[i+2]);
         }
+	else if (string(argv[i])=="-maxr")
+	     maxr = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-He3")
             he3_id = StrToInt(argv[i+1]);
         else if (string(argv[i])=="-schwinger")
@@ -340,6 +342,7 @@ int main(int argc, char* argv[])
     
 
     Diffraction diff(*amp, *wavef);
+	diff.MAXR=maxr;
     
     
     cout << "# " << InfoStr() << endl;
@@ -483,12 +486,13 @@ int main(int argc, char* argv[])
         cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm tot F_L(light) F_L(charm) F_L(tot)" << endl;
         double orig_x = xbj;
         WaveFunction * photon = new VirtualPhoton();;
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT, 0.03);
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT, 0.14);
         cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
         
         amp->SetSkewedness(false);
         Diffraction f2(*amp, *photon);
-        
+       	f2.MAXR=maxr; 
+        cout << "#Maxr = " << f2.MAXR << endl;
         // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
         // Note* 4pi, as convention in BoostedGaussian and VirtualPhoton classes are different!!!
         double xs_t = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
@@ -496,14 +500,15 @@ int main(int argc, char* argv[])
         double structurefun = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l+xs_t);
         double fl_light =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*xs_l;
         
+        double mc=1.4;
         // heavy quark contribution
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.4);
-        double xbj_c = xbj * (1.0 + 4.0*1.4*1.4 / Qsqr);
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, mc);
+        double xbj_c = xbj * (1.0 + 4.0*mc*mc / Qsqr);
         double xs_t_c = 0;
         double xs_l_c = 0;
         double fl_c = 0;
         double structurefun_c = 0;
-        if (xbj_c < 0.01)
+        if (xbj_c < 0.01 or true)
         {
             cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
             xs_t_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj_c, Qsqr, 0, T);

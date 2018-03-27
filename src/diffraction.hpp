@@ -36,6 +36,7 @@ public:
     
     DipoleAmplitude* GetDipole();
     WaveFunction* GetWaveFunction();
+	double MAXR;
 private:
     DipoleAmplitude* dipole;
     WaveFunction* wavef;

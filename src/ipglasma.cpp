@@ -168,6 +168,9 @@ double IPGlasma::AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] 
         or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
         or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
         return 0;
+double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
+        if (r < std::abs( xcoords[1] - xcoords[0]))
+                        return 0;
     
     // First find corresponding grid indeces
     WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
