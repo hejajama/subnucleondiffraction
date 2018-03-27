@@ -20,7 +20,7 @@ const int Nc=3;
 
 const double ZINTACCURACY=0.0001;
 const int MAXITER_ZINT=500;
-const double MINZ=0;  // Integration limits
+const double MINZ=1e-4;  // Integration limits
 const double MAXZ=1.0-MINZ;
 
 VirtualPhoton::VirtualPhoton()

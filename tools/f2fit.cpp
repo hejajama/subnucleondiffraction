@@ -55,12 +55,14 @@ double mean(vector<double> &v)
 
 int main(int argc, char* argv[])
 {
-    MCINTPOINTS=2e5; 
-    FACTORIZE_ZINT=false;
+	double minq2=1;
+    MCINTPOINTS=5e4; 
+    FACTORIZE_ZINT=true;
     gsl_set_error_handler(&ErrHandler);
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
-    cout << "# F2 fitter" << endl;
+	double ipglasma_step = 5.12/700.0; //0.01;
+    cout << "# F2 fitter, intpoints " << MCINTPOINTS <<  endl;
     if (argc < 8)
     {
         cout << "Syntax: " << argv[0] << " jimwlkdir step maxstep heradata alphas config ds schwinger"  << endl;
@@ -72,7 +74,7 @@ int main(int argc, char* argv[])
     int maxstep = StrToInt(argv[3]);
     double alphas = StrToReal(argv[5]);
     string herafile = argv[4];
-    double quarkmass = 1.27;
+    double quarkmass = 1.4;
     int averages = StrToInt(argv[6]);
     ds = StrToReal(argv[7]);
     double schwinger = StrToReal(argv[8]);
@@ -90,13 +92,21 @@ int main(int argc, char* argv[])
         minx = x0*exp(-maxy);
         cout << "# x range in fit: " << x0 << " - " << minx << ", # of configs" << averages << endl;
     }
+    else
+    {
+        double maxy =  M_PI*M_PI * maxstep * ds;
+        minx = x0*exp(-maxy);
+        cout << "# x range in fit: " << x0 << " - " << minx << ", # of configs" << averages << endl;
+
+    }
     
     bool scale_x = true;   // scale bjorken x to take into account the quark mass
-    bool include_light = false;
+    bool include_light = true;
     
     int points=0;
     double chisqr=0;
-    
+   
+    cout << "# "; if (include_light) cout << "Light quarks included. "; cout << " Charm mass " << quarkmass << endl; 
     
     if (scale_x)
         cout <<"# Shifting Bjorken-x to x*(1 + 4mf^2/Q^2)" << endl;
@@ -135,6 +145,8 @@ int main(int argc, char* argv[])
     // Compute reduced cross section
     for (unsigned int i=0; i<xvals.size(); i++)
     {
+	if (qsqrvals[i] < minq2)
+		continue;
         double x = xvals[i];
         double sqrts = std::sqrt( qsqrvals[i]/(x * yvals[i]) );
       	double xcharm = x; 
@@ -157,9 +169,17 @@ int main(int argc, char* argv[])
         if (fixed_coupling)
         {
             evolsteps = alphas * log(x0/x)/ (M_PI*M_PI*ds);
-			evolsteps_c = alphas * log(x0/xcharm)/ (M_PI*M_PI*ds);
-			int evolstepsint = (int)(evolsteps );
-			int evolstepsint_c = (int)(evolsteps_c );
+	    evolsteps_c = alphas * log(x0/xcharm)/ (M_PI*M_PI*ds);
+		
+	}
+	else 
+	{
+		evolsteps =  log(x0/x)/ (M_PI*M_PI*ds);
+                evolsteps_c =  log(x0/xcharm)/ (M_PI*M_PI*ds);
+	}
+
+	int evolstepsint = (int)(evolsteps );
+	int evolstepsint_c = (int)(evolsteps_c );
 			
             steps_lower = evolstepsint - (evolstepsint%step) ;
             steps_upper = evolstepsint + (step - evolstepsint%step) ;
@@ -167,8 +187,8 @@ int main(int argc, char* argv[])
 			steps_lower_c = evolstepsint_c - (evolstepsint_c%step);
 			steps_upper_c = evolstepsint_c + (step - evolstepsint_c%step); 
             //cout << " Evolsteps " << evolsteps << " lower " << steps_lower << " upper " << steps_upper << endl;
-			//cout << " Evolsteps_c " << evolsteps_c << " lower " << steps_lower_c << " upper " << steps_upper_c << endl;
-        }
+	cout << "# Evolsteps_c " << evolsteps_c << " lower " << steps_lower_c << " upper " << steps_upper_c << endl;
+        
         VirtualPhoton charm;
         charm.SetQuark(Amplitude::C, quarkmass);
 		VirtualPhoton light;
@@ -202,21 +222,12 @@ int main(int argc, char* argv[])
 
             //cout << fname_upper_c.str() << " " << fname_lower_c.str() << endl;
             
-			IPGlasma dipole_upper_c(fname_upper_c.str());
-            IPGlasma dipole_lower_c(fname_lower_c.str());
-
-            if (schwinger > 0)
-            {
-				dipole_upper_c.SetSchwinger(true, schwinger);
-                dipole_lower_c.SetSchwinger(true, schwinger);
-
-            }
-           
+	  
 		     
  			if (include_light)
 			{
-	            IPGlasma dipole_upper(fname_upper.str());
-    	        IPGlasma dipole_lower(fname_lower.str());
+	            IPGlasma dipole_upper(fname_upper.str(), ipglasma_step);
+    	        IPGlasma dipole_lower(fname_lower.str(), ipglasma_step);
 
 
 				if (schwinger > 0)
@@ -245,6 +256,16 @@ int main(int argc, char* argv[])
 				xs_t_lower.push_back(0); xs_l_lower.push_back(0);
 			}
           	
+		IPGlasma dipole_upper_c(fname_upper_c.str(), ipglasma_step);
+            IPGlasma dipole_lower_c(fname_lower_c.str(), ipglasma_step);
+
+            if (schwinger > 0)
+            {
+				dipole_upper_c.SetSchwinger(true, schwinger);
+                dipole_lower_c.SetSchwinger(true, schwinger);
+
+            }
+         
 			Diffraction f2upper_c(dipole_upper_c, charm);
             Diffraction f2lower_c(dipole_lower_c, charm);
             
@@ -253,11 +274,13 @@ int main(int argc, char* argv[])
             double l_up_c = 4.0*M_PI*f2upper_c.ScatteringAmplitude(xcharm, qsqrvals[i], 0, L);
             xs_t_upper_c.push_back(t_up_c);
             xs_l_upper_c.push_back(l_up_c);
+
             
             double t_low_c = 4.0*M_PI*f2lower_c.ScatteringAmplitude(xcharm, qsqrvals[i], 0, T);
             double l_low_c = 4.0*M_PI*f2lower_c.ScatteringAmplitude(xcharm, qsqrvals[i], 0, L);
             xs_t_lower_c.push_back(t_low_c);
             xs_l_lower_c.push_back(l_low_c);
+
  
             
         }
@@ -267,7 +290,7 @@ int main(int argc, char* argv[])
         double f2_upper = qsqrvals[i]/(4.0*M_PI*M_PI*ALPHA_e) * (xs_t_u + xs_l_u);
         double fl_upper = qsqrvals[i]/(4.0*M_PI*M_PI*ALPHA_e) * ( xs_l_u );
         double sigmar_upper = f2_upper - yvals[i]*yvals[i]/(1.0 + pow(1.0-yvals[i],2.0))*fl_upper;
-        
+
         double xs_t_l =mean(xs_t_lower);
         double xs_l_l = mean(xs_l_lower);
         double f2_lower = qsqrvals[i]/(4.0*M_PI*M_PI*ALPHA_e) * (xs_t_l + xs_l_l);
@@ -292,15 +315,14 @@ int main(int argc, char* argv[])
         double sigmar_lower_c = f2_lower_c - yvals[i]*yvals[i]/(1.0 + pow(1.0-yvals[i],2.0))*fl_lower_c;
        
 	   	
-	   	//cout << "f2_c_upper " << f2_upper_c << " f2_lower_c " << f2_lower_c << endl;
+	  cout << "#f2_c_upper " << f2_upper_c << " f2_lower_c " << f2_lower_c << endl;
 	    
         // Interpolate in s ~ ln 1/x
         double sigmar_c = sigmar_lower_c + (evolsteps_c-(double)(steps_lower_c)) / ((double)(steps_upper_c - steps_lower_c)) * (sigmar_upper_c - sigmar_lower_c);
 		cout << "#sigmar_lower " << sigmar_lower_c << " upper " << sigmar_upper_c << endl;        
 
-        cout << qsqrvals[i] << " " << xvals[i] << " " << yvals[i] << " " << expvals[i] << " " << experrors[i] << " " << sigmar + sigmar_c << endl;
+        cout << qsqrvals[i] << " " << xvals[i] << " " << yvals[i] << " " << expvals[i] << " " << experrors[i] << " " << sigmar + sigmar_c << endl << "#" << endl;
 
-        
         points++;
         chisqr += pow((sigmar - expvals[i])/experrors[i],2.0);
     }
