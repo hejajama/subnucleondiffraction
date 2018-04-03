@@ -5,7 +5,7 @@ import sys
 sys.path.append("/nashome2/hejajama/lib/")
 sys.path.append("/home/hejajama/lib/")
 sys.path.append("/home/heikki/lib")
-sys.path.append("/Users/heikki/lib")
+sys.path.append("/Users/hejajama/lib")
 import math
 from math import pow
 from matplotlibhelper import *
@@ -33,7 +33,7 @@ rc("xtick", labelsize=textsize)
 rc("ytick", labelsize=textsize)
 
 minx=0.0
-maxx=2.50
+maxx=2.0
 miny=0.02
 maxy=1.5e3
 #maxy=60
@@ -47,8 +47,8 @@ show_incoherent = True
 lw_coh = 2.5
 lw_incoh = 1.2
 
-if slides:
-    lw_incoh += 0.7
+#if slides:
+# lw_incoh += 0.7
 
 markersize_coh = 6#5.0
 markersize_incoh = 7#6.0
@@ -134,14 +134,14 @@ files = [
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_fixedx", r"Fixed, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"Lumpy $(B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2})$", Linestyle(0), 'black', "", 1.0, "black"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
-         #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"Lumpy", Linestyle(0), 'red', "", 1.0, "red"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
+         ["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_qsfluct_avgfluct1_fixedx", r"Lumpy", Linestyle(0), 'red', "", 1.0, "red"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
          #["paper_2/ipsat_bp_3.3_bq_0.5_w_75_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          
          #smooth
-         ["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_qsfluct_avgfluct1_fixedx", r"Lumpy", Linestyle(0), 'black', "", 1.0, "black"],
-         ["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx", r"Smooth", Linestyle(2), 'blue', "", 1.0, "blue"],
-         
+         # ["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_qsfluct_avgfluct1_fixedx", r"Lumpy", Linestyle(0), 'black', "", 1.0, "black"],
+         #["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx", r"Smooth", Linestyle(2), 'blue', "", 1.0, "blue"],
+         ["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx_qsfluct", r"Smooth", Linestyle(2), 'blue', "", 1.0, "blue"],
          
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_fixedx", r"No geometric fluctuations", Linestyle(3), 'green', "", 1.0, "green"],
          
@@ -401,9 +401,9 @@ if slides:
 leg=legend(prop=dict(size=legfont+2),labelspacing=0.001,ncol=2,numpoints=1, loc=1)
 leg.draw_frame(False)
 
-#plt.gcf().subplots_adjust(top=0.9)
+plt.gcf().subplots_adjust(left=0.15)
 
-plt.gcf().subplots_adjust(bottom=0.13)
+plt.gcf().subplots_adjust(bottom=0.15)
 
 file = "./proton_spectra.pdf"
 print file

@@ -78,6 +78,7 @@ int main(int argc, char* argv[])
     bool schwinger = false;
     double schwinger_rc = 0;
     int rng_offset=0;
+    double maxr=999;
     
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2017" << endl;
@@ -251,6 +252,8 @@ int main(int argc, char* argv[])
                 exit(1);
             }
         }
+        else if (string(argv[i])=="-maxr")
+            maxr = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-satscale")
             mode = SATURATION_SCALE;
         else if (string(argv[i])=="-wavef_file")
@@ -308,7 +311,6 @@ int main(int argc, char* argv[])
 
     
     
-    
     amp->SetSkewedness(skewedness);
     if (qsfluct_sigma > 0)
     {
@@ -340,7 +342,7 @@ int main(int argc, char* argv[])
     
 
     Diffraction diff(*amp, *wavef);
-    
+    diff.MAXR=maxr*5.068;;
     
     cout << "# " << InfoStr() << endl;
     //cout << "# " << *wavef << endl;
@@ -418,7 +420,7 @@ int main(int argc, char* argv[])
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
         double tstep = 0.05;
-        for (t=0; t<=1.5; t+=tstep)
+        for (t=0; t<=2; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.02)
