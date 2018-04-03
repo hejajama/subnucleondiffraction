@@ -418,7 +418,7 @@ int main(int argc, char* argv[])
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
         double tstep = 0.1;
-        for (t=0.04159 ; t<=M_PI; t+=tstep)
+        for (t=0.04159 + M_PI - tstep*10 ; t<=M_PI; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.02)
@@ -443,20 +443,23 @@ int main(int argc, char* argv[])
             cout << trans  << " " << lng << endl;
             */
             
-            /*
+            
             diff.SetDijetComponent(X);
             double xcomp =diff.ScatteringAmplitude(xpom, Qsqr, t, T);
             diff.SetDijetComponent(Y);
             double ycomp =diff.ScatteringAmplitude(xpom, Qsqr, t, T);
+            diff.SetDijetComponent(MF);
+            double mfcomp =diff.ScatteringAmplitude(xpom, Qsqr, t, T);
 
-            cout << t << " " << xcomp << " " << ycomp << endl;
-             */
+            cout << t << " " << xcomp << " " << ycomp <<" " << mfcomp << endl;
+             
             
             // L
+            /*
             xpom=1e-4;
             double xcomp =diff.ScatteringAmplitude(xpom, Qsqr, t, L);
             cout << t << " " << xcomp << endl;
-            
+            */
             // Larger t step probably useful at large t
             /*
             if (t>0.08)

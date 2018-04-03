@@ -16,7 +16,8 @@ using namespace Amplitude;
 enum DIJET_COMPONENT
 {
     X,
-    Y
+    Y,
+    MF  // Term explicitly proportional to mass
 };
 
 class Diffraction

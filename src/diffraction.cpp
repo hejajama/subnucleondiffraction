@@ -273,8 +273,8 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     if (DIJET)
     {
-        double pt0  =1;
-        double pt1 = 1;
+        double pt0  =0.5;
+        double pt1 = 0.5;
         double dphi = t;
         double Q2=Qsqr;
         double z0=0.5; double z1=0.5;
@@ -303,9 +303,12 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         if (pol == T)
         {
             if (dijet_component == X)
-                 result = r*b*exponent * amp * eps*r*gsl_sf_bessel_K1(eps*r) * r*sin(theta_r)/(r*r);
-            else
+                result = b*exponent * amp * eps*gsl_sf_bessel_K1(eps*r) * r*sin(theta_r);
+                 ///result = r*b*exponent * amp * eps*r*gsl_sf_bessel_K1(eps*r) * r*sin(theta_r)/(r*r);
+            else if (dijet_component == Y)
                 result = r*b*exponent * amp * eps*r*gsl_sf_bessel_K1(eps*r) * r*cos(theta_r)/(r*r);
+            else // mass term
+                result = mq*r*b*exponent * amp * gsl_sf_bessel_K0(eps*r);
             
         }
         
