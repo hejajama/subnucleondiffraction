@@ -42,7 +42,8 @@
 using namespace std;
 using namespace Amplitude;
 
-double x0 = 0.01;
+//double x0 = 0.01;
+double x0 = 0.00175;
 double ds = 0.0004;
 gsl_rng* global_rng;
 
@@ -101,7 +102,7 @@ int main(int argc, char* argv[])
     }
     
     bool scale_x = true;   // scale bjorken x to take into account the quark mass
-    bool include_light = true;
+    bool include_light = false;
     
     int points=0;
     double chisqr=0;
@@ -153,7 +154,7 @@ int main(int argc, char* argv[])
         if (scale_x)
             xcharm = x   * (1.0 + 4.0*SQR(quarkmass)/qsqrvals[i]);
        
-		if (x > 0.01 or xcharm > 0.01)
+		if (x > x0 or xcharm > x0)
 			continue;
         // Calculate reduced xs below and above, and interpolate
         // Fixed coupling: step = alphas*ln(x0/x) / (pi^2 * ds)

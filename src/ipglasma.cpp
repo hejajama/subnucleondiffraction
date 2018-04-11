@@ -323,7 +323,7 @@ int IPGlasma::LoadData(std::string fname, double step)
     
     if (xcoords.size() != ycoords.size())
     {
-        cerr << "xcoords.size() != ycoords.size(), probably uncomplete input data? " << LINEINFO << endl;
+        cerr << "xcoords.size() != ycoords.size(), probably uncomplete input data? Datafile " << fname << " -  " << LINEINFO << endl;
         return -1;
     }
     

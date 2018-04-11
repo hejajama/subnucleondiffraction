@@ -420,8 +420,8 @@ double maxr=99;
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
-        double tstep = 0.05;
-        for (t=0; t<=1.5; t+=tstep)
+        double tstep = 0.02;
+        for (t=0; t<=2.505; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.02)
@@ -448,9 +448,10 @@ double maxr=99;
             /*
             if (t>0.08)
                 tstep = 0.015;
-            if (t>=0.4 )
+            */
+	    if (t>=0.6 )
                 tstep = 0.05;
-                */
+                
         }
     }
     else if (mode == CORRECTIONS)
