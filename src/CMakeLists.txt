@@ -5,7 +5,7 @@ add_library(
 	STATIC
 	mz_ipsat/dipoleamplitude.cpp
 	mz_ipsat/dglap_cpp/AlphaStrong.cpp
-	mz_ipsat/dglap_cpp/EvolutionLO.cpp
+	mz_ipsat/dglap_cpp/EvolutionLO_nocoupling.cpp
 	)
 
 add_executable(

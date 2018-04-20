@@ -497,8 +497,8 @@ void Ipsat_Proton::Init()
 }
 Ipsat_Proton::Ipsat_Proton()
 {
-    gdist = new DGLAPDist();
-    allocated_gdist = true;
+    
+    allocated_gdist = false;
     ipsat = IPSAT12;
     saturation=true;
     
@@ -513,14 +513,16 @@ Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
     if (version == MZSAT)
     {
         ipsat = MZSAT;
-        mzipsat = new MZ_ipsat::DipoleAmplitude(2.146034445992, 1.1, 0.09665075464199, 2.103826220003, 1.351650642298);
+        double C=2.2894; double mu0 = std::sqrt(1.1); double lambdag=0.08289; double Ag=2.1953; double mc=1.3528;
+        mzipsat = new MZ_ipsat::DipoleAmplitude(C, mu0, lambdag , Ag , mc );
         mzipsat->SetSaturation(true);
         saturation = true;
     }
     else if (version == MZNONSAT)
     {
+        double C = 4.2974; double mu0=std::sqrt(1.1); double lambdag = -0.006657; double Ag=3.0391; double mc = 1.3504;
         ipsat=MZNONSAT;
-        mzipsat = new MZ_ipsat::DipoleAmplitude(4.939286653112, 1.1, -0.009631194037871, 3.058791613883, 1.342035015621);
+        mzipsat = new MZ_ipsat::DipoleAmplitude(C, mu0, lambdag, Ag, mc);
         mzipsat->SetSaturation(false);
         saturation=false;
         
@@ -529,6 +531,13 @@ Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
     {
         ipsat = IPSAT12;
         saturation=true;
+    }
+    else if (version == IPSAT06)
+    {
+        gdist = new DGLAPDist();
+        allocated_gdist=true;
+        saturation = true;
+        
     }
     Init();
     

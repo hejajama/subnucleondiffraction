@@ -49,7 +49,11 @@ DipoleAmplitude::DipoleAmplitude(double C_, double mu0_, double lambda_g_, doubl
     // Init alphas(M_Z=91.1876 GeV) = 0.1183
     alphas = new AlphaStrong(0, 1.0, 91.1876, 0.1183, mc, mb, mt);
     // DGLAP_Solver will take care of deleting alphas when it is deleted
-    cppdglap = new EvolutionLO(alphas);
+    cppdglap = new EvolutionLO_gluon(alphas);
+
+	cppdglap -> generateLookupTable(mu0, 0, A_g, lambda_g, 0, 0);
+    cppdglap-> useLookupTable(true);
+
 }
 
 DipoleAmplitude::~DipoleAmplitude()

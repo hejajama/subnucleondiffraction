@@ -10,7 +10,7 @@
  * H. Mäntysaari and P. Zurita, 2017
  */
 #include "dglap_cpp/AlphaStrong.h"
-#include "dglap_cpp/EvolutionLO.h"
+#include "dglap_cpp/EvolutionLO_nocoupling.h"
 
 namespace MZ_ipsat
 {
@@ -68,7 +68,7 @@ class DipoleAmplitude
         void SetSaturation(bool s) { saturation = s; }
     
     private:
-        EvolutionLO *cppdglap;
+        EvolutionLO_gluon *cppdglap;
         AlphaStrong *alphas;
         bool saturation;   // True for ipsat, false for ipnonsat
         double InitAlphas();

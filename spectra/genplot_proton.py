@@ -12,7 +12,7 @@ from matplotlibhelper import *
 import pylab
 import scipy.integrate
 import numpy as np
-
+plt.style.use('classic')
 #import scipy.integrate
 
 from matplotlib import rcParams
@@ -47,6 +47,9 @@ show_incoherent = True
 lw_coh = 2.5
 lw_incoh = 1.2
 
+lw_coh += 0.5
+lw_incoh += 0.5
+
 #if slides:
 # lw_incoh += 0.7
 
@@ -72,6 +75,7 @@ ylabel(r"$\mathrm{d}\sigma/\mathrm{d}t$ $[\mathrm{nb}/\mathrm{GeV}^2]$ ", fontsi
 # fname title style normalization,facecolor, hatch, linecolor
 files = [
          # tests
+         #["test_old_m_0.2", r"old", Linestyle(1), 'blue', "",1.0,"black"],
          #["test/ipglasma_bp_3.0_bq_0.3_fluct_qsmu_0.7", "$Q_s \mu = 0.7$, qsfluct", Linestyle(0), 'black', "",1.0,"black"],
          #["test/ipglasma_bp_3.0_bq_0.3_fluct_qsmu_1", "$Q_s \mu = 1.0$, qsfluct", Linestyle(1), 'blue', "",1.0,"blue"],
         
@@ -134,14 +138,14 @@ files = [
          #["paper_2/ipsat_bp_3.5_bq_1.0_w_75_q2_0_fixedx", r"Fixed, $B_{qc}=3.5\,\mathrm{GeV}^{-2}, B_q=1.0\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_fixedx", r"Lumpy $(B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2})$", Linestyle(0), 'black', "", 1.0, "black"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
-         ["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_qsfluct_avgfluct1_fixedx", r"Lumpy", Linestyle(0), 'red', "", 1.0, "red"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
+         #["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_qsfluct_avgfluct1_fixedx", r"Lumpy", Linestyle(0), 'red', "", 1.0, "red"], # $B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.7\,\mathrm{GeV}^{-2}$
          #["paper_2/ipsat_bp_3.3_bq_0.5_w_75_q2_0_fixedx", r"$B_{qc}=3.3\,\mathrm{GeV}^{-2}, B_q=0.5\,\mathrm{GeV}^{-2}$", Linestyle(1), 'blue', "", 1.0, "blue"],
          
          
          #smooth
          # ["paper_2/ipsat_bp_3.3_bq_0.7_w_75_q2_0_qsfluct_avgfluct1_fixedx", r"Lumpy", Linestyle(0), 'black', "", 1.0, "black"],
          #["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx", r"Smooth", Linestyle(2), 'blue', "", 1.0, "blue"],
-         ["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx_qsfluct", r"Smooth", Linestyle(2), 'blue', "", 1.0, "blue"],
+         #["paper_2/ipsat_bp_1.0_bq_3.0_w_75_q2_0_fixedx_qsfluct", r"Smooth", Linestyle(2), 'blue', "", 1.0, "blue"],
          
          #["paper_2/ipsat_bp_4.0_w_75_q2_0_fixedx", r"No geometric fluctuations", Linestyle(3), 'green', "", 1.0, "green"],
          
@@ -167,12 +171,12 @@ files = [
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$", Linestyle(0), "black", "", 1.0, "black"],
          
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m02_n07_w_75_q2_0_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.2\,\mathrm{GeV}$", Linestyle(1), "blue", "", 1.0, "blue"],
-         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift", r"Geometric and color charge fluctuations", Linestyle(1), "blue", "", 1.0, "blue"], # $B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$
+         #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"With fluctuations", Linestyle(0), "black", "", 1.0, "black"], # $B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m06_n07_w_75_q2_0_noshift", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, m=0.6\,\mathrm{GeV}$", Linestyle(3), "red", "", 1.0, "red"],
          
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_noshift_onlyreal", r"$B_{qc}=3.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}$ only real", Linestyle(1), "blue", "", 1.0, "black"],
          
-         #["paper_2/ipglasma_bp_4.0_m04_n065_w_75_q2_0", r"Round proton, color charge fluctuations ", Linestyle(0), "black", "", 1.0, "black"],
+         ["paper_2/ipglasma_bp_4.0_m04_n065_w_75_q2_0", r"Round proton", Linestyle(1), "blue", "", 1.0, "blue"],
          #["paper_2/ipglasma_bp_1.5_bq_0.3_m04_n07_w_75_qsfluct_noshift", r"+  $Q_s$ fluctuations", Linestyle(0), "black", "", 1.0, "black"], # $B_{qc}=1.5\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$
          #["ipglasma_smallfluctuations", r"IP-Glasma, small geometric fluctuations", Linestyle(1), "red", "", 1.0, "red"],
          #["paper_2/ipglasma_bp_2.0_bq_0.3_m04_n07_w_75_qsfluct", r"$B_{qc}=2.0\,\mathrm{GeV}^{-2}, B_{q}=0.3\,\mathrm{GeV}^{-2}, \sigma=0.5$", Linestyle(1), "blue", "", 1.0, "blue"],
@@ -383,12 +387,12 @@ if w_75_data:
 
 #p1.text(0.2,0.1,"IP-Glasma", fontsize=textsize)
 #fluct
-p1.annotate("Incoherent", xy=(1.5,15), rotation=-7, fontsize=15)
+#p1.annotate("Incoherent", xy=(1.5,15), rotation=-7, fontsize=15)
 #p1.annotate("Coherent", xy=(1.,3.5), rotation=-30, fontsize=15)
 
 #round
-#p1.annotate("Incoherent", xy=(1.7,0.4), rotation=-7, fontsize=15)
-p1.annotate("Coherent", xy=(1.2,0.19), rotation=-45, fontsize=15)
+p1.annotate("Incoherent", xy=(1.6,0.4), rotation=-7, fontsize=15)
+p1.annotate("Coherent", xy=(1.3,0.22), rotation=-30, fontsize=15)
 
 yscale("log",nonposy='clip')
 #xscale("log")
@@ -398,12 +402,12 @@ legfont = textsize-8.5 #-8
 # orig legfont + 2
 if slides:
     legfont = legfont + 3
-leg=legend(prop=dict(size=legfont+2),labelspacing=0.001,ncol=2,numpoints=1, loc=1)
+leg=legend(prop=dict(size=legfont+2),labelspacing=0.001,ncol=1,numpoints=1, loc=1)
 leg.draw_frame(False)
 
-plt.gcf().subplots_adjust(left=0.15)
+plt.gcf().subplots_adjust(left=0.13)
 
-plt.gcf().subplots_adjust(bottom=0.15)
+plt.gcf().subplots_adjust(bottom=0.13)
 
 file = "./proton_spectra.pdf"
 print file

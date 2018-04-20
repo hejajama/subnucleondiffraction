@@ -107,8 +107,8 @@ void DGLAPDist::Intialize(std::string file)
   log2maxxbj = log2(maxxbj); deltalog2xbj = (log2(maxxbj)-log2(minxbj))/(Nxbj-1);
   log2minrsqr = log2(minrsqr); deltalog2rsqr = (log2(maxrsqr)-log2(minrsqr))/(Nrsqr-1);
 
-  // cerr << " xbj " << minxbj << " " << maxxbj << endl;
-  // cerr << " rsqr " << minrsqr << " " << maxrsqr << endl;
+  //cerr << " xbj " << minxbj << " " << maxxbj << endl;
+  //cerr << " rsqr " << minrsqr << " " << maxrsqr << endl;
 
 #ifdef SPLINE
   interpdata = new gsl_interp *[Nxbj];
