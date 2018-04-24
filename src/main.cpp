@@ -487,7 +487,7 @@ double maxr=99;
         cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm tot F_L(light) F_L(charm) F_L(tot)" << endl;
         double orig_x = xbj;
         WaveFunction * photon = new VirtualPhoton();;
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT, 0.14);
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT, 0.03);
         cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
         
         amp->SetSkewedness(false);

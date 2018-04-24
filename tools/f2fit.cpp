@@ -43,7 +43,7 @@ using namespace std;
 using namespace Amplitude;
 
 //double x0 = 0.01;
-double x0 = 0.00175;
+double x0 = 0.01; //0.00175;
 double ds = 0.0004;
 gsl_rng* global_rng;
 
@@ -58,6 +58,7 @@ int main(int argc, char* argv[])
 {
 	double minq2=1;
     MCINTPOINTS=5e4; 
+//    MCINTPOINTS=1e5;
     FACTORIZE_ZINT=true;
     gsl_set_error_handler(&ErrHandler);
     gsl_rng_env_setup();
@@ -317,12 +318,17 @@ int main(int argc, char* argv[])
        
 	   	
 	  cout << "#f2_c_upper " << f2_upper_c << " f2_lower_c " << f2_lower_c << endl;
+	cout << "#f2_upper " << f2_upper << " f2_lower " << f2_lower << endl;
+
 	    
         // Interpolate in s ~ ln 1/x
         double sigmar_c = sigmar_lower_c + (evolsteps_c-(double)(steps_lower_c)) / ((double)(steps_upper_c - steps_lower_c)) * (sigmar_upper_c - sigmar_lower_c);
 		cout << "#sigmar_lower " << sigmar_lower_c << " upper " << sigmar_upper_c << endl;        
 
-        cout << qsqrvals[i] << " " << xvals[i] << " " << yvals[i] << " " << expvals[i] << " " << experrors[i] << " " << sigmar + sigmar_c << endl << "#" << endl;
+	double f2_light = f2_lower + (evolsteps-(double)(steps_lower)) / ((double)(steps_upper - steps_lower)) * (f2_upper - f2_lower);
+	double f2_c = f2_lower_c + (evolsteps_c-(double)(steps_lower_c)) / ((double)(steps_upper_c - steps_lower_c)) * (f2_upper_c - f2_lower_c);
+
+        cout << qsqrvals[i] << " " << xvals[i] << " " << yvals[i] << " " << expvals[i] << " " << experrors[i] << " " << sigmar + sigmar_c <<  " " << f2_light << " " << f2_c << endl << "#" << endl;
 
         points++;
         chisqr += pow((sigmar - expvals[i])/experrors[i],2.0);

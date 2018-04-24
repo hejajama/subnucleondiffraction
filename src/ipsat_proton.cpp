@@ -75,7 +75,6 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         // par 1: m_c=1.27,   2: m_c=1.4
         double n = dipole_amplitude_(&xpom, &tmpr, &tmpb, &IPSAT12_PAR)/2.0;
         
-        
         double c = std::log(1.0-n);
         
         if (std::isnan(c) or std::isinf(c))
