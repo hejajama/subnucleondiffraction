@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
     cout << "# Git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__ << endl;
     if (argc < 8)
     {
-        cout << "Syntax: " << argv[0] << " jimwlkdir step maxstep heradata alphas config ds schwinger"  << endl;
+        cout << "Syntax: " << argv[0] << " jimwlkdir step maxstep heradata alphas config ds x0 schwinger"  << endl;
         return 0;
     }
     
@@ -80,8 +80,9 @@ int main(int argc, char* argv[])
     string herafile = argv[4];
     double quarkmass = 1.4;
     int averages = StrToInt(argv[6]);
-    ds = StrToReal(argv[7]);
-    double schwinger = StrToReal(argv[8]);
+    ds = StrToReal(argv[7]); 
+    x0  = StrToReal(argv[8]);
+    double schwinger = StrToReal(argv[9]);
    
     cout << "# Command: " ; for (unsigned int i=0; i<argc; i++) cout << argv[i] << " ";
     cout << endl;
