@@ -27,6 +27,7 @@
 #include "../src/ipglasma.hpp"
 #include "../src/dis.hpp"
 #include "../src/virtual_photon.hpp"
+#include "../src/gitsha1.h"
 
 #include <gsl/gsl_rng.h>
 
@@ -65,6 +66,7 @@ int main(int argc, char* argv[])
     global_rng = gsl_rng_alloc(gsl_rng_default);
 	double ipglasma_step = 5.12/700.0; //0.01;
     cout << "# F2 fitter, intpoints " << MCINTPOINTS <<  endl;
+    cout << "# Git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__ << endl;
     if (argc < 8)
     {
         cout << "Syntax: " << argv[0] << " jimwlkdir step maxstep heradata alphas config ds schwinger"  << endl;
@@ -328,7 +330,7 @@ int main(int argc, char* argv[])
 	double f2_light = f2_lower + (evolsteps-(double)(steps_lower)) / ((double)(steps_upper - steps_lower)) * (f2_upper - f2_lower);
 	double f2_c = f2_lower_c + (evolsteps_c-(double)(steps_lower_c)) / ((double)(steps_upper_c - steps_lower_c)) * (f2_upper_c - f2_lower_c);
 
-        cout << qsqrvals[i] << " " << xvals[i] << " " << yvals[i] << " " << expvals[i] << " " << experrors[i] << " " << sigmar + sigmar_c <<  " " << f2_light << " " << f2_c << endl << "#" << endl;
+        cout << qsqrvals[i] << " " << xvals[i] << " " << yvals[i] << " " << expvals[i] << " " << experrors[i] << " " << sigmar + sigmar_c  << endl; //<<  " " << f2_light << " " << f2_c << endl << "#" << endl;
 
         points++;
         chisqr += pow((sigmar - expvals[i])/experrors[i],2.0);

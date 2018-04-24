@@ -1,3 +1,4 @@
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../src/gitsha1.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp" @ONLY)
 
 add_executable(
 	average_amplitude	
@@ -24,6 +25,7 @@ add_executable(
 	../src/wave_function.cpp
 	../src/gdist_dglap.cpp
 	../src/subnucleon_config.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp
 )
 
 include_directories(.)

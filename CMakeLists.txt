@@ -18,6 +18,7 @@ link_directories("../amplitudelib_v2/build/lib/")
 
 # AmplitudeLib headers
 include_directories("../amplitudelib_v2/")
+include_directories("./src/")
 
 add_subdirectory(libColorDipole/src/)
 add_subdirectory(src)
