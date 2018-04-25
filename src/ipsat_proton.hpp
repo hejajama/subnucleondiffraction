@@ -21,7 +21,7 @@
 
 // If Fortran compiler is not available, uncommet this
 // In that case, IPSAT12 does not work!
-//#define USE_FORTRAN_IPSAT12
+#define USE_FORTRAN_IPSAT12
 
 
 // How are the hotspots distributed
