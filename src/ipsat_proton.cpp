@@ -19,9 +19,11 @@
 #include "mz_ipsat/dipoleamplitude.hpp"
 
 // IPsat 2012
+#ifdef USE_FORTRAN_IPSAT12
 extern "C" {
        double dipole_amplitude_(double* xBj, double* r, double* b, int* param);
      };
+#endif
 
 int IPSAT12_PAR = 2;    // m_c=1.4 GeV
 
@@ -48,34 +50,25 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
     double tpsum = 0;
     tpsum = Density(b);
     
+    // pi^2/2Nc as * xg
+    double ipsat_exponent = 0;
     if (ipsat == IPSAT06)
     {
-        double skew=1.0;
-        if (skewedness and r.Len() < MAXR_SKEW)
-        {
-            double skew_lambda = LogDerivative_xg(xpom, r.Len());
-            skew = Skewedness(skew_lambda);
-        }
-        //std::cout << "skew at r=" << r.Len() << " is " << skew << std::endl;
-        if (saturation)
-            return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew*gdist->Gluedist(xpom, r.LenSqr()) * tpsum  );
-        else
-            return r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  ;
+        ipsat_exponent = gdist->Gluedist(xpom, r.LenSqr());
     }
     else if (ipsat == IPSAT12)
     {
-        if (!saturation)
-        {
-            std::cerr << "Nonsat is not defined for ipsat2012" << std::endl;
-            exit(1);
-        }
+#ifndef USE_FORTRAN_IPSAT12
+        cerr << "IPsat12 support is not complied (requires Fortran compiler!)" << endl;
+        exit(1);
+#else
         // dipole_amplitude(xBj, r, b, parameterSet) gives amplitude 2(1 - exp(c*T(p)))
         // We have to calculate "gluedist" as in case of ipsat06
         double tmpb=0;  double tmpr = r.Len();
         // par 1: m_c=1.27,   2: m_c=1.4
         double n = dipole_amplitude_(&xpom, &tmpr, &tmpb, &IPSAT12_PAR)/2.0;
         
-        double c = std::log(1.0-n);
+        double c = -std::log(1.0-n);
         
         if (std::isnan(c) or std::isinf(c))
         {
@@ -84,36 +77,48 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
             //
             // NOTE: When you calculate F_2, be very careful! This may have significant effect
             // Also, in case of light mesons, there could be some effect!
-            return 1.0;
+            
+            // Fall back to round proton! This gives approximately 1 if impact parameter is not crazy
+            double tmpb = b.Len();
+            return dipole_amplitude_(&xpom, &tmpr, &tmpb, &IPSAT12_PAR)/2.0;
+            //return 1.0;
         }
         
         double tp = 1.0/(2.0*M_PI*4.0)*std::exp(- tmpb*tmpb / (2.0*4.0));
         c /= tp;
         
-        double skew=1.0; // now c contains xg that is modified by skewedness correction if enabled
-        if (skewedness and tmpr < MAXR_SKEW)
-        {
-            double skew_lambda = LogDerivative_xg(xpom, r.Len());
-            if (std::isnan(skew_lambda))
-            {
-                std::cerr << "skew nan at xpom=" << xpom << " r = " << r.Len() << std::endl;
-                skew=1.0;
-            }
-            else
-                skew = Skewedness(skew_lambda);
-        }
-        return 1.0 - std::exp( GetQsFluctuation(b.GetX(),b.GetY())*skew*c * 1.0/quarks.size()*tpsum);
+        ipsat_exponent = c / r.LenSqr();
+#endif
     }
-    else if (ipsat == MZSAT or ipsat==MZNONSAT)
+    else if (ipsat == MZSAT or ipsat == MZNONSAT)
     {
-        return mzipsat->N(r.Len(), xpom, b.Len());
-            
+        const double Nc=3;
+        ipsat_exponent = M_PI * M_PI / (2.0*Nc) * mzipsat->Alphas_xg(xpom, mzipsat->MuSqr(r.Len()));
     }
     else
     {
         std::cerr << "UNKNOWN IPSAT VERSION!" << std::endl;
         exit(1);
     }
+    
+    double skew = 1.0;
+    if (skewedness and r.Len() < MAXR_SKEW)
+    {
+        double skew_lambda = LogDerivative_xg(xpom, r.Len());
+        if (isnan(skew_lambda))
+            cerr << "NaN skew, probably too large r=" << r.Len() << "? Neglecting skew now.. " << LINEINFO << endl;
+        else
+            skew = Skewedness(skew_lambda);
+    }
+    double tmpb=b.Len(); double tmpr=r.Len();
+    
+    if (saturation)
+        return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew* ipsat_exponent * tpsum  );
+    else
+        return r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew* ipsat_exponent * tpsum;
+    
+
+   
     return 0;
     
 }
@@ -154,6 +159,10 @@ double Ipsat_Proton::Amplitude_Tp(double xpom, double r, double tp)  // Dipole a
 {
     if (ipsat == IPSAT12)
     {
+#ifndef USE_FORTRAN_IPSAT12
+        cerr << "IPsat12 support is not complied (requires Fortran compiler!)" << endl;
+        exit(1);
+#else
         if (!saturation)
         {
             std::cerr << "Nonsat is not defined for ipsat2012" << std::endl;
@@ -179,6 +188,7 @@ double Ipsat_Proton::Amplitude_Tp(double xpom, double r, double tp)  // Dipole a
         c *= tp;
         
         return 1.0 - std::exp(c);
+#endif
     }
     else
     {
@@ -498,7 +508,12 @@ Ipsat_Proton::Ipsat_Proton()
 {
     
     allocated_gdist = false;
+    
+#ifdef USE_FORTRAN_IPSAT12
     ipsat = IPSAT12;
+#else
+    ipsat = MZSAT;
+#endif
     saturation=true;
     
                                            // (4.939286653112, 1.1, 0.009631194037871, 3.058791613883, 1.342035015621);
@@ -528,6 +543,10 @@ Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
     }
     else if (version == IPSAT12)
     {
+#ifndef USE_FORTRAN_IPSAT12
+        cerr << "IPsat12 support is not complied (requires Fortran compiler!)" << endl;
+        exit(1);
+#endif
         ipsat = IPSAT12;
         saturation=true;
     }
@@ -578,16 +597,28 @@ double Ipsat_Proton::xg(double x, double r)
     }
     else if (ipsat == IPSAT12)
     {
+#ifndef USE_FORTRAN_IPSAT12
+        cerr << "IPsat12 support is not complied (requires Fortran compiler!)" << endl;
+        exit(1);
+#else
         double tmpb = 0;
         
         double n = dipole_amplitude_(&x, &r, &tmpb, &IPSAT12_PAR)/2.0;
         double exp = std::log(1.0-n);
         // exp is -pi^2 r^2/(2Nc) as xg T(0)
         double musqr = 4.0/(r*r) + 1.428;   // 1.428 corresponds to m_c=1.4 GeV
+        if (IPSAT12_PAR != 2)
+        {
+            cerr << "Warning: mc=1.4 parameters used when extracting xg, but we have mc=1.27 IPsat! " << LINEINFO << endl;
+        }
         double as = 12.0*M_PI / ( (33.0-2.0*3.0)*log(musqr/(0.156*0.156) ) );
         
         return -2.0*3.0/ (M_PI*M_PI * as* r*r * 1.0/(2.0*M_PI*4.0))*exp;
-        
+#endif
+    }
+    else if (ipsat == MZSAT or ipsat==MZNONSAT)
+    {
+        return mzipsat->xg(x, mzipsat->MuSqr(r));
     }
     else
     {
@@ -955,11 +986,11 @@ std::string Ipsat_Proton::InfoStr()
     else ss << "disabled";
     ss << endl <<"# ";
     if (ipsat == IPSAT06)
-        ss << "IPsat version: 2006 (KMW)";
+        ss << "IPsat version: 2006 (arXiv:hep-ph/0304189)";
     else if (ipsat == IPSAT12)
-        ss << "IPsat version: 2012";
+        ss << "IPsat version: 2012 (arXiv:1212.2974)";
     else if (ipsat == MZSAT or ipsat==MZNONSAT)
-        ss << "MZipsat fit";
+        ss << "MZipsat fit (arXiv:1804.05311)";
     ss << ". Skewedness in dipole amplitude: ";
     if (skewedness)
         ss << " Enabled";

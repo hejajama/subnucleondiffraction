@@ -1,6 +1,6 @@
 /*
  * Diffraction at sub-nucleon scale
- * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015
+ * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015-2018
  */
 
 #include <iostream>
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
     int rng_offset=0;
     
     
-    cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2017" << endl;
+    cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2018" << endl;
     cout << "# Git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__ << endl; 
     cout << "# Command: ";
     for (int i=1; i<argc; i++)

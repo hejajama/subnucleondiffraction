@@ -1,7 +1,7 @@
 /*
  * Diffraction at sub-nucleon scale
  * Dipole amplitude for a proton that consists of quarks
- * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015
+ * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015-2018
  */
 
 
@@ -17,6 +17,12 @@
 #include "gdist_dglap.hpp"
 #include "vector.hpp"
 #include "mz_ipsat/dipoleamplitude.hpp"
+
+
+// If Fortran compiler is not available, uncommet this
+// In that case, IPSAT12 does not work!
+//#define USE_FORTRAN_IPSAT12
+
 
 // How are the hotspots distributed
 enum Proton_shape
