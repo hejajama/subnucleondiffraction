@@ -24,6 +24,7 @@ Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
     wavef=&wavef_;
     num_of_averages = 1;
     zlimit=0.00000001;
+	MAXR=10*5.068;
 }
 
 
@@ -133,9 +134,9 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     }
     
     lower[0]=lower[1]=lower[2]=lower[3]=0;
-    upper[0] = 100  ; //1*5.068; //100; // Max b
+    upper[0] = 5*5.068 ; // Max b
     upper[1] = 2.0*M_PI;
-    upper[2] = MAXR;//20; //0.5*5.068;  // Max r
+    upper[2] = MAXR; //MAXR;//20; //0.5*5.068;  // Max r
     upper[3] = 2.0*M_PI;
     
     gsl_monte_function F;

@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 {
     gsl_set_error_handler(&ErrHandler); // Do not let code to crash if an error occurs, we should
     // have error handling everywhere!
-    
+    double maxr=99;    
     double Qsqr=0;
     double xbj=0; // x for F2
     double t=0.1;
@@ -78,7 +78,6 @@ int main(int argc, char* argv[])
     bool schwinger = false;
     double schwinger_rc = 0;
     int rng_offset=0;
-    double maxr=999;
     
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2017" << endl;
@@ -264,6 +263,8 @@ int main(int argc, char* argv[])
             Qsqr = StrToReal(argv[i+1]);
             xbj=StrToReal(argv[i+2]);
         }
+	else if (string(argv[i])=="-maxr")
+	     maxr = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-He3")
             he3_id = StrToInt(argv[i+1]);
         else if (string(argv[i])=="-schwinger")
@@ -342,7 +343,8 @@ int main(int argc, char* argv[])
     
 
     Diffraction diff(*amp, *wavef);
-    diff.MAXR=maxr*5.068;;
+    diff.SetMaxR(maxr*5.068);
+
     
     cout << "# " << InfoStr() << endl;
     //cout << "# " << *wavef << endl;
@@ -419,8 +421,9 @@ int main(int argc, char* argv[])
         cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
-        double tstep = 0.05;
-        for (t=0; t<=2; t+=tstep)
+
+        double tstep = 0.02;
+        for (t=0; t<=2.505; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.02)
@@ -447,9 +450,10 @@ int main(int argc, char* argv[])
             /*
             if (t>0.08)
                 tstep = 0.015;
-            if (t>=0.4 )
+            */
+	    if (t>=0.6 )
                 tstep = 0.05;
-                */
+                
         }
     }
     else if (mode == CORRECTIONS)
@@ -490,7 +494,8 @@ int main(int argc, char* argv[])
         
         amp->SetSkewedness(false);
         Diffraction f2(*amp, *photon);
-        
+       	f2.SetMaxR(maxr*5.068);
+        cout << "#Maxr = " << f2.MaxR() << endl;
         // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
         // Note* 4pi, as convention in BoostedGaussian and VirtualPhoton classes are different!!!
         double xs_t = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
@@ -498,14 +503,15 @@ int main(int argc, char* argv[])
         double structurefun = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l+xs_t);
         double fl_light =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*xs_l;
         
+        double mc=1.4;
         // heavy quark contribution
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, 1.4);
-        double xbj_c = xbj * (1.0 + 4.0*1.4*1.4 / Qsqr);
+        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, mc);
+        double xbj_c = xbj * (1.0 + 4.0*mc*mc / Qsqr);
         double xs_t_c = 0;
         double xs_l_c = 0;
         double fl_c = 0;
         double structurefun_c = 0;
-        if (xbj_c < 0.01)
+        if (xbj_c < 0.01 or true)
         {
             cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
             xs_t_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj_c, Qsqr, 0, T);

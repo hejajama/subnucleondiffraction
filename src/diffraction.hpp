@@ -37,8 +37,13 @@ public:
     DipoleAmplitude* GetDipole();
     WaveFunction* GetWaveFunction();
     
-    double MAXR;
+    // Set maximum dipole size
+    void SetMaxR(double maxr) { MAXR = maxr; }
+    double MaxR() { return MAXR; }
+	
+
 private:
+    double MAXR;
     DipoleAmplitude* dipole;
     WaveFunction* wavef;
     int num_of_averages;
