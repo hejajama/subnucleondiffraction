@@ -112,6 +112,7 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
     }
     double tmpb=b.Len(); double tmpr=r.Len();
     
+    
     if (saturation)
         return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew* ipsat_exponent * tpsum  );
     else
@@ -268,6 +269,32 @@ void Ipsat_Proton::InitializeTarget()
             
         }
      }
+    else if (shape == MORELAND)
+    {
+        // Scott's Python script converted to C++
+        // see original in scott_sampler/sampler.py
+        // Numbers are in fm, converted to GeV^-1 at the end
+        // NOTE: Some parameters also copied to SampleQSFluctuations
+        double radius = 0.87;
+        double structure_parameter = 0.3;
+        unsigned int constituent_number=5;
+        double sigma_fluct=0.81;
+        double constituent_width = 0.2 + structure_parameter*(radius - 0.2);
+        double sampling_radius = std::sqrt( std::pow(radius,2) - std::pow(constituent_width,2));
+        double gamma_shape = 1./(constituent_number*std::pow(sigma_fluct,2) );
+        
+        for (unsigned int i=0; i < constituent_number; i++)
+        {
+            double qx = gsl_ran_gaussian(global_rng, sampling_radius);
+            double qy = gsl_ran_gaussian(global_rng, sampling_radius);
+            Vec tmpvec(qx*FMGEV,qy*FMGEV,0);
+            Vec tmpvec3d(qx*FMGEV,qy*FMGEV,0);  // Not really 3d!
+            quarks.push_back(tmpvec);
+            quark_bp.push_back(constituent_width*constituent_width);
+            quarks3d.push_back(tmpvec3d);
+            
+        }
+    }
         // Sample uncorrelated quark positions
      else {
          
@@ -332,8 +359,9 @@ void Ipsat_Proton::InitializeTarget()
             
         }
      }
-    SampleQsFluctuations();
     
+    SampleQsFluctuations();
+
     // set center of mass to origin
     if (origin_at_center_of_mass)
     {
@@ -361,6 +389,7 @@ void Ipsat_Proton::InitializeTarget()
         center3d = GeometricMedian(quarks3d);
         NormalizeFluxTubeThickness();
     }
+    
 }
 
 /*
@@ -392,6 +421,9 @@ void Ipsat_Proton::SampleQsFluctuations()
     
     if (fluctuation_shape == FLUCTUATE_QUARKS)
     {
+        
+        
+    
         // Saturation scale of each quark fluctuates from a Gaussian distribution
         // Note that as Q_s^2 ~ xg * T_q, and we get ln Q_s^2 fluctuations from
         // a Gaussian distribution, this same distribution can be used to describe
@@ -403,14 +435,25 @@ void Ipsat_Proton::SampleQsFluctuations()
         double sum=0;
         for (int i=0; i<nq; i++)
         {
-            double f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
-            double fluct = std::exp(f)/lognormal_mean;
-            qs_fluctuations_quarks.push_back(fluct);
-            sum+=fluct;
+            double f = 1;
+            if (shape == MORELAND)
+            {
+                double sigma_fluct=0.81;
+                double gamma_shape = 1./(nq*std::pow(sigma_fluct,2) );
+                f=gsl_ran_gamma(global_rng, gamma_shape, 1./gamma_shape);
+            }
+            else
+            {
+                f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
+                f = std::exp(f)/lognormal_mean;
+            }
+            qs_fluctuations_quarks.push_back(f);
+            sum+=f;
         }
         cout << "# Sampled " << nq << " quark fluctuations ";
         for (int i=0; i<nq; i++) cout << qs_fluctuations_quarks[i] << " ";
         cout << " average Q_s^2 fluctuation " << sum/nq << endl;
+        
     }
     else if (fluctuation_shape == LOCAL_FLUCTUATIONS)
     {
@@ -434,7 +477,6 @@ void Ipsat_Proton::SampleQsFluctuations()
                 double fluct;
                 if (Qs_fluctuation_sigma > 0)
                 {
-                    //f = fluct;  // no b dependence
                     double f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
                     fluct = std::exp(f)/lognormal_mean;
                     fluct_coef_sum += fluct; pts++; stdev += std::pow(1.0-fluct,2.0);
@@ -496,7 +538,7 @@ void Ipsat_Proton::Init()
     shape = GAUSSIAN;
     skewedness=false;
     Qs_fluctuation_sigma=0;
-    fluctuation_shape = LOCAL_FLUCTUATIONS;
+    fluctuation_shape = FLUCTUATE_QUARKS;
     proton_structure = QUARKS ;
     fluxtube_normalization = -1;
     origin_at_center_of_mass = false;
@@ -682,7 +724,7 @@ double inthelperf_exponential3d(double z, void *p)
 
 double Ipsat_Proton::QuarkThickness(double r, int i)
 {
-    if (shape == GAUSSIAN or shape == ALBACETE)
+    if (shape == GAUSSIAN or shape == ALBACETE or shape==MORELAND)
     {
         double bp = quark_bp[i];
         double fluct = 1.0;
@@ -715,6 +757,11 @@ double Ipsat_Proton::QuarkThickness(double r, int i)
         
         // 2d exponential
         //return fluct/(2.0*M_PI*bp*bp)*std::exp(- r / bp);
+    }
+    else
+    {
+        cerr << "Constituent shape unknown! " << LINEINFO << endl;
+        exit(1);
     }
 }
 
@@ -969,6 +1016,8 @@ std::string Ipsat_Proton::InfoStr()
         ss << "Gaussian distribution exp(-b^2/(2B_p))";
     else if (shape == EXPONENTIAL)
         ss << "Exponential distribution, exp(-b/B)";
+    else if (shape==MORELAND)
+        ss << "Scott Moreland's protons";
     
     ss << endl;
     

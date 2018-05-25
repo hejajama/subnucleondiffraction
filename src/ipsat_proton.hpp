@@ -30,6 +30,7 @@ enum Proton_shape
     GAUSSIAN,
     EXPONENTIAL,
     ALBACETE,   // implement 1605.09176
+    MORELAND    // Scott Moreland pA bayesian analysis
 };
 
 // Quark structure
