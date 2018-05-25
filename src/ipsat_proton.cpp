@@ -290,7 +290,7 @@ void Ipsat_Proton::InitializeTarget()
             Vec tmpvec(qx*FMGEV,qy*FMGEV,0);
             Vec tmpvec3d(qx*FMGEV,qy*FMGEV,0);  // Not really 3d!
             quarks.push_back(tmpvec);
-            quark_bp.push_back(constituent_width*constituent_width);
+            quark_bp.push_back(constituent_width*constituent_width*FMGEV*FMGEV);
             quarks3d.push_back(tmpvec3d);
             
         }

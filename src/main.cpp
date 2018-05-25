@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
                         ((Ipsat_Proton*)amp)->SetShape(ALBACETE);
                     else
                     {
-                        ((Ipsat_Proton*)amp)->SetShape(GAUSSIAN);
+                        ((Ipsat_Proton*)amp)->SetShape(MORELAND);
                         if (argc > i+5)
                         {
                             if (string(argv[i+5])=="fluxtube")
