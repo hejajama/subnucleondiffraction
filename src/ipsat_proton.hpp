@@ -97,6 +97,7 @@ public:
     
     double GetQsFluctuation(double x, double y);   // return Exp(f(x,y)) that multiplies xg
     void SetQsFluctuation(double s);    // Set sigma for ln Q_s fluctuation
+    double GetQuarkQsFluctuation(unsigned int i);   // Get Q_s fluctuation for the given quark
     
     void SetFluctuationShape(Fluctuation_shape s);
     Fluctuation_shape GetFluctuationShape();

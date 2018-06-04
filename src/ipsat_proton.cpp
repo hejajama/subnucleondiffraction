@@ -403,6 +403,8 @@ void Ipsat_Proton::SampleQsFluctuations()
     
     if (std::abs(Qs_fluctuation_sigma) < 1e-10)
     {
+        for (int i=0; i < quarks.size(); i++)
+            qs_fluctuations_quarks.push_back(1.0);
         return; // No fluctuations
     }
     
@@ -428,7 +430,6 @@ void Ipsat_Proton::SampleQsFluctuations()
         // Note that as Q_s^2 ~ xg * T_q, and we get ln Q_s^2 fluctuations from
         // a Gaussian distribution, this same distribution can be used to describe
         // the normalization fluctuations of quarks
-        
         
         
         int nq  = quarks.size();
@@ -498,6 +499,20 @@ void Ipsat_Proton::SampleQsFluctuations()
     }
     
 }
+
+/*
+ * Get Q_s fluctuation of the given quark
+ */
+double Ipsat_Proton::GetQuarkQsFluctuation(unsigned int i)
+{
+    if (i >= qs_fluctuations_quarks.size())
+    {
+        cout << "Warning, asked Q_s fluctuations for quark " << i << "/" <<qs_fluctuations_quarks.size() << endl;
+        return 1.0;
+    }
+    return qs_fluctuations_quarks[i];
+}
+
 
 /*
  * Get Q_s fluctuations on the transverse plane
@@ -730,7 +745,7 @@ double Ipsat_Proton::QuarkThickness(double r, int i)
         double fluct = 1.0;
         if (fluctuation_shape == FLUCTUATE_QUARKS)
         {
-            fluct = qs_fluctuations_quarks[i];
+            fluct = GetQuarkQsFluctuation(i);
         }
         return fluct/(2.0*M_PI*bp)*std::exp(- r*r / (2.0*bp));
     }
