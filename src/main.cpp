@@ -422,8 +422,8 @@ int main(int argc, char* argv[])
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
 
-        double tstep = 0.02;
-        for (t=0; t<=2.505; t+=tstep)
+        double tstep = 0.005;
+        for (t=0; t<=1.505; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.02)
@@ -451,8 +451,8 @@ int main(int argc, char* argv[])
             if (t>0.08)
                 tstep = 0.015;
             */
-	    if (t>=0.6 )
-                tstep = 0.05;
+	    if (t>=0.15 )
+                tstep = 0.02;
                 
         }
     }

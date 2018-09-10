@@ -11,6 +11,29 @@ add_executable(
 	../src/gdist_dglap.cpp
 	../src/subnucleon_config.cpp
 	)
+add_executable(
+	b_r_angle 	
+	b_r_angle.cpp
+	../src/dipole.cpp
+	../src/vector.cpp
+	../src/wilsonline.cpp
+	../src/ipglasma.cpp
+	../src/ipsat_proton.cpp
+	../src/gdist_dglap.cpp
+	../src/subnucleon_config.cpp
+	)
+
+add_executable(
+	b_r_grid  	
+	tabulate_b_r_angle.cpp
+	../src/dipole.cpp
+	../src/vector.cpp
+	../src/wilsonline.cpp
+	../src/ipglasma.cpp
+	../src/ipsat_proton.cpp
+	../src/gdist_dglap.cpp
+	../src/subnucleon_config.cpp
+	)
 
 add_executable(
 	f2fit
@@ -33,6 +56,25 @@ include_directories(.)
 find_package(GSL REQUIRED)    #
 target_link_libraries(
 	average_amplitude
+	PRIVATE
+	mzipsat
+	amplitude
+	ColorDipole
+	GSL::gsl
+	GSL::gslcblas
+)
+
+target_link_libraries(
+	b_r_angle
+	PRIVATE
+	mzipsat
+	amplitude
+	ColorDipole
+	GSL::gsl
+	GSL::gslcblas
+)
+target_link_libraries(
+	b_r_grid 
 	PRIVATE
 	mzipsat
 	amplitude
