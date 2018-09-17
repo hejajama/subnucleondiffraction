@@ -67,7 +67,11 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         double tmpb=0;  double tmpr = r.Len();
         // par 1: m_c=1.27,   2: m_c=1.4
         double n = dipole_amplitude_(&xpom, &tmpr, &tmpb, &IPSAT12_PAR)/2.0;
-        
+       
+	// If we do not have fluctuations, do not modify geometry
+	if (B_q==4.0 and B_p == 0 and saturation  and Qs_fluctuation_sigma==0)
+		return n;
+ 
         double c = -std::log(1.0-n);
         
         if (std::isnan(c) or std::isinf(c))
