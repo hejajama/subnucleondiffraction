@@ -67,6 +67,9 @@ int main(int argc, char* argv[])
     int A=1;
     DGLAPDist *gd=0;  // Initialized and used if we have nucleus consisting of ipsatnucleons
     int he3_id=-1;   // Used to set He3 configuration
+    double mint=0;
+    double maxt=1.5;
+    double tstep=0.1;
     
     //double xpom=0.000959089;
     double w = 100;
@@ -103,6 +106,7 @@ int main(int argc, char* argv[])
         cout << "-wavef gauslc/boostedgaussian" << endl;
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
         cout << "-schwinger r_c" << endl;
+        cout << "-mint, -maxt, -tstep" << endl;
         return 0;
     }
     
@@ -224,7 +228,7 @@ int main(int argc, char* argv[])
                         }
                     }
                     amp = new Nucleons(nucleons);
-                    ((Nucleons*) amp)->SetDeuteronStructure(TUBE);
+                    ((Nucleons*) amp)->SetDeuteronStructure(NUCLEONS);
                 } // End construct nucleus
             }
             
@@ -274,7 +278,13 @@ int main(int argc, char* argv[])
         }
         else if (string(argv[i])=="-rng_offset")
             rng_offset = StrToInt(argv[i+1]);
-        else if (string(argv[i]).substr(0,1)=="-")
+        else if (string(argv[i])=="-mint")
+            mint=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-maxt")
+            maxt=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-tstep")
+            tstep=StrToReal(argv[i+1]);
+     else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
             exit(1);
@@ -422,10 +432,9 @@ int main(int argc, char* argv[])
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
 
-        double tstep = 0.005;
-        for (t=0; t<=1.505; t+=tstep)
+        for (t=mint; t<=maxt; t+=tstep)
         {
-            double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
+            double xpom = (mjpsi*mjpsi+Qsqr+0*t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.02)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
@@ -451,8 +460,8 @@ int main(int argc, char* argv[])
             if (t>0.08)
                 tstep = 0.015;
             */
-	    if (t>=0.15 )
-                tstep = 0.02;
+	    ///if (t>=0.15 )
+            ///    tstep = 0.02;
                 
         }
     }
