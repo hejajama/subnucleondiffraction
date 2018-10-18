@@ -327,6 +327,12 @@ int IPGlasma::LoadData(std::string fname, double step)
         cerr << "xcoords.size() != ycoords.size(), probably uncomplete input data? Datafile " << fname << " -  " << LINEINFO << endl;
         return -1;
     }
+
+    if (xcoords.size() < 10 or ycoords.size()<10)
+    {
+        cerr << "Grid size is " << xcoords.size() << " x " << ycoords.size() << ", this makes no sense! File " << fname << " - " << LINEINFO << endl;
+        return -1;
+    }
     
 
     
