@@ -12,14 +12,21 @@
 #include "wilsonline.hpp"
 #include "dipole.hpp"
 
+enum WilsonLineDataFileType
+{
+    BINARY,
+    TEXT
+};
+
 class IPGlasma : public DipoleAmplitude {
 public:
     
     IPGlasma(std::string fname);
     // Specify the step size, note that here step is in fm!
-    IPGlasma(std::string fname, double step);
+    IPGlasma(std::string fname, double step, WilsonLineDataFileType=TEXT);
     
-    int LoadData(std::string fname, double step);
+    int LoadData(std::string fname, double step, WilsonLineDataFileType type=TEXT);
+    int LoadBinaryData(std::string fname, double step);
     
     // Evaluate dipole ampltitude, qaurks at coordinates x1 and x2
     // Array points are x and y coordinates

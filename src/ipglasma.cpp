@@ -229,9 +229,9 @@ IPGlasma::IPGlasma(std::string file)
         exit(1);
 }
 
-IPGlasma::IPGlasma(std::string file, double step)
+IPGlasma::IPGlasma(std::string file, double step, WilsonLineDataFileType type)
 {
-   int load =LoadData(file, step);
+   int load =LoadData(file, step, type);
     
     if (load<0)
         exit(1);
@@ -239,8 +239,11 @@ IPGlasma::IPGlasma(std::string file, double step)
 
 
 // Note that here step is in fm!
-int IPGlasma::LoadData(std::string fname, double step)
+int IPGlasma::LoadData(std::string fname, double step, WilsonLineDataFileType type)
 {
+    if (type == BINARY)
+        return LoadBinaryData(fname, step);
+    
     // Load data
     datafile=fname;
     
@@ -347,6 +350,96 @@ int IPGlasma::LoadData(std::string fname, double step)
 
         
     return 0;
+}
+
+
+/*
+ * Load data from binary file
+ */
+int IPGlasma::LoadBinaryData(std::string fname, double step)
+{
+    std::ifstream InStream;
+    InStream.precision(10);
+    InStream.open(fname.c_str(), std::ios::in | std::ios::binary);
+    int N;
+    int Nc;
+    double L,a;
+    
+    if(InStream.is_open())
+    {
+        // READING IN PARAMETERS -----------------------------------------------------------------//
+        double temp;
+        InStream.read(reinterpret_cast<char*>(&N), sizeof(int));
+        InStream.read(reinterpret_cast<char*>(&Nc), sizeof(int));
+        InStream.read(reinterpret_cast<char*>(&L), sizeof(double));
+        InStream.read(reinterpret_cast<char*>(&a), sizeof(double));
+        InStream.read(reinterpret_cast<char*>(&temp), sizeof(double));
+        
+        std::cout << "# BINARY Size is " << N << ", Nc " << Nc << ", length is [fm] " << L << ", a is [fm]" << a << "  (user specified " << step << ")" << std::endl;
+        
+        // Init Wilson lines - fill in later
+        wilsonlines.clear();
+        for (unsigned int i=0; i<N*N; i++)
+        {
+            WilsonLine w;
+            wilsonlines.push_back(w);
+        }
+        
+        
+        // READING ACTUAL DATA --------------------------------------------------------------------//
+        double ValueBuffer;
+        int INPUT_CTR=0;
+        double re,im;
+        
+        while( InStream.read(reinterpret_cast<char*>(&ValueBuffer), sizeof(double)))
+        {
+            if(INPUT_CTR%2==0)              //this is the real part
+            {
+                re=ValueBuffer;
+            }
+            else                            // this is the imaginary part, write then to variable //
+            {
+                im=ValueBuffer;
+                
+                int TEMPINDX=((INPUT_CTR-1)/2);
+                int PositionIndx = TEMPINDX / 9;
+                int ix = PositionIndx / N;
+                int iy = PositionIndx - N*ix;
+                
+                
+                int MatrixIndx=TEMPINDX - PositionIndx*9;
+                int j=MatrixIndx/3;
+                int k=MatrixIndx-j*3;
+                
+                int indx = N*iy + ix;
+                wilsonlines[indx].Set(j,k, std::complex<double> (re,im));
+            }
+            INPUT_CTR++;
+        }
+    }
+    else
+    {
+        std::cerr << "ERROR COULD NOT OPEN FILE";
+    }
+    
+    InStream.close();
+    
+    // Fill x and y coordinate values in GeV^-1
+    for (unsigned int i=0; i<N; i++)
+    {
+        xcoords.push_back(i*a*5.068);
+        ycoords.push_back(i*a*5.068);
+    }
+    
+    // Shift coordinates s.t. 0 fm is at the center
+    double center = xcoords[xcoords.size()/2];
+    for (int i=0; i<xcoords.size(); i++)
+    {
+        xcoords[i] -= center;
+        ycoords[i] -= center;
+    }
+    
+    SetSchwinger(false); 
 }
 
 double IPGlasma::MinX()
