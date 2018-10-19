@@ -47,6 +47,7 @@ using namespace Amplitude;
 double x0 = 0.01; //0.00175;
 double ds = 0.0004;
 gsl_rng* global_rng;
+WilsonLineDataFileType DATATYPE = BINARY;
 
 double mean(vector<double> &v)
 {
@@ -213,15 +214,25 @@ int main(int argc, char* argv[])
         int conf = averages; // Do only single configuration, average later separately!
         {
             stringstream fname_upper;
-            fname_upper << jimwlkdir << "/V-" << conf << ".txt_steps_" << steps_upper;
             stringstream fname_lower;
-            fname_lower << jimwlkdir << "/V-" << conf << ".txt_steps_" << steps_lower;
-			
-			stringstream fname_upper_c;
-            fname_upper_c << jimwlkdir << "/V-" << conf << ".txt_steps_" << steps_upper_c;
+            stringstream fname_upper_c;
             stringstream fname_lower_c;
-            fname_lower_c << jimwlkdir << "/V-" << conf << ".txt_steps_" << steps_lower_c;
+            if (DATATYPE == TEXT)
+            {
+                fname_upper << jimwlkdir << "/V-" << conf << ".txt_steps_" << steps_upper;
+                fname_lower << jimwlkdir << "/V-" << conf << ".txt_steps_" << steps_lower;
 			
+                fname_upper_c << jimwlkdir << "/V-" << conf << ".txt_steps_" << steps_upper_c;
+                fname_lower_c << jimwlkdir << "/V-" << conf << ".txt_steps_" << steps_lower_c;
+             } else if (DATATYPE == BINARY)
+             {
+                fname_upper << jimwlkdir << "/V-" << conf << "_steps_" << steps_upper;
+                fname_lower << jimwlkdir << "/V-" << conf << "_steps_" << steps_lower;
+			
+                fname_upper_c << jimwlkdir << "/V-" << conf << "_steps_" << steps_upper_c;
+                fname_lower_c << jimwlkdir << "/V-" << conf << "_steps_" << steps_lower_c;
+
+             }	
 
 
 
@@ -231,8 +242,8 @@ int main(int argc, char* argv[])
 		     
  			if (include_light)
 			{
-	            IPGlasma dipole_upper(fname_upper.str(), ipglasma_step);
-    	        IPGlasma dipole_lower(fname_lower.str(), ipglasma_step);
+	            IPGlasma dipole_upper(fname_upper.str(), ipglasma_step, DATATYPE);
+    	        IPGlasma dipole_lower(fname_lower.str(), ipglasma_step, DATATYPE);
 
 
 				if (schwinger > 0)
@@ -261,8 +272,8 @@ int main(int argc, char* argv[])
 				xs_t_lower.push_back(0); xs_l_lower.push_back(0);
 			}
           	
-		IPGlasma dipole_upper_c(fname_upper_c.str(), ipglasma_step);
-            IPGlasma dipole_lower_c(fname_lower_c.str(), ipglasma_step);
+		IPGlasma dipole_upper_c(fname_upper_c.str(), ipglasma_step, DATATYPE);
+            IPGlasma dipole_lower_c(fname_lower_c.str(), ipglasma_step, DATATYPE);
 
             if (schwinger > 0)
             {
