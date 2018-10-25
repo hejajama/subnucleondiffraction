@@ -45,8 +45,15 @@ int main(int argc, char* argv[])
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
     gsl_set_error_handler_off ();
-    
-    IPGlasma glasma(fname, step);
+   
+
+    // If file extension is txt, 
+    WilsonLineDataFileType wlinetype;
+    if(fname.substr( fname.length() - 4 ) == ".txt") 
+        wlinetype=TEXT;
+    else
+        wlinetype=BINARY;
+    IPGlasma glasma(fname, step, wlinetype);
     bhelper helper;
     helper.glasma = &glasma;
 	helper.r=r;

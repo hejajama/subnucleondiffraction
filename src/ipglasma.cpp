@@ -156,6 +156,12 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
         return 1;
     if (result < 0)
         return 0;
+
+    if (isnan(result))
+    {
+        cerr << "Wilson line trance NaN, quark coords " << q1[0] << ", " << q1[1] << " and " << q2[0] << ", " << q2[1] << endl;
+	exit(1);
+    } 
      
     return result;
 }
