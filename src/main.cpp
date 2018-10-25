@@ -81,6 +81,7 @@ int main(int argc, char* argv[])
     bool schwinger = false;
     double schwinger_rc = 0;
     int rng_offset=0;
+    double t_in_xpom=1.0;  // This multiplies t in the expression for xpom, if 0, then xpom is independent of t
     
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2018" << endl;
@@ -107,6 +108,7 @@ int main(int argc, char* argv[])
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
         cout << "-schwinger r_c" << endl;
         cout << "-mint, -maxt, -tstep" << endl;
+	cout << "-no_t_in_xpom: do not include t dependence in xpom" << endl;
         return 0;
     }
     
@@ -286,6 +288,8 @@ int main(int argc, char* argv[])
             maxt=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-tstep")
             tstep=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-no_t_in_xpom")
+            t_in_xpom = 0.0;
      else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -436,7 +440,7 @@ int main(int argc, char* argv[])
 
         for (t=mint; t<=maxt; t+=tstep)
         {
-            double xpom = (mjpsi*mjpsi+Qsqr+0*t)/(w*w+Qsqr-mp*mp);
+            double xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.02)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
@@ -474,7 +478,7 @@ int main(int argc, char* argv[])
         double tstep=0.02;
         for (t=0; t<=2.5; t+=tstep)
         {
-            double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
+            double xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.01)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
