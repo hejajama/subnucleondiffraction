@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
     ifstream file(herafile.c_str());
     if (!file.is_open())
     {
-        cerr << "ERROR! Coudn't read file " << file << endl;
+        cerr << "ERROR! Coudn't read file " << herafile.c_str() << endl;
         return -1;
     }
     
