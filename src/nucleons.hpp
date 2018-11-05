@@ -22,7 +22,7 @@ enum DeuteronStructure
 // Hulthen:
 // Extended Hulthen: Phys. Rev. 151, 772
 // WoodsSaxon is parameters from PHOBOS Glauber 1408.2549
-enum DeuteronWaveFunction {
+enum DeuteronWaveFunctionType {
     Hulthen,
     ExtendedHulthen,
     WoodsSaxon
@@ -55,8 +55,8 @@ public:
     
     DeuteronStructure GetDeuteronStructure() { return deuteron_structure; }
     void SetDeuteronStructure(DeuteronStructure d) { deuteron_structure = d; }
-    void SetDeuteronWF(DeuteronWaveFunction wf) { DeuteronWF = wf; }
-    DeuteronWaveFunction GetDeuteronWF() { return DeuteronWF; }
+    void SetDeuteronWF(DeuteronWaveFunctionType wf) { DeuteronWF = wf; }
+    DeuteronWaveFunctionType GetDeuteronWF() { return DeuteronWF; }
     
 private:
     int A;
@@ -67,7 +67,7 @@ private:
     double ws_ra;
     
     DeuteronStructure deuteron_structure;
-    DeuteronWaveFunction DeuteronWF;
+    DeuteronWaveFunctionType DeuteronWF;
     
     int he3_id; // which He3 configuration we use
     
