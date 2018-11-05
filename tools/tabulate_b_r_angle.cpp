@@ -32,10 +32,15 @@ double bhelperf_theta(double theta_b, void* p);
 int main(int argc, char* argv[])
 {
 	const double fmgev=5.068;
-    // Arguments: ipglasma filename  b  schwinger_r
+    // Arguments: ipglasma filename step 
+    if (argc != 3)
+    {
+        cerr << "Arguments: filaneme wlinestepsize [fm] " << endl;
+        return 1;
+    }
     string fname = argv[1];
     double step = StrToReal(argv[2]);
-    cout << "# Filename: " << fname <<  "  step[fm]" << step <<  endl; 
+    cout << "# Filename: " << fname <<  "  step[fm] " << step <<  endl; 
     double step_gev = step *fmgev;
     double maxr = 3.0*fmgev;
     double maxb = 3.0*fmgev;
@@ -51,8 +56,14 @@ int main(int argc, char* argv[])
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
     gsl_set_error_handler_off ();
-    
-    IPGlasma glasma(fname, step);
+ 
+    WilsonLineDataFileType wlinetype;
+    if(fname.substr( fname.length() - 4 ) == ".txt")
+        wlinetype=TEXT;
+    else
+        wlinetype=BINARY; 
+
+    IPGlasma glasma(fname, step, wlinetype);
     bhelper helper;
     helper.glasma = &glasma;
     
