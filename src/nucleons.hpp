@@ -19,6 +19,16 @@ enum DeuteronStructure
     TUBE    // Connect nucleons by a tube
 };
 
+// Hulthen:
+// Extended Hulthen: Phys. Rev. 151, 772
+// WoodsSaxon is parameters from PHOBOS Glauber 1408.2549
+enum DeuteronWaveFunction {
+    Hulthen,
+    ExtendedHulthen,
+    WoodsSaxon
+};
+
+
 class Nucleons : public DipoleAmplitude
 {
 public:
@@ -41,9 +51,12 @@ public:
     double DeuteronTubeDensity(Vec b);  // Model deuteron as a Gaussian tube
     
     std::vector<DipoleAmplitude*> GetNucleons();
+	std::vector<Vec> GetNucleonPositions() { return nucleon_positions; }
     
     DeuteronStructure GetDeuteronStructure() { return deuteron_structure; }
     void SetDeuteronStructure(DeuteronStructure d) { deuteron_structure = d; }
+    void SetDeuteronWF(DeuteronWaveFunction wf) { DeuteronWF = wf; }
+    DeuteronWaveFunction GetDeuteronWF() { return DeuteronWF; }
     
 private:
     int A;
@@ -54,6 +67,7 @@ private:
     double ws_ra;
     
     DeuteronStructure deuteron_structure;
+    DeuteronWaveFunction DeuteronWF;
     
     int he3_id; // which He3 configuration we use
     

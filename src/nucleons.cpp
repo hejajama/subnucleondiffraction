@@ -20,10 +20,7 @@ const double FMGEV = 5.067731;
 using namespace std;
 
 
-// Hulthen:
-// Extended Hulthen: Phys. Rev. 151, 772
-enum DeuteronWaveFunction { Hulthen, ExtendedHulthen };
-const DeuteronWaveFunction DEUTERON = Hulthen;
+
 
 double Nucleons::Amplitude(double xpom, double q1[2], double q2[2] )
 {
@@ -62,30 +59,50 @@ void Nucleons::InitializeTarget()
     // Handle special cases
     if (A==2)
     {
+        double maxr = 25*FMGEV;
+        
         nucleons[0]->InitializeTarget();
         nucleons[1]->InitializeTarget();
         // Sample difference
-       
-        double maxr = 15*FMGEV;
-        double probability=0;
-    
-        Vec tmp;
-        do {
+        
+        // Woods Saxon separately
+        if (DEUTERON == WoodsSaxon)
+        {
+            Vec tmp;
+            do {
+                Vec tmpvec (2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
+                            2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
+                            2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr);
+                tmp=tmpvec;
+            } while (gsl_rng_uniform(global_rng) > WS_unnorm(tmp.Len())); // WS distribution!
+            nucleon_positions.push_back(tmp);
+            Vec tmp2 = tmp*(-1.0);
+            nucleon_positions.push_back(tmp2);
             
-            Vec tmpvec (2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
-                        2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
-                        2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr);
-            tmp=tmpvec;
-            probability = DeuteronWaveFunction(tmp.Len());
-            
-        } while (gsl_rng_uniform(global_rng) > probability);
-        // Now vec is from proton to neutron, put origin at the center
-        Vec proton = tmp*0.5;
-        Vec neutron = proton*(-1);
-        //proton.SetZ(0);
-        //neutron.SetZ(0);
-        nucleon_positions.push_back(proton);
-        nucleon_positions.push_back(neutron);
+        }
+        
+        else    // Hulthen
+        {
+            double probability=0;
+        
+            Vec tmp;
+            do {
+                
+                Vec tmpvec (2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
+                            2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
+                            2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr);
+                tmp=tmpvec;
+                probability = DeuteronWaveFunction(tmp.Len());
+                
+            } while (gsl_rng_uniform(global_rng) > probability);
+            // Now vec is from proton to neutron, put origin at the center
+            Vec proton = tmp*0.5;
+            Vec neutron = proton*(-1);
+            //proton.SetZ(0);
+            //neutron.SetZ(0);
+            nucleon_positions.push_back(proton);
+            nucleon_positions.push_back(neutron);
+        }
 
     }
     // He 3
@@ -160,8 +177,19 @@ Nucleons::Nucleons(std::vector<DipoleAmplitude*> nucleons_)
     A=nucleons_.size();
     cout << nucleons_[0]->InfoStr();
     nucleons=nucleons_;
-    ws_delta=0.54*FMGEV;
-    ws_ra = 1.12 * std::pow(A, 1.0/3.0) * FMGEV;
+    DeuteronWF = Hulthen;
+    
+    if (A > 2)
+    {
+        ws_delta=0.54*FMGEV;
+        ws_ra = 1.12 * std::pow(A, 1.0/3.0) * FMGEV;
+    }
+    else
+    {
+        // PHOBOS parameters
+        ws_ra = 0.01 * FMGEV;
+        ws_delta = 0.5882 * FMGEV;
+    }
     he3_id=-1;
     deuteron_structure = NUCLEONS;
 
@@ -182,10 +210,12 @@ std::string Nucleons::InfoStr()
     {
         ss << "#DipoleAmplitude: Deuteron nucleus, nucleon coordinates (" << nucleon_positions[0].GetX() << ", " << nucleon_positions[0].GetY() << ") and (" <<  nucleon_positions[1].GetX() << ", " << nucleon_positions[1].GetY() << endl;
         ss << nucleons[0]->InfoStr() << endl << nucleons[1]->InfoStr() << endl;
-        if (DEUTERON == Hulthen)
+        if (DeuteronWF == Hulthen)
             ss << "# Deuteron wave function: Hulthen" << endl;
-        else if (DEUTERON == ExtendedHulthen)
+        else if (DeuteronWF == ExtendedHulthen)
             ss << "# Deuteron wave function: ExtendedHulthen" << endl;
+        else if (DeuteronWF == WoodsSaxon)
+            ss << "# Deuteron wave function:  WoodsSaxon" << endl;
         if (deuteron_structure == NUCLEONS)
             ss << "# Deuteron = proton + neutron " << endl;
         else

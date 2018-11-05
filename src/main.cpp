@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
                     return -1;
                 }
             }
-            else
+            else    // A>1
             {
                 if (string(argv[i+2])=="smoothnuke")
                 {
@@ -367,7 +367,7 @@ int main(int argc, char* argv[])
     
     if (mode == PRINT_NUCLEUS)
     {
-        
+        /*
         // Assume IPglasma, so crashes for ipsatproton...
         double origin[2]={0,0};
         double max = ((IPGlasma*)amp)->MaxX();
@@ -389,11 +389,11 @@ int main(int argc, char* argv[])
          cout << endl;
         }
        
+       */ 
         
-      /*  
         double origin[2]={0,0};
-        double max = 8;
-        double min = -8;
+        double max = 25;
+        double min = -25;
         double step = 0.1;
         cout << "# x y N(0,(x,y)) T(b) " << endl;
         for (double y=min+step/2; y < max-step/2; y+=step)
@@ -402,13 +402,25 @@ int main(int argc, char* argv[])
             {
                 double p[2] = {x,y};
                 
-                cout << y << " " << x << " " << amp->Amplitude(0.001, origin, p) << " " << ((Ipsat_Proton*)amp)->Density(Vec(x,y)) << endl;
+                double density = 0;
+                if (A == 1)
+                    density =((Ipsat_Proton*)amp)->Density(Vec(x,y));
+                else
+                {
+                    std::vector<DipoleAmplitude*> nucleons = ((Nucleons*)amp)->GetNucleons();
+                    std::vector<Vec> positions =((Nucleons*)amp)->GetNucleonPositions();
+                    for (unsigned int i=0; i<nucleons.size(); i++)
+                    {
+                        density += nucleons[i]->Density(Vec(x,y)-positions[i]);
+                    }
+                }
+                cout << y/5.068 << " " << x/5.068 << " " << amp->Amplitude(0.001, origin, p) << " " << density << endl;
             }
             cout << endl;
         }
         
         
-        */
+        
          
         return 0;
     }
