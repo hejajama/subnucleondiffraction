@@ -66,7 +66,7 @@ void Nucleons::InitializeTarget()
         // Sample difference
         
         // Woods Saxon separately
-        if (DEUTERON == WoodsSaxon)
+        if (DeuteronWF == WoodsSaxon)
         {
             Vec tmp;
             do {
@@ -177,7 +177,7 @@ Nucleons::Nucleons(std::vector<DipoleAmplitude*> nucleons_)
     A=nucleons_.size();
     cout << nucleons_[0]->InfoStr();
     nucleons=nucleons_;
-    DeuteronWF = Hulthen;
+    DeuteronWF = WoodsSaxon;
     
     if (A > 2)
     {
@@ -253,7 +253,7 @@ double Nucleons::DeuteronWaveFunction(double r)
     if (r<1e-10)
         return 0;   // Forbid zero distance
     
-    if (DEUTERON == Hulthen)
+    if (DeuteronWF == Hulthen)
     {
         double a = 0.228/FMGEV; // 0.228 1/fm = 0.228/5.068 GeV
         double b =1.18/FMGEV;
@@ -261,7 +261,7 @@ double Nucleons::DeuteronWaveFunction(double r)
         return 1000.0*probability_amp*probability_amp;
         // Todo: maximum of this is very small, so rejection sampling does not work well without prefactor
     }
-    else if (DEUTERON == ExtendedHulthen)
+    else if (DeuteronWF == ExtendedHulthen)
     {
         // This parametrization is already squared, and assumes r is in fm
         r = r / FMGEV;
