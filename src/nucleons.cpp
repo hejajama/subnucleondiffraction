@@ -258,8 +258,8 @@ double Nucleons::DeuteronWaveFunction(double r)
         double a = 0.228/FMGEV; // 0.228 1/fm = 0.228/5.068 GeV
         double b =1.18/FMGEV;
         double probability_amp = 1.0/sqrt(2.0*M_PI) * sqrt(a*b*(a+b))/(b-a) * (exp(-a*r) - exp(-b*r))/r;
-        return probability_amp*probability_amp;
-        // Todo: maximum of this is very small, so rejection sampling does not work well
+        return 1000.0*probability_amp*probability_amp;
+        // Todo: maximum of this is very small, so rejection sampling does not work well without prefactor
     }
     else if (DEUTERON == ExtendedHulthen)
     {

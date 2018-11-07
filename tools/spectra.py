@@ -284,7 +284,7 @@ if coherent:
         #staterr = 2.0*transverse*staterr_t + 2.0*longitudinal*staterr_l
         staterr= staterr_t + staterr_l
 
-        print tvals[t], xs, max_xs, min_xs, staterr/(16.0*pi)
+        print tvals[t], xs, max_xs, min_xs, staterr/(16.0*pi), correction_t*transverse/(16.0*pi), correction_l*longitudinal/(16.0*pi)
 
 
 # Incoherent xs
