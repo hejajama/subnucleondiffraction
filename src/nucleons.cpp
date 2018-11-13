@@ -177,7 +177,7 @@ Nucleons::Nucleons(std::vector<DipoleAmplitude*> nucleons_)
     A=nucleons_.size();
     cout << nucleons_[0]->InfoStr();
     nucleons=nucleons_;
-    DeuteronWF = WoodsSaxon;
+    DeuteronWF = Hulthen;
     
     if (A > 2)
     {
