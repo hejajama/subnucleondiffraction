@@ -73,6 +73,7 @@ int main(int argc, char* argv[])
     
     //double xpom=0.000959089;
     double w = 100;
+    double xp = -1;
     bool skewedness = false;
     double qsfluct_sigma=0;
     Fluctuation_shape fluctshape = LOCAL_FLUCTUATIONS;
@@ -93,7 +94,7 @@ int main(int argc, char* argv[])
     
     if (string(argv[1])=="-help")
     {
-        cout << "-Q2, -W: set kinematics" << endl;
+        cout << "-Q2, -W, -xp: set kinematics" << endl;
         cout << "-real, -imag: set real/imaginary part" << endl;
         cout << "-dipole A [ipglasma,ipglasma_binary,ipsatproton,smoothnuke] [ipglasmafile ipglasmastep (fm), ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [albacete]" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
@@ -131,6 +132,8 @@ int main(int argc, char* argv[])
             Qsqr = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-W")
             w=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-xp")
+            xp=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-real")
             REAL_PART = true;
         else if (string(argv[i])=="-imag")
@@ -446,13 +449,20 @@ int main(int argc, char* argv[])
     
     else if (mode == AMPLITUDE_DT)
     {
-        cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
+        if (xp < 0)
+            cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
+        else
+            cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
 
         for (t=mint; t<=maxt; t+=tstep)
         {
-            double xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+            double xpom;
+            if (xp < 0)
+                xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+            else
+                xpom = xp;
             if (xpom > 0.02)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
