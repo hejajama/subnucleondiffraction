@@ -240,7 +240,11 @@ IPGlasma::IPGlasma(std::string file, double step, WilsonLineDataFileType type)
    int load =LoadData(file, step, type);
     
     if (load<0)
+    {
+        cout << "Loading file " << file << " with step " << step << " and type " << type << "failed, exit code " << load;
         exit(1);
+    }
+    
 }
 
 
@@ -445,7 +449,10 @@ int IPGlasma::LoadBinaryData(std::string fname, double step)
         ycoords[i] -= center;
     }
     
-    SetSchwinger(false); 
+    
+    SetSchwinger(false);
+    
+    return 0;
 }
 
 double IPGlasma::MinX()

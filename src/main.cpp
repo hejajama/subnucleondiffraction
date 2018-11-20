@@ -184,12 +184,13 @@ int main(int argc, char* argv[])
                 else if (string(argv[i+2])=="ipglasma")
                     amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), TEXT);
                 else if (string(argv[i+2])=="ipglasma_binary")
-                amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), BINARY);
+                    amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), BINARY);
                 else
                 {
                     cerr << "Unknown dipole " << argv[i+1] << endl;
                     return -1;
                 }
+            
             }
             else    // A>1
             {
@@ -300,7 +301,6 @@ int main(int argc, char* argv[])
         }
         
     }
-    
     
     
     
@@ -455,19 +455,10 @@ int main(int argc, char* argv[])
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
-
+        
         for (t=mint; t<=maxt; t+=tstep)
         {
-            double xpom;
-            if (xp < 0)
-                xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
-            else
-                xpom = xp;
-            if (xpom > 0.02)
-            {
-                cerr << "xpom = " << xpom << ", can't do this!" << endl;
-                //continue;
-            }
+            double xpom = xp;
             
             if(auto_mcintpoints)
                 MCINTPOINTS = MCpoints(t);
