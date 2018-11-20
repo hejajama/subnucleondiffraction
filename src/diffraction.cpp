@@ -124,7 +124,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     
     
     lower[0]=lower[1]=0;
-    upper[0] = 15*5.068 ; // Max r
+    upper[0] = 35*5.068 ; // Max r
     upper[1] = 2.0*M_PI;
     
     gsl_monte_function F;
@@ -140,7 +140,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     {
         gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
         gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result, &error);
-        cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
+        //cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
         gsl_monte_miser_free(s);
     }
     else if (MCINT == VEGAS)
@@ -181,7 +181,7 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
     double theta_b = helper->Qsqr;
     
         
-    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z, helper->polarization);
+    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, b, theta_b, z, helper->polarization);
     
     /*
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(ZINT_INTERVALS);

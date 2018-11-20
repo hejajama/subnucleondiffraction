@@ -449,14 +449,22 @@ int main(int argc, char* argv[])
     
     else if (mode == AMPLITUDE_DT)
     {
-        if (xp < 0)
-            cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
-        else
-            cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
-        cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
-
+        // t = qx
+	// xp = b [gev-1]
+	// Q2 = theta(b,q)
+	
+	// theta(b,q) dep. of FT (approx W), fixed b and q
+	double q = mint;
+	double b = xp;
+	cout << "# q=" << q <<" GeV, b=" << b << " GeV^-1" << endl;
+	cout <<"# theta(b,q)  Wigner 0 " << endl;
+	for (double angle=0; angle <= 2.0*M_PI; angle += 2.0*M_PI/40)
+	{
+		double r = diff.ScatteringAmplitude(b, angle, q, T);
+		cout << angle << " " << r << " " << 0 << endl;
+	}
         
-        for (t=mint; t<=maxt; t+=tstep)
+        /*for (t=mint; t<=maxt; t*=tstep)
         {
             double xpom = xp;
             
@@ -482,7 +490,7 @@ int main(int argc, char* argv[])
 	    ///if (t>=0.15 )
             ///    tstep = 0.02;
                 
-        }
+        //}
     }
     else if (mode == CORRECTIONS)
     {

@@ -13,6 +13,7 @@ def sqr(x):
 
 sys.path.append("/Users/hejajama/lib/")
 sys.path.append("/nashome2/hejajama/lib/")
+sys.path.append("/homeappl/home/hmantysa/lib/")
 from matplotlibhelper import *
 import numpy as np
 
