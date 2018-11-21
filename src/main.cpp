@@ -457,11 +457,42 @@ int main(int argc, char* argv[])
 	double q = mint;
 	double b = xp;
 	cout << "# q=" << q <<" GeV, b=" << b << " GeV^-1" << endl;
-	cout <<"# theta(b,q)  Wigner 0 " << endl;
-	for (double angle=0; angle <= 2.0*M_PI; angle += 2.0*M_PI/40)
+	cout <<"# theta(b,q)   FT of N    laplace of FT of N " << endl;
+	for (double angle=0.2; angle <= 2.0*M_PI-0.2; angle += 2.0*M_PI/40)
 	{
 		double r = diff.ScatteringAmplitude(b, angle, q, T);
-		cout << angle << " " << r << " " << 0 << endl;
+        
+        // Laplace operator:
+        // nabla_b^2 = \partial_r^2 + 1/r \partial_r + 1/r^2 \partial_th
+        // First try to use simple finite difference method
+        // d^2 f/dr^2 = [f(x+h) + f(x-h) -f(x)]/h^2
+        double db = 0.2*5.068; // Seems to make sense, quite large, but hopefully
+        // laplace term is a small correction anyway
+        
+        if (b - db < 0)
+        {
+            cerr<< "Computing laplace only works for b>0" << endl;
+            exit(1);
+        }
+        double b_plus = 0; //diff.ScatteringAmplitude(b+db, angle, q, T);
+        double b_minus = 0; //diff.ScatteringAmplitude(b-db, angle, q, T);
+        
+        double delta_th = 0.15;
+        if (angle - delta_th < 0 or angle + delta_th > 2.0*M_PI)
+        {
+            cerr << "Computing laplace only works if angle is not 0 or 2pi" << endl;
+            exit(1);
+        }
+        double th_plus =  diff.ScatteringAmplitude(b, angle+delta_th, q, T);
+        double th_minus = diff.ScatteringAmplitude(b, angle-delta_th, q, T);
+        
+        double der2b = (b_plus + b_minus - 2.0*r)/(db*db);
+        double derb = (b_plus - b_minus)/(2.0*db);
+        double der2th = (th_plus + th_minus -2.0*r)/(delta_th*delta_th);
+        
+        double laplace = der2b + 1.0/b * derb  + 1.0/(b*b)*der2th;
+        
+		cout << angle << " " << r << " " << laplace << endl;
 	}
         
         /*for (t=mint; t<=maxt; t*=tstep)
