@@ -12,6 +12,7 @@
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_bessel.h>
 #include "subnucleon_config.hpp"
+#include "ipglasma.hpp"
 
 using namespace std;
 
@@ -238,9 +239,10 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     double x1[2] = {qx,qy};
     double x2[2] = {qbarx, qbary};
-    double amp_real = dipole->Amplitude(xpom, x1, x2 );
-    double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
-    std::complex<double> amp(amp_real, amp_imag);
+    //double amp_real = dipole->Amplitude(xpom, x1, x2 );
+    //double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
+    //std::complex<double> amp(amp_real, amp_imag);
+    std::complex<double> amp = ((IPGlasma*)dipole)->ComplexAmplitude(xpom,x1,x2);
     //amp = amp.real();   // Disable possible imag part for now
     
     

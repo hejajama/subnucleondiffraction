@@ -328,7 +328,17 @@ int main(int argc, char* argv[])
         wavef = new BoostedGauss(wavef_file);
         cout << "# " << *(BoostedGauss*)wavef << endl;
     }
-
+    /*
+    for (int i=1; i < 50; i++)
+    {
+        GRADIENT=true;
+        GRADIENT_STEP=i;
+        double q1[2] = {0.3*5.068, 0.3*5.068};
+        double q2[2] = {0.35*5.068, 0.3*5.068};
+        double r = amp->Amplitude(0.01,q1,q2);
+        cout << i << " " << r<< endl;
+    }
+    exit(1);*/
     
     
     amp->SetSkewedness(skewedness);
@@ -359,8 +369,6 @@ int main(int argc, char* argv[])
 
     amp->InitializeTarget();
     
-    
-
     Diffraction diff(*amp, *wavef);
     diff.SetMaxR(maxr*5.068);
 
@@ -458,10 +466,15 @@ int main(int argc, char* argv[])
 	double b = xp;
 	cout << "# q=" << q <<" GeV, b=" << b << " GeV^-1" << endl;
 	cout <<"# theta(b,q)   FT of N    laplace of FT of N " << endl;
-	for (double angle=0.2; angle <= 2.0*M_PI-0.2; angle += 2.0*M_PI/40)
+	for (double angle=0.2; angle <= 2.0*M_PI-0.; angle += 2.0*M_PI/40)
 	{
+        GRADIENT = false;
 		double r = diff.ScatteringAmplitude(b, angle, q, T);
-        
+        GRADIENT = true;
+        GRADIENT_STEP=1;
+        double laplace = diff.ScatteringAmplitude(b, angle, q, T);
+
+        /*
         // Laplace operator:
         // nabla_b^2 = \partial_r^2 + 1/r \partial_r + 1/r^2 \partial_th
         // First try to use simple finite difference method
@@ -469,13 +482,15 @@ int main(int argc, char* argv[])
         double db = 0.2*5.068; // Seems to make sense, quite large, but hopefully
         // laplace term is a small correction anyway
         
+        
+        
         if (b - db < 0)
         {
             cerr<< "Computing laplace only works for b>0" << endl;
             exit(1);
         }
-        double b_plus = 0; //diff.ScatteringAmplitude(b+db, angle, q, T);
-        double b_minus = 0; //diff.ScatteringAmplitude(b-db, angle, q, T);
+        double b_plus = diff.ScatteringAmplitude(b+db, angle, q, T);
+        double b_minus = diff.ScatteringAmplitude(b-db, angle, q, T);
         
         double delta_th = 0.15;
         if (angle - delta_th < 0 or angle + delta_th > 2.0*M_PI)
@@ -491,8 +506,10 @@ int main(int argc, char* argv[])
         double der2th = (th_plus + th_minus -2.0*r)/(delta_th*delta_th);
         
         double laplace = der2b + 1.0/b * derb  + 1.0/(b*b)*der2th;
+        */
         
 		cout << angle << " " << r << " " << laplace << endl;
+         
 	}
         
         /*for (t=mint; t<=maxt; t*=tstep)

@@ -9,8 +9,12 @@
 
 #include <string>
 #include <vector>
+#include <complex>
 #include "wilsonline.hpp"
 #include "dipole.hpp"
+
+extern bool GRADIENT;
+extern int GRADIENT_STEP;
 
 enum WilsonLineDataFileType
 {
@@ -32,6 +36,8 @@ public:
     // Array points are x and y coordinates
     double Amplitude(double xpom, double q1[2], double q2[2]);
     double AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] );
+    
+    std::complex<double> ComplexAmplitude(double xpom, double q1[2], double q2[2]);
 
     WilsonLine& GetWilsonLine( double x, double y); // Find Wilson line that corresponds to the coordinate
     

@@ -20,6 +20,9 @@ using std::cout;
 using std::endl;
 extern gsl_rng *global_rng;
 
+bool GRADIENT = false;
+int GRADIENT_STEP=1;
+
 const int NC=3;
 
 /*
@@ -136,6 +139,7 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
     WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
     antiquark = antiquark.HermitianConjugate();
     
+    
     WilsonLine prod;
     try {
         prod =  quark*antiquark;
@@ -150,6 +154,55 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
     std::complex<double > amp =  1.0 - 1.0/NC * prod.Trace();
     
     double result = amp.real();
+    
+    if (GRADIENT)
+    {
+        double h = XStep() * GRADIENT_STEP;
+        //double h = 1*XStep();
+        // Shift impact parameter!
+        // Shifting by XStep() gives us always the next cell
+        // xplus
+        WilsonLine q = GetWilsonLine(q1[0] +h, q1[1]);
+        WilsonLine aq = GetWilsonLine(q2[0] + h, q2[1]);
+        aq = aq.HermitianConjugate();
+        prod = q*aq;
+        std::complex<double > xplus = 1.0 - 1.0/NC*prod.Trace();
+        
+        // xminus
+        q = GetWilsonLine(q1[0] - h, q1[1]);
+        aq = GetWilsonLine(q2[0] - h, q2[1]);
+        aq = aq.HermitianConjugate();
+        prod = q*aq;
+        std::complex<double > xminus = 1.0 - 1.0/NC*prod.Trace();
+        
+        // yplus
+        q = GetWilsonLine(q1[0], q1[1] + h);
+        aq = GetWilsonLine(q2[0], q2[1] + h);
+        aq = aq.HermitianConjugate();
+        prod = q*aq;
+        std::complex<double > yplus = 1.0 - 1.0/NC*prod.Trace();
+        
+        // yminus
+        q = GetWilsonLine(q1[0], q1[1] - h);
+        aq = GetWilsonLine(q2[0], q2[1] - h);
+        aq = aq.HermitianConjugate();
+        prod = q*aq;
+        std::complex<double > yminus = 1.0 - 1.0/NC*prod.Trace();
+        
+       /* cout << "# h=" << h/5.068 << " fm" << endl;
+        cout << "# Central: " << amp;
+        cout << "# x+ " << xplus << " x- " << xminus << " y+ " << yplus << " y- " << yminus << endl;
+        cout << "# Laplace: " <<(xplus + xminus + yplus + yminus - 4.0*amp) / (h*h) << endl;
+        */
+        std::complex<double > res = (xplus + xminus + yplus + yminus - 4.0*amp) / (h*h);
+        
+        return res.real();
+        
+        
+    }
+    
+    
+    
     if (result < 0) return 0;
     return result;
     if (result > 1)
@@ -196,6 +249,44 @@ double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
     }
     std::complex<double > amp =  1.0 - 1.0/NC * prod.Trace();
     
+    if (GRADIENT)
+    {   // Shift impact parameter!
+        // Shifting by XStep() gives us always the next cell
+        // xplus
+        WilsonLine q = GetWilsonLine(q1[0] + XStep(), q1[1]);
+        WilsonLine aq = GetWilsonLine(q2[0] + XStep(), q2[1]);
+        aq = aq.HermitianConjugate();
+        prod = q*aq;
+        std::complex<double > xplus = 1.0 - 1.0/NC*prod.Trace();
+        
+        // xminus
+        q = GetWilsonLine(q1[0] - XStep(), q1[1]);
+        aq = GetWilsonLine(q2[0] - XStep(), q2[1]);
+        aq = aq.HermitianConjugate();
+        prod = q*aq;
+        std::complex<double > xminus = 1.0 - 1.0/NC*prod.Trace();
+        
+        // yplus
+        q = GetWilsonLine(q1[0], q1[1] + XStep());
+        aq = GetWilsonLine(q2[0], q2[1] + XStep());
+        aq = aq.HermitianConjugate();
+        prod = q*aq;
+        std::complex<double > yplus = 1.0 - 1.0/NC*prod.Trace();
+        
+        // yminus
+        q = GetWilsonLine(q1[0], q1[1] - XStep());
+        aq = GetWilsonLine(q2[0], q2[1] - XStep());
+        aq = aq.HermitianConjugate();
+        prod = q*aq;
+        std::complex<double > yminus = 1.0 - 1.0/NC*prod.Trace();
+        
+        std::complex<double > res = (xplus + xminus + yplus + yminus - 4.0*amp) / (XStep()*XStep());
+        
+        return res.imag();
+        
+        
+    }
+    
     double result = amp.imag();
     return result;
     if (result > 1)
@@ -206,10 +297,88 @@ double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
     return result;
 }
 
+
+
+std::complex<double> IPGlasma::ComplexAmplitude(double xpom, double q1[2], double q2[2] )
+{
+    // Out of grid? Return 1 (probably very large dipole)
+    if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
+        or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
+        or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
+        or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
+    return 0;
+    double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
+    if (r < std::abs( xcoords[1] - xcoords[0]))
+    return 0;
+    
+    // First find corresponding grid indeces
+    WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
+    WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
+    antiquark = antiquark.HermitianConjugate();
+    
+    WilsonLine prod;
+    try {
+        prod =  quark*antiquark;
+    } catch (...) {
+        cerr << "Matrix multiplication failed!" << endl;
+        cout << "Quark: " << q1[0] << ", " << q1[1] << endl;
+        cout << quark << endl;
+        cout << "Antiquark: " << q2[0] << ", " << q2[1] << endl;
+        cout << antiquark << endl;
+        exit(1);
+    }
+    std::complex<double > amp =  1.0 - 1.0/NC * prod.Trace();
+    
+    if (GRADIENT)
+    {   // Shift impact parameter!
+        // Shifting by XStep() gives us always the next cell
+        // xplus
+        WilsonLine q = GetWilsonLine(q1[0] + XStep(), q1[1]);
+        WilsonLine aq = GetWilsonLine(q2[0] + XStep(), q2[1]);
+        aq = aq.HermitianConjugate();
+        prod = q*aq;
+        std::complex<double > xplus = 1.0 - 1.0/NC*prod.Trace();
+        
+        // xminus
+        q = GetWilsonLine(q1[0] - XStep(), q1[1]);
+        aq = GetWilsonLine(q2[0] - XStep(), q2[1]);
+        aq = aq.HermitianConjugate();
+        prod = q*aq;
+        std::complex<double > xminus = 1.0 - 1.0/NC*prod.Trace();
+        
+        // yplus
+        q = GetWilsonLine(q1[0], q1[1] + XStep());
+        aq = GetWilsonLine(q2[0], q2[1] + XStep());
+        aq = aq.HermitianConjugate();
+        prod = q*aq;
+        std::complex<double > yplus = 1.0 - 1.0/NC*prod.Trace();
+        
+        // yminus
+        q = GetWilsonLine(q1[0], q1[1] - XStep());
+        aq = GetWilsonLine(q2[0], q2[1] - XStep());
+        aq = aq.HermitianConjugate();
+        prod = q*aq;
+        std::complex<double > yminus = 1.0 - 1.0/NC*prod.Trace();
+        
+        std::complex<double > res = (xplus + xminus + yplus + yminus - 4.0*amp) / (XStep()*XStep());
+        
+        return res;
+        
+        
+    }
+    
+    if (amp.real() < 0) return 0;
+    
+    return amp;
+}
+
+
+
 WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
 {
     int xind = FindIndex(x, xcoords);
     int yind = FindIndex(y, ycoords);
+    
     
     // Handle edges
     if (xind < 0)
