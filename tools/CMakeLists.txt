@@ -51,6 +51,22 @@ add_executable(
 	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp
 )
 
+add_executable(
+	husimi
+	husimi.cpp
+	../src/dipole.cpp
+	../src/diffraction.cpp
+	../src/wilsonline.cpp
+	../src/ipsat_proton.cpp
+	../src/vector.cpp
+	../src/virtual_photon.cpp
+	../src/ipglasma.cpp
+	../src/wave_function.cpp
+	../src/gdist_dglap.cpp
+	../src/subnucleon_config.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp
+)
+
 include_directories(.)
 
 find_package(GSL REQUIRED)    #
@@ -85,6 +101,17 @@ target_link_libraries(
 
 target_link_libraries(
 	f2fit      
+	PRIVATE
+	mzipsat
+	amplitude
+	ColorDipole
+	GSL::gsl
+	GSL::gslcblas
+)
+
+
+target_link_libraries(
+	husimi     
 	PRIVATE
 	mzipsat
 	amplitude

@@ -248,6 +248,9 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
    
     
+    
+    
+    
         std::complex<double> imag(0,1);
         std::complex<double> exponent = std::exp( -imag* ( r*t*std::cos(theta_r)  )  );
         //std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b)  )  );
