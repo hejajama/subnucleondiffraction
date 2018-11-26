@@ -112,6 +112,8 @@ public:
     
     void SetQuarkCenterOfMassToOrigin(bool s);
     
+    void SetA(double A_) { A=A_; }
+    
 private:
     void Init();
     
@@ -130,6 +132,7 @@ private:
     double B_q;     // Central value for the quark gaussian width
     bool saturation;
     
+    double A;   // azimuthal anisotropy
     
     double fluxtube_normalization; // Normalization factor for FluxTube
     void NormalizeFluxTubeThickness();  // Calculate normalization factor, do this after quark positions

@@ -19,6 +19,7 @@
 		138FE4A71C7BC85F0078E11F /* average_amplitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 138FE4A61C7BC85F0078E11F /* average_amplitude.cpp */; };
 		13E399D01CFF6B61002471F5 /* dis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 13E399CE1CFF6B61002471F5 /* dis.cpp */; };
 		13E8924D1D63B62000DA2C38 /* modified_ipsat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 13E8924C1D63B62000DA2C38 /* modified_ipsat.cpp */; };
+		3079D2CE21ABD5080092E0A2 /* husimi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3079D2CD21ABD5080092E0A2 /* husimi.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -85,6 +86,7 @@
 		13E399CE1CFF6B61002471F5 /* dis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dis.cpp; path = src/dis.cpp; sourceTree = "<group>"; };
 		13E399CF1CFF6B61002471F5 /* dis.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dis.hpp; path = src/dis.hpp; sourceTree = "<group>"; };
 		13E8924C1D63B62000DA2C38 /* modified_ipsat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = modified_ipsat.cpp; path = tools/modified_ipsat.cpp; sourceTree = "<group>"; };
+		3079D2CD21ABD5080092E0A2 /* husimi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = husimi.cpp; path = tools/husimi.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,6 +118,7 @@
 		12B5191B1BD9765200230988 = {
 			isa = PBXGroup;
 			children = (
+				3079D2CD21ABD5080092E0A2 /* husimi.cpp */,
 				13BE4A371EDEA6CC0010843B /* proton_size.cpp */,
 				13BE4A361EDEA6AD0010843B /* proton_size.cpp */,
 				1385C42A1ECC2CB600ABE2EE /* sigmar_chisqr.py */,
@@ -249,6 +252,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13E399D01CFF6B61002471F5 /* dis.cpp in Sources */,
+				3079D2CE21ABD5080092E0A2 /* husimi.cpp in Sources */,
 				13E8924D1D63B62000DA2C38 /* modified_ipsat.cpp in Sources */,
 				1217F7851C11EA830008A90C /* sample_color_charges.cpp in Sources */,
 				1217F7821C0509E50008A90C /* nucleons.cpp in Sources */,

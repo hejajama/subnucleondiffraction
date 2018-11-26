@@ -65,7 +65,7 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         // dipole_amplitude(xBj, r, b, parameterSet) gives amplitude 2(1 - exp(c*T(p)))
  	double tmpb=0;  double tmpr = r.Len();
        	// If we do not have fluctuations, do not modify geometry
-	if (B_q==4.0 and B_p == 0 and saturation  and Qs_fluctuation_sigma==0)
+	if (B_q==4.0 and B_p == 0 and saturation  and Qs_fluctuation_sigma==0 and A==0)
 		return dipole_amplitude_(&xpom, &tmpr, &blen, &IPSAT12_PAR)/2.0;
  
         // We have to calculate "gluedist" as in case of ipsat06
@@ -92,7 +92,10 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         double tp = 1.0/(2.0*M_PI*4.0)*std::exp(- tmpb*tmpb / (2.0*4.0));
         c /= tp;
         
-        ipsat_exponent = c / r.LenSqr();
+        double r_dot_b = r*b;
+        double cosrb = r_dot_b / (r.Len()*b.Len());
+        
+        ipsat_exponent = c / r.LenSqr() * (1.0 + A*(std::pow(cosrb,2) - 0.5));
 #endif
     }
     else if (ipsat == MZSAT or ipsat == MZNONSAT)
@@ -568,7 +571,7 @@ void Ipsat_Proton::Init()
 }
 Ipsat_Proton::Ipsat_Proton()
 {
-    
+    A=0;
     allocated_gdist = false;
     
 #ifdef USE_FORTRAN_IPSAT12
@@ -585,7 +588,7 @@ Ipsat_Proton::Ipsat_Proton()
 Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
 {
     allocated_gdist = false;
-    
+    A=0;
     if (version == MZSAT)
     {
         ipsat = MZSAT;
@@ -624,6 +627,7 @@ Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
 }
 Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
 {
+    A=0;
     gdist = gd;
     allocated_gdist = false;
     ipsat = IPSAT06;

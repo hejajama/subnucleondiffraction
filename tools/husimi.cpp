@@ -29,10 +29,11 @@ struct inthelper_husimi
     double k;
     double l;
     bool real_part;
+    double xpom;
 };
 
 double inthelperf_mc( double *vec, size_t dim, void* par);
-const int MCINTPOINTS = 5e6;
+int MCINTPOINTS_HUSIMI = 2e7;
 int main(int argc, char* argv[])
 {
     // Params ipglasmafname k theta
@@ -41,14 +42,45 @@ int main(int argc, char* argv[])
     gsl_set_error_handler_off ();
 
     inthelper_husimi helper;
-    helper.real_part = false;
+    helper.real_part = true;
     helper.k = StrToReal(argv[2]);
-    helper.b=0.5;
+    helper.b=2.5;
     helper.l=1;
-    helper.theta_b = StrToReal(argv[3]);
+    helper.xpom=0.01;
+    
+    double A=1;
     
     
-    IPGlasma dipole(argv[1], 0.00731429, BINARY);
+    for (int i=1; i<argc; i++)
+    {
+        if (string(argv[i])=="-b")
+            helper.b=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-k")
+            helper.k = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-l")
+            helper.l = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-mcintpoints")
+            MCINTPOINTS_HUSIMI = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-A")
+            A=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-xpom")
+            helper.xpom=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-imag")
+            helper.real_part=false;
+        else if (string(argv[i]).substr(0,1)=="-")
+        {
+            cerr << "Unknown parameter " << argv[i] << endl;
+            exit(1);
+        }
+    }
+                
+    
+    
+    
+    //IPGlasma dipole(argv[1], 0.00731429, BINARY);
+    Ipsat_Proton dipole; dipole.SetProtonWidth(0), dipole.SetQuarkWidth(4);
+    dipole.SetA(A);
+    dipole.InitializeTarget();
     helper.dipole = &dipole;
     
     double *lower, *upper;
@@ -73,9 +105,17 @@ int main(int argc, char* argv[])
     double result,error;
     
      gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
-    cout << "# k  real(th=0)  imag(th=0)   real(th=pi/2)  imag(th=pi/2)" << endl;
-    for (double k=0.4; k<15; k*=1.5){
-        std::vector<double> res;
+        cout << "# b = " << helper.b << " k = " << helper.k << " A = " << A << " xp = " << helper.xpom  << " l= " << helper.l << endl;
+    cout << "# angle  Husimi  montecarloerror" << endl;
+   // for (double k=0.4; k<15; k*=1.5){
+        
+        for (double th = 0; th<= 2.0*M_PI*1.0001; th += 2.0*M_PI/30)
+        {
+            helper.theta_b = th;
+            gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS_HUSIMI, global_rng, s, &result, &error);
+            cout << th << " " << result << " " << error << endl;
+        }
+        /*std::vector<double> res;
         
         for (double th = 0; th <= M_PI/2.0*1.01; th += M_PI/2.0)
         {
@@ -94,9 +134,10 @@ int main(int argc, char* argv[])
             
         }
         cout << k << " " << res[0] << " " << res[1] << " " << res[2] << " " << res[3] << endl;
+         */
         
         
-    }
+ //   }
     
 
    
@@ -145,7 +186,7 @@ double inthelperf_mc( double *vec, size_t dim, void* p)
     complex<double> exponent = -1.0/(l*l) * b_minus_b2_sqr - r*r/(4.0*l*l) + imag*k*r*std::cos(theta_r);
     
     complex<double> result = std::exp(exponent) * (1.0/(l*l)*b_minus_b2_sqr + l*l*kilr_sqr)
-        * ((IPGlasma*)dipole)->Amplitude(0.01,q1,q2);
+        * dipole->Amplitude(par->xpom,q1,q2);
     
     // Prefactors and Jacobian
     result *= -b2*r/(l*l);
