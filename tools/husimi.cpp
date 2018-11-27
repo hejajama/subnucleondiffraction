@@ -30,13 +30,12 @@ struct inthelper_husimi
     double l;
     bool real_part;
     double xpom;
-    
-    double overall_angle;   // With IPglasma, we do average over overal azimuth
+   
 };
 
 double inthelperf_mc( double *vec, size_t dim, void* par);
 int MCINTPOINTS_HUSIMI = 2e7;
-int avereages_azimuth = 1;
+bool avereages_azimuth = false;
 
 int main(int argc, char* argv[])
 {
@@ -75,7 +74,7 @@ int main(int argc, char* argv[])
         else if (string(argv[i])=="-ipglasma")
             ipglasmafile = argv[i+1];
         else if (string(argv[i])=="-azimuth_averages")
-            avereages_azimuth =StrToInt(argv[i+1]);
+            avereages_azimuth =true;
         else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -116,8 +115,17 @@ int main(int argc, char* argv[])
     upper[3] = 2.0*M_PI;
     
     gsl_monte_function F;
-    F.f = &inthelperf_mc;
     F.dim = 4;
+    
+    if (avereages_azimuth == true)
+    {
+        F.dim=5;    // Additional dimension: overall rotation
+        lower[4]=0;
+        upper[4]=2.0*M_PI;
+    }
+    
+    F.f = &inthelperf_mc;
+    
     
     F.params = &helper;
     
@@ -130,21 +138,13 @@ int main(int argc, char* argv[])
         
         for (double th = 0; th<= 2.0*M_PI*1.0001; th += 2.0*M_PI/30)
         {
-            double sum = 0;
-            double errorsum = 0;
-            for (unsigned int avg=0; avg < avereages_azimuth; avg++)
-            {
-                helper.theta_b = th;
-                helper.overall_angle = 2.0*M_PI / avereages_azimuth * avg;
-                gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS_HUSIMI, global_rng, s, &result, &error);
+           
+            
+            helper.theta_b = th;
+            gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS_HUSIMI, global_rng, s, &result, &error);
                 //cout <<"# rot " << helper.overall_angle << " res " << result <<  " pm " << error <<endl;
-                sum += result;
-                errorsum += error;
-                
-            }
-            sum/=avereages_azimuth;
-            errorsum/=avereages_azimuth;
-            cout << th << " " << sum << " " << errorsum << endl;
+            
+            cout << th << " " << result/(2.0*M_PI) << " " << error/(2.0*M_PI) << endl;
         }
         /*std::vector<double> res;
         
@@ -191,10 +191,7 @@ double inthelperf_mc( double *vec, size_t dim, void* p)
     double theta_b2 = vec[3];
     double theta_b = par->theta_b;
     
-    // Overall rotation
-    theta_r += par->overall_angle;
-    theta_b += par->overall_angle;
-    theta_b2 += par->overall_angle;
+
     
     
     double b2x = b2*cos(theta_b2);
@@ -225,6 +222,15 @@ double inthelperf_mc( double *vec, size_t dim, void* p)
     
     complex<double> exponent = -1.0/(l*l) * b_minus_b2_sqr - r*r/(4.0*l*l) + imag*k*r*std::cos(theta_r);
     
+    if (avereages_azimuth == true)
+    {// Rotate dipole
+        double overall_angle = vec[4];
+        q1[0] = std::cos(overall_angle)*q1[0] + std::sin(overall_angle)*q1[1];
+        q1[1] = -std::sin(overall_angle)*q1[0] + std::cos(overall_angle)*q1[1];
+        
+        q2[0] = std::cos(overall_angle)*q2[0] + std::sin(overall_angle)*q2[1];
+        q2[1] = -std::sin(overall_angle)*q2[0] + std::cos(overall_angle)*q2[1];
+    }
     complex<double> result = std::exp(exponent) * (1.0/(l*l)*b_minus_b2_sqr + l*l*kilr_sqr)
         * dipole->Amplitude(par->xpom,q1,q2);
     
