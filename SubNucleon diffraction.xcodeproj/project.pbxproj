@@ -20,6 +20,7 @@
 		13E399D01CFF6B61002471F5 /* dis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 13E399CE1CFF6B61002471F5 /* dis.cpp */; };
 		13E8924D1D63B62000DA2C38 /* modified_ipsat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 13E8924C1D63B62000DA2C38 /* modified_ipsat.cpp */; };
 		3079D2CE21ABD5080092E0A2 /* husimi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3079D2CD21ABD5080092E0A2 /* husimi.cpp */; };
+		3079D2D021ADAB750092E0A2 /* wigner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3079D2CF21ADAB740092E0A2 /* wigner.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -87,6 +88,7 @@
 		13E399CF1CFF6B61002471F5 /* dis.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dis.hpp; path = src/dis.hpp; sourceTree = "<group>"; };
 		13E8924C1D63B62000DA2C38 /* modified_ipsat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = modified_ipsat.cpp; path = tools/modified_ipsat.cpp; sourceTree = "<group>"; };
 		3079D2CD21ABD5080092E0A2 /* husimi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = husimi.cpp; path = tools/husimi.cpp; sourceTree = "<group>"; };
+		3079D2CF21ADAB740092E0A2 /* wigner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = wigner.cpp; path = tools/wigner.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +120,7 @@
 		12B5191B1BD9765200230988 = {
 			isa = PBXGroup;
 			children = (
+				3079D2CF21ADAB740092E0A2 /* wigner.cpp */,
 				3079D2CD21ABD5080092E0A2 /* husimi.cpp */,
 				13BE4A371EDEA6CC0010843B /* proton_size.cpp */,
 				13BE4A361EDEA6AD0010843B /* proton_size.cpp */,
@@ -260,6 +263,7 @@
 				12F504E61BECEFA3005540EF /* subnucleon_config.cpp in Sources */,
 				138FE4A71C7BC85F0078E11F /* average_amplitude.cpp in Sources */,
 				137168441C9C3E76002C9873 /* basis_expansion.cpp in Sources */,
+				3079D2D021ADAB750092E0A2 /* wigner.cpp in Sources */,
 				1349C3F91C29F38B00B8EBA7 /* satscale.cpp in Sources */,
 				12F69EFB1BE162F00045E7DD /* wilsonline.cpp in Sources */,
 				12F69EFE1BE16FE10045E7DD /* ipglasma.cpp in Sources */,

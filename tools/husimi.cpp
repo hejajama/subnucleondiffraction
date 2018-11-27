@@ -30,10 +30,14 @@ struct inthelper_husimi
     double l;
     bool real_part;
     double xpom;
+    
+    double overall_angle;   // With IPglasma, we do average over overal azimuth
 };
 
 double inthelperf_mc( double *vec, size_t dim, void* par);
 int MCINTPOINTS_HUSIMI = 2e7;
+int avereages_azimuth = 1;
+
 int main(int argc, char* argv[])
 {
     // Params ipglasmafname k theta
@@ -70,6 +74,8 @@ int main(int argc, char* argv[])
             helper.real_part=false;
         else if (string(argv[i])=="-ipglasma")
             ipglasmafile = argv[i+1];
+        else if (string(argv[i])=="-azimuth_averages")
+            avereages_azimuth =StrToInt(argv[i+1]);
         else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -124,9 +130,21 @@ int main(int argc, char* argv[])
         
         for (double th = 0; th<= 2.0*M_PI*1.0001; th += 2.0*M_PI/30)
         {
-            helper.theta_b = th;
-            gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS_HUSIMI, global_rng, s, &result, &error);
-            cout << th << " " << result << " " << error << endl;
+            double sum = 0;
+            double errorsum = 0;
+            for (unsigned int avg=0; avg < avereages_azimuth; avg++)
+            {
+                helper.theta_b = th;
+                helper.overall_angle = 2.0*M_PI / avereages_azimuth * avg;
+                gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS_HUSIMI, global_rng, s, &result, &error);
+                //cout <<"# rot " << helper.overall_angle << " res " << result <<  " pm " << error <<endl;
+                sum += result;
+                errorsum += error;
+                
+            }
+            sum/=avereages_azimuth;
+            errorsum/=avereages_azimuth;
+            cout << th << " " << sum << " " << errorsum << endl;
         }
         /*std::vector<double> res;
         
@@ -165,19 +183,28 @@ int main(int argc, char* argv[])
 
 double inthelperf_mc( double *vec, size_t dim, void* p)
 {
+     inthelper_husimi *par = (inthelper_husimi*)p;
+    
     double r = vec[0];
     double theta_r = vec[1];
     double b2 = vec[2]; // b'
     double theta_b2 = vec[3];
+    double theta_b = par->theta_b;
+    
+    // Overall rotation
+    theta_r += par->overall_angle;
+    theta_b += par->overall_angle;
+    theta_b2 += par->overall_angle;
+    
     
     double b2x = b2*cos(theta_b2);
     double b2y = b2*sin(theta_b2);
     double rx = r*cos(theta_r);
     double ry = r*sin(theta_r);
     
-    inthelper_husimi *par = (inthelper_husimi*)p;
+   
     double b = par->b;
-    double theta_b = par->theta_b;
+    
     double k = par->k;
     double l = par->l;
     DipoleAmplitude* dipole = par->dipole;
