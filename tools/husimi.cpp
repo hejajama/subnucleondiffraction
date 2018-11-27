@@ -50,6 +50,7 @@ int main(int argc, char* argv[])
     
     double A=1;
     
+    std::string ipglasmafile="";
     
     for (int i=1; i<argc; i++)
     {
@@ -67,6 +68,8 @@ int main(int argc, char* argv[])
             helper.xpom=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-imag")
             helper.real_part=false;
+        else if (string(argv[i])=="-ipglasma")
+            ipglasmafile = argv[i+1];
         else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -76,12 +79,22 @@ int main(int argc, char* argv[])
                 
     
     
-    
+    DipoleAmplitude* dipole;
+    if (ipglasmafile=="")
+    {
+        dipole = new Ipsat_Proton;
+        ((Ipsat_Proton*)dipole)->SetProtonWidth(0);
+        ((Ipsat_Proton*)dipole)->SetQuarkWidth(4);
+        ((Ipsat_Proton*)dipole)->SetA(1);
+        ((Ipsat_Proton*)dipole)->InitializeTarget();
+    }
+    else
+    {
+        dipole = new IPGlasma(ipglasmafile, 0.00731429, BINARY);
+    }
     //IPGlasma dipole(argv[1], 0.00731429, BINARY);
-    Ipsat_Proton dipole; dipole.SetProtonWidth(0), dipole.SetQuarkWidth(4);
-    dipole.SetA(A);
-    dipole.InitializeTarget();
-    helper.dipole = &dipole;
+
+    helper.dipole = dipole;
     
     double *lower, *upper;
     
