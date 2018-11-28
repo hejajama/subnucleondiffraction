@@ -95,8 +95,8 @@ int main(int argc, char* argv[])
     
     double *lower, *upper;
     
-    lower = new double[2];
-    upper = new double[2];
+    lower = new double[3];
+    upper = new double[3];
     
     
     
@@ -107,7 +107,15 @@ int main(int argc, char* argv[])
     
     gsl_monte_function F;
     F.f = &inthelperf_mc;
-    F.dim = 2;
+    
+    F.dim=2;
+    if (helper.ipglasma==true)
+    {
+        F.dim = 3;
+        lower[2]=0;
+        upper[2]=2.0*M_PI;   // Overall rotation
+    }
+        
     
     F.params = &helper;
     
@@ -180,6 +188,12 @@ int main(int argc, char* argv[])
                  laplace = der2b + 1.0/b * derb  + 1.0/(b*b)*der2th;
             }
             
+            if (helper.ipglasma==true)
+            {
+                // Azimuthal average
+                r /= 2.0*M_PI;
+                laplace /= 2.0*M_PI;
+            }
             cout << th << " " << r << " " << laplace << endl;
             
             
@@ -226,6 +240,16 @@ double inthelperf_mc( double *vec, size_t dim, void* p)
     std::complex<double> imag(0,1);
     complex<double> exponent = imag*b_dot_q;
     
+    // Overall rotation
+    if (par->ipglasma)
+    {
+        double overall_angle = vec[2];
+        q1[0] = std::cos(overall_angle)*q1[0] + std::sin(overall_angle)*q1[1];
+        q1[1] = -std::sin(overall_angle)*q1[0] + std::cos(overall_angle)*q1[1];
+        
+        q2[0] = std::cos(overall_angle)*q2[0] + std::sin(overall_angle)*q2[1];
+        q2[1] = -std::sin(overall_angle)*q2[0] + std::cos(overall_angle)*q2[1];
+    }
     double amp = dipole->Amplitude(par->xpom,q1,q2);
 
     
@@ -236,7 +260,7 @@ double inthelperf_mc( double *vec, size_t dim, void* p)
     complex<double> result = std::exp(exponent) * amp;
     
     // Prefactors and Jacobian
-    result *= b*r;
+    result *= r;
     // Todo nc, as, 2pi
     
     if (par->real_part)

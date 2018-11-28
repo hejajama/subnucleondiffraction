@@ -103,8 +103,8 @@ int main(int argc, char* argv[])
     
     double *lower, *upper;
     
-    lower = new double[4];
-    upper = new double[4];
+    lower = new double[5];
+    upper = new double[5];
     
     
     
@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
     cout << "# angle  Husimi  montecarloerror" << endl;
    // for (double k=0.4; k<15; k*=1.5){
         
-        for (double th = 0; th<= 2.0*M_PI*1.0001; th += 2.0*M_PI/30)
+        for (double th = 0; th<= 2.0*M_PI*1.0001; th += 2.0*M_PI/15)
         {
            
             
@@ -144,7 +144,13 @@ int main(int argc, char* argv[])
             gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS_HUSIMI, global_rng, s, &result, &error);
                 //cout <<"# rot " << helper.overall_angle << " res " << result <<  " pm " << error <<endl;
             
-            cout << th << " " << result/(2.0*M_PI) << " " << error/(2.0*M_PI) << endl;
+            if (avereages_azimuth)
+            {
+                result /= 2.0*M_PI;
+                error /= 2.0*M_PI;
+            }
+            
+            cout << th << " " << result << " " << error << endl;
         }
         /*std::vector<double> res;
         
