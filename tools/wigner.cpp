@@ -26,7 +26,7 @@ struct inthelper_wigner
     DipoleAmplitude* dipole;
     double theta_b;
     double b;
-    double q;
+    double k;
     bool real_part;
     double xpom;
     bool ipglasma;  // if true, FT N, if False, FT S (dies at large r)
@@ -53,8 +53,8 @@ int main(int argc, char* argv[])
     {
         if (string(argv[i])=="-b")
             b=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-q")
-            helper.q = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-k")
+            helper.k = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-mcintpoints")
             MCINTPOINTS_WIGNER = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-A")
@@ -122,11 +122,11 @@ int main(int argc, char* argv[])
     double result,error;
     
      gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
-        cout << "# b = " << helper.b << " q = " << helper.q << " A = " << A << " xp = " << helper.xpom  <<  endl;
+        cout << "# b = " << helper.b << " k = " << helper.k << " A = " << A << " xp = " << helper.xpom  <<  endl;
     cout << "# angle  wigner  montecarloerror" << endl;
    // for (double k=0.4; k<15; k*=1.5){
         
-        for (double th = 0; th<= 2.0*M_PI*1.0001; th += 2.0*M_PI/30)
+        for (double th = 0; th<= 2.0*M_PI*1.0001; th += 2.0*M_PI/15)
         {
             helper.theta_b = th;
             
@@ -135,6 +135,7 @@ int main(int argc, char* argv[])
             double laplace=0;
             gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS_WIGNER, global_rng, s, &r, &error);
             
+            /*
             if (helper.ipglasma == true) // IPGlasma only currenltly repsects global GRADIENT
             {
                 GRADIENT = true;
@@ -186,15 +187,17 @@ int main(int argc, char* argv[])
                  double der2th = (th_plus + th_minus -2.0*r)/(delta_th*delta_th);
                 
                  laplace = der2b + 1.0/b * derb  + 1.0/(b*b)*der2th;
-            }
+            }*/
             
             if (helper.ipglasma==true)
             {
                 // Azimuthal average
                 r /= 2.0*M_PI;
                 laplace /= 2.0*M_PI;
+                error /= 2.0*M_PI;
             }
-            cout << th << " " << r << " " << laplace << endl;
+            cout << th << " " << r << " " << error << endl;
+            //cout << th << " " << r << " " << laplace << endl;
             
             
 
@@ -235,10 +238,10 @@ double inthelperf_mc( double *vec, size_t dim, void* p)
     double q2[2] = {qbarx, qbary};
     
 
-    double b_dot_q = bx*rx+by*ry;
+    double r_dot_k = r*par->k*std::cos(theta_r);
     
     std::complex<double> imag(0,1);
-    complex<double> exponent = imag*b_dot_q;
+    complex<double> exponent = imag*r_dot_k;
     
     // Overall rotation
     if (par->ipglasma)
