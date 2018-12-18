@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
     cout << "# angle  Husimi  montecarloerror" << endl;
    // for (double k=0.4; k<15; k*=1.5){
         
-        for (double th = 0; th<= 2.0*M_PI*1.0001; th += 2.0*M_PI/15)
+        for (double th = 0; th<= 2.0*M_PI*1.0001; th += 2.0*M_PI/30)
         {
            
             
@@ -222,23 +222,33 @@ double inthelperf_mc( double *vec, size_t dim, void* p)
     
     double b_minus_b2_sqr = b*b + b2*b2 - 2.0*b*b2*std::cos(theta_b - theta_b2);
     
-    // (k + i/(2l)*r)^2
+    // (k + i/(2l^2)*r)^2
     std::complex<double> imag(0,1);
-    std::complex<double> kilr_sqr = k*k - std::pow(r/(2*l), 2.0) + imag/l * k*r*std::cos(theta_r);
+    std::complex<double> kilr_sqr = k*k - std::pow(r/(2*l*l), 2.0) + imag/(l*l) * k*r*std::cos(theta_r);
     
     complex<double> exponent = -1.0/(l*l) * b_minus_b2_sqr - r*r/(4.0*l*l) + imag*k*r*std::cos(theta_r);
     
+    double overall_angle = vec[4];
+    double rot_q1[2];
+    double rot_q2[2];
+    
+    double amplitude=0;
+    
     if (avereages_azimuth == true)
     {// Rotate dipole
-        double overall_angle = vec[4];
-        q1[0] = std::cos(overall_angle)*q1[0] + std::sin(overall_angle)*q1[1];
-        q1[1] = -std::sin(overall_angle)*q1[0] + std::cos(overall_angle)*q1[1];
         
-        q2[0] = std::cos(overall_angle)*q2[0] + std::sin(overall_angle)*q2[1];
-        q2[1] = -std::sin(overall_angle)*q2[0] + std::cos(overall_angle)*q2[1];
+        rot_q1[0] = std::cos(overall_angle)*q1[0] + std::sin(overall_angle)*q1[1];
+        rot_q1[1] = -std::sin(overall_angle)*q1[0] + std::cos(overall_angle)*q1[1];
+        
+        rot_q2[0] = std::cos(overall_angle)*q2[0] + std::sin(overall_angle)*q2[1];
+        rot_q2[1] = -std::sin(overall_angle)*q2[0] + std::cos(overall_angle)*q2[1];
+        
+        amplitude =dipole->Amplitude(par->xpom,rot_q1,rot_q2);
     }
+    else
+        amplitude =dipole->Amplitude(par->xpom,q1,q2)
     complex<double> result = std::exp(exponent) * (1.0/(l*l)*b_minus_b2_sqr + l*l*kilr_sqr)
-        * dipole->Amplitude(par->xpom,q1,q2);
+        * amplitude;
     
     // Prefactors and Jacobian
     result *= -b2*r/(l*l);
