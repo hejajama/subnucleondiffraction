@@ -246,9 +246,10 @@ double inthelperf_mc( double *vec, size_t dim, void* p)
         amplitude =dipole->Amplitude(par->xpom,rot_q1,rot_q2);
     }
     else
-        amplitude =dipole->Amplitude(par->xpom,q1,q2)
-    complex<double> result = std::exp(exponent) * (1.0/(l*l)*b_minus_b2_sqr + l*l*kilr_sqr)
-        * amplitude;
+    {
+        amplitude =dipole->Amplitude(par->xpom,q1,q2);
+    }
+    complex<double> result = std::exp(exponent) * (1.0/(l*l)*b_minus_b2_sqr + l*l*kilr_sqr) * amplitude;
     
     // Prefactors and Jacobian
     result *= -b2*r/(l*l);
