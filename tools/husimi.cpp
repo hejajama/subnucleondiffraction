@@ -16,6 +16,7 @@
 #include <gsl/gsl_monte.h>
 #include <gsl/gsl_monte_miser.h>
 #include <gsl/gsl_integration.h>
+#include <gsl/gsl_sf_bessel.h>
 
 
 gsl_rng* global_rng;
@@ -30,12 +31,96 @@ struct inthelper_husimi
     double l;
     bool real_part;
     double xpom;
+    
+    double r;
+    gsl_integration_workspace *ws1;
+    gsl_integration_workspace *ws2;
    
 };
 
+const int INTEGRATION_INTERVALS = 8;
+const double COS2PHIACCURACY = 0.001;
 double inthelperf_mc( double *vec, size_t dim, void* par);
+double inthelperf_mc_xH1( double *vec, size_t dim, void* par);
 int MCINTPOINTS_HUSIMI = 2e7;
 bool avereages_azimuth = false;
+bool COMPUTE_HUSIMI_V2=false;   // Compute xH1 as in 1609.05773 eq (26)
+
+
+
+double inthelperf_cos2phi_n(double phi_rb, void* p)
+{
+    inthelper_husimi *par = (inthelper_husimi*)p;
+    
+    double rx = par->r * cos(par->theta_b + phi_rb);
+    double ry = par->r * sin(par->theta_b + phi_rb);
+    
+    double bx = par->b * cos(par->theta_b);
+    double by = par->b * sin(par->theta_b);
+    
+    double z=0.5;
+    double qx = bx + z*rx; double qy = by + z*ry;
+    double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
+    
+    double q1[2] = {qx,qy};
+    double q2[2] = {qbarx, qbary};
+    
+    return std::cos(2.0*phi_rb) * par->dipole->Amplitude(0.01, q1,q2);
+
+}
+
+
+double inthelperf_cos2phi_overall(double overall_rotation, void* p)
+{
+    inthelper_husimi *par = (inthelper_husimi*)p;
+    par->theta_b = overall_rotation;
+    
+    double result,abserr;
+    gsl_function f;
+    f.function = &inthelperf_cos2phi_n;
+    f.params = par;
+    
+    int status = gsl_integration_qag(&f, 0, 2*M_PI, 0, COS2PHIACCURACY, INTEGRATION_INTERVALS, GSL_INTEG_GAUSS51, par->ws2, &result, &abserr);
+    
+    return result/(2.0*M_PI);
+    
+}
+
+
+
+
+double Cos2Phi_N(double r, double b, DipoleAmplitude *dipole)
+{
+    // Compute \int_0^2pi cos(2phi) N(r,b,phi)
+    
+    inthelper_husimi par;
+    par.b=b;
+    par.r=r;
+    par.dipole = dipole;
+    par.ws1 = gsl_integration_workspace_alloc(INTEGRATION_INTERVALS);
+    par.ws2 = gsl_integration_workspace_alloc(INTEGRATION_INTERVALS);
+    
+    double result,abserr;
+    gsl_function f;
+    f.function = &inthelperf_cos2phi_overall;
+    f.params = &par;
+    
+    
+    int status = gsl_integration_qag(&f, 0, 2*M_PI, 0, COS2PHIACCURACY, INTEGRATION_INTERVALS, GSL_INTEG_GAUSS51, par.ws1, &result, &abserr);
+    
+    if (status)
+    {
+        //cerr << "Cos2phi integral failed (r=" << r <<", b=" << b <<"), result " << result << " +/- " << abserr << endl;
+    }
+    cout << r << " " << b << " " << result << " " << abserr << endl;
+    
+    
+    delete par.ws1;
+    delete par.ws2;
+    
+    return result;
+    
+}
 
 int main(int argc, char* argv[])
 {
@@ -50,6 +135,8 @@ int main(int argc, char* argv[])
     helper.b=2.5;
     helper.l=1;
     helper.xpom=0.01;
+    
+    
     
     double A=1;
     
@@ -75,6 +162,8 @@ int main(int argc, char* argv[])
             ipglasmafile = argv[i+1];
         else if (string(argv[i])=="-azimuth_averages")
             avereages_azimuth =true;
+        else if (string(argv[i])=="-xH1")
+            COMPUTE_HUSIMI_V2 = true;
         else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -101,30 +190,57 @@ int main(int argc, char* argv[])
 
     helper.dipole = dipole;
     
+    // Test
+    double v2dipole = Cos2Phi_N(0.4*5.068, 0.4*5.068, dipole);
+    return 0;
+    
     double *lower, *upper;
     
     lower = new double[5];
     upper = new double[5];
     
-    
-    
-    lower[0]=lower[1]=lower[2]=lower[3]=0;
-    upper[0] = 10*5.068 ; // Max r
-    upper[1] = 2.0*M_PI;
-    upper[2] = 10*5.068;    // max b
-    upper[3] = 2.0*M_PI;
-    
     gsl_monte_function F;
-    F.dim = 4;
-    
-    if (avereages_azimuth == true)
+    if (COMPUTE_HUSIMI_V2 == false)
     {
-        F.dim=5;    // Additional dimension: overall rotation
-        lower[4]=0;
-        upper[4]=2.0*M_PI;
+        lower[0]=lower[1]=lower[2]=lower[3]=0;
+        upper[0] = 10*5.068 ; // Max r
+        upper[1] = 2.0*M_PI;
+        upper[2] = 10*5.068;    // max b
+        upper[3] = 2.0*M_PI;
+        
+        
+        F.dim = 4;
+        
+        if (avereages_azimuth == true)
+        {
+            F.dim=5;    // Additional dimension: overall rotation
+            lower[4]=0;
+            upper[4]=2.0*M_PI;
+        }
+        
+        F.f = &inthelperf_mc;
     }
-    
-    F.f = &inthelperf_mc;
+    else
+    {
+        /*
+        lower[0]=lower[1]=lower[2]=lower[3]=0;
+        upper[0]=10*5.068; // max r
+        upper[1]=10*5.068; // max b2
+        upper[2] = 2.0*M_PI;   // r,b2 angle
+        upper[3] = 2.0*M_PI;    // overall rotation
+        
+        F.dim=4;*/
+        lower[0]=std::log(1e-3);
+        lower[1]=0;
+        upper[0]=std::log(50);
+        upper[1]=3*5.068; // max b2
+        F.dim=2;
+        
+        F.f = &inthelperf_mc_xH1;
+        
+        avereages_azimuth = true;  // This is done automatically in this case, true = correct normalization?
+        
+    }
     
     
     F.params = &helper;
@@ -140,7 +256,7 @@ int main(int argc, char* argv[])
         {
            
             
-            helper.theta_b = th;
+            helper.theta_b = 0; //th;
             gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS_HUSIMI, global_rng, s, &result, &error);
                 //cout <<"# rot " << helper.overall_angle << " res " << result <<  " pm " << error <<endl;
             
@@ -236,7 +352,7 @@ double inthelperf_mc( double *vec, size_t dim, void* p)
     
     if (avereages_azimuth == true)
     {// Rotate dipole
-        
+        cout << "hi" << endl;
         rot_q1[0] = std::cos(overall_angle)*q1[0] + std::sin(overall_angle)*q1[1];
         rot_q1[1] = -std::sin(overall_angle)*q1[0] + std::cos(overall_angle)*q1[1];
         
@@ -246,7 +362,7 @@ double inthelperf_mc( double *vec, size_t dim, void* p)
         amplitude =dipole->Amplitude(par->xpom,rot_q1,rot_q2);
     }
     else
-        amplitude =dipole->Amplitude(par->xpom,q1,q2)
+        amplitude =dipole->Amplitude(par->xpom,q1,q2);
     complex<double> result = std::exp(exponent) * (1.0/(l*l)*b_minus_b2_sqr + l*l*kilr_sqr)
         * amplitude;
     
@@ -259,4 +375,65 @@ double inthelperf_mc( double *vec, size_t dim, void* p)
     else
         return result.imag();
     return 0;
+}
+
+
+
+
+double inthelperf_mc_xH1( double *vec, size_t dim, void* p)
+{
+    inthelper_husimi *par = (inthelper_husimi*)p;
+    
+    double r = std::exp(vec[0]);
+    double b2 = vec[1]; // b'
+    
+    /*
+    double theta_rb2 = vec[2];
+    double overall_rotation = vec[3];
+    
+    double b2x = b2*cos(overall_rotation);
+    double b2y = b2*sin(overall_rotation);
+    
+    double rx = r*cos(overall_rotation + theta_rb2);
+    double ry = r*sin(overall_rotation + theta_rb2);
+    */
+    
+  
+    
+    double b = par->b;
+    
+    double k = par->k;
+    double l = par->l;
+    DipoleAmplitude* dipole = par->dipole;
+    
+
+    /*
+    double z=0.5;
+    double qx = b2x + z*rx; double qy = b2y + z*ry;
+    double qbarx = b2x - (1.0-z)*rx; double qbary = b2y - (1.0-z)*ry;
+    
+    double q1[2] = {qx,qy};
+    double q2[2] = {qbarx, qbary};
+    */
+    
+    double result = 0;
+    
+    double i2 = gsl_sf_bessel_In(2, 2.0*b*b2/(l*l));
+    double i1 = gsl_sf_bessel_I1(2*b*b2/(l*l));
+    double j2 = gsl_sf_bessel_Jn(2,k*r);
+    double j1 = gsl_sf_bessel_J1(k*r);
+    
+    result = 1.0/(2.0*M_PI) * std::exp(-1.0/(l*l) *(b*b+b2*b2) - r*r/(4.0*l*l));
+    
+    result *=(((1.0/(l*l) * (b*b + b2*b2) + l*l*k*k - r*r/(4.0*l*l)) * i2 - 2.0*b*b2 /(l*l) * i1 ) * j2  + k*r*i2*j1)
+    * Cos2Phi_N(r, b2, dipole);
+    
+    //std::cos(2.0*theta_rb2) * dipole->Amplitude(0.01, q1, q2);
+    
+    
+    int Nc=3;
+    double as=0.3;
+    result *= 2.0*Nc/(l*l*l*l*as*M_PI) * b2*r;
+    
+    return r*result;   // jacobian as we integrate log r
 }
