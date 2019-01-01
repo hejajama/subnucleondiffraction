@@ -190,10 +190,6 @@ int main(int argc, char* argv[])
 
     helper.dipole = dipole;
     
-    // Test
-    double v2dipole = Cos2Phi_N(0.4*5.068, 0.4*5.068, dipole);
-    return 0;
-    
     double *lower, *upper;
     
     lower = new double[5];
@@ -222,19 +218,22 @@ int main(int argc, char* argv[])
     }
     else
     {
-        /*
+        
         lower[0]=lower[1]=lower[2]=lower[3]=0;
         upper[0]=10*5.068; // max r
         upper[1]=10*5.068; // max b2
         upper[2] = 2.0*M_PI;   // r,b2 angle
         upper[3] = 2.0*M_PI;    // overall rotation
         
-        F.dim=4;*/
+        F.dim=4;
+        
+        /*
         lower[0]=std::log(1e-3);
         lower[1]=0;
         upper[0]=std::log(50);
         upper[1]=3*5.068; // max b2
         F.dim=2;
+         */
         
         F.f = &inthelperf_mc_xH1;
         
@@ -249,9 +248,12 @@ int main(int argc, char* argv[])
     
      gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
         cout << "# b = " << helper.b << " k = " << helper.k << " A = " << A << " xp = " << helper.xpom  << " l= " << helper.l << endl;
-    cout << "# angle  Husimi  montecarloerror" << endl;
-   // for (double k=0.4; k<15; k*=1.5){
-        
+   
+    
+    if (COMPUTE_HUSIMI_V2 == false)
+    {
+
+         cout << "# angle  Husimi  montecarloerror" << endl;
         for (double th = 0; th<= 2.0*M_PI*1.0001; th += 2.0*M_PI/30)
         {
            
@@ -266,33 +268,32 @@ int main(int argc, char* argv[])
                 error /= 2.0*M_PI;
             }
             
+            
             cout << th << " " << result << " " << error << endl;
         }
-        /*std::vector<double> res;
-        
-        for (double th = 0; th <= M_PI/2.0*1.01; th += M_PI/2.0)
+    }
+    else
+    {
+         cout << "# k  Husimi  montecarloerror" << endl;
+        for (double k=0.5; k<5; k+=0.5)
         {
-            helper.k = k;
-            helper.theta_b = th;
-            helper.real_part=true;
-            gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result, &error);
-            cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
-            res.push_back(result);
+            helper.k=k;
             
-            helper.real_part=false;
-            result=0;
-            //gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result, &error);
-            //cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
-            res.push_back(result);
+            gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS_HUSIMI, global_rng, s, &result, &error);
+            result /= 2.0*M_PI;
+            error /= 2.0*M_PI;
             
+            cout << k << " " << result << " " << error << endl;
         }
-        cout << k << " " << res[0] << " " << res[1] << " " << res[2] << " " << res[3] << endl;
-         */
+        
+    }
         
         
  //   }
     
 
+        
+           // for (double k=0.4; k<15; k*=1.5){
    
     
     gsl_monte_miser_free(s);
@@ -385,10 +386,13 @@ double inthelperf_mc_xH1( double *vec, size_t dim, void* p)
 {
     inthelper_husimi *par = (inthelper_husimi*)p;
     
+    /*
     double r = std::exp(vec[0]);
     double b2 = vec[1]; // b'
+     */
     
-    /*
+    double r = vec[0];
+    double b2 = vec[1];
     double theta_rb2 = vec[2];
     double overall_rotation = vec[3];
     
@@ -397,7 +401,7 @@ double inthelperf_mc_xH1( double *vec, size_t dim, void* p)
     
     double rx = r*cos(overall_rotation + theta_rb2);
     double ry = r*sin(overall_rotation + theta_rb2);
-    */
+    
     
   
     
@@ -408,14 +412,14 @@ double inthelperf_mc_xH1( double *vec, size_t dim, void* p)
     DipoleAmplitude* dipole = par->dipole;
     
 
-    /*
+    
     double z=0.5;
     double qx = b2x + z*rx; double qy = b2y + z*ry;
     double qbarx = b2x - (1.0-z)*rx; double qbary = b2y - (1.0-z)*ry;
     
     double q1[2] = {qx,qy};
     double q2[2] = {qbarx, qbary};
-    */
+    
     
     double result = 0;
     
@@ -427,14 +431,16 @@ double inthelperf_mc_xH1( double *vec, size_t dim, void* p)
     result = 1.0/(2.0*M_PI) * std::exp(-1.0/(l*l) *(b*b+b2*b2) - r*r/(4.0*l*l));
     
     result *=(((1.0/(l*l) * (b*b + b2*b2) + l*l*k*k - r*r/(4.0*l*l)) * i2 - 2.0*b*b2 /(l*l) * i1 ) * j2  + k*r*i2*j1)
-    * Cos2Phi_N(r, b2, dipole);
+        * std::cos(2.0*theta_rb2) * dipole->Amplitude(0.01, q1, q2);
+    //* Cos2Phi_N(r, b2, dipole);
     
-    //std::cos(2.0*theta_rb2) * dipole->Amplitude(0.01, q1, q2);
+    //
     
     
     int Nc=3;
     double as=0.3;
     result *= 2.0*Nc/(l*l*l*l*as*M_PI) * b2*r;
     
-    return r*result;   // jacobian as we integrate log r
+    return result;
+    //return r*result;   // jacobian as we integrate log r
 }
