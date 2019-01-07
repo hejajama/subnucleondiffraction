@@ -45,7 +45,7 @@ double inthelperf_mc_xH1( double *vec, size_t dim, void* par);
 int MCINTPOINTS_HUSIMI = 2e7;
 bool avereages_azimuth = false;
 bool COMPUTE_HUSIMI_V2=false;   // Compute xH1 as in 1609.05773 eq (26)
-
+bool V0=false;
 
 
 double inthelperf_cos2phi_n(double phi_rb, void* p)
@@ -112,7 +112,7 @@ double Cos2Phi_N(double r, double b, DipoleAmplitude *dipole)
     {
         //cerr << "Cos2phi integral failed (r=" << r <<", b=" << b <<"), result " << result << " +/- " << abserr << endl;
     }
-    cout << r << " " << b << " " << result << " " << abserr << endl;
+    //cout << r << " " << b << " " << result << " " << abserr << endl;
     
     
     delete par.ws1;
@@ -164,6 +164,8 @@ int main(int argc, char* argv[])
             avereages_azimuth =true;
         else if (string(argv[i])=="-xH1")
             COMPUTE_HUSIMI_V2 = true;
+        else if (string(argv[i])=="-v0")
+            V0 = true;
         else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -428,12 +430,26 @@ double inthelperf_mc_xH1( double *vec, size_t dim, void* p)
     double j2 = gsl_sf_bessel_Jn(2,k*r);
     double j1 = gsl_sf_bessel_J1(k*r);
     
-    result = 1.0/(2.0*M_PI) * std::exp(-1.0/(l*l) *(b*b+b2*b2) - r*r/(4.0*l*l));
     
-    result *=(((1.0/(l*l) * (b*b + b2*b2) + l*l*k*k - r*r/(4.0*l*l)) * i2 - 2.0*b*b2 /(l*l) * i1 ) * j2  + k*r*i2*j1)
-        * std::cos(2.0*theta_rb2) * dipole->Amplitude(0.01, q1, q2);
-    //* Cos2Phi_N(r, b2, dipole);
-    
+    if (V0 == false)
+    {
+        result = 1.0/(2.0*M_PI) * std::exp(-1.0/(l*l) *(b*b+b2*b2) - r*r/(4.0*l*l));
+        
+        result *=(((1.0/(l*l) * (b*b + b2*b2) + l*l*k*k - r*r/(4.0*l*l)) * i2 - 2.0*b*b2 /(l*l) * i1 ) * j2  + k*r*i2*j1)
+            * std::cos(2.0*theta_rb2) * dipole->Amplitude(0.01, q1, q2);
+        //* Cos2Phi_N(r, b2, dipole);
+    }
+    else    // xH0
+    {
+        double i0 = gsl_sf_bessel_I0(2.0*b*b2/(l*l));
+        double j0 = gsl_sf_bessel_J0(k*r);
+        // eq 25
+        result = -1.0/(2.0*M_PI) * std::exp(-1.0/(l*l) *(b*b+b2*b2) - r*r/(4.0*l*l));
+        
+        result *=(((1.0/(l*l) * (b*b + b2*b2) + l*l*k*k - r*r/(4.0*l*l)) * i0 - 2.0*b*b2 /(l*l) * i1 ) * j0  - k*r*i0*j1)
+        * dipole->Amplitude(0.01, q1, q2);
+        //* Cos2Phi_N(r, b2, dipole);
+    }
     //
     
     
