@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        dipole = new IPGlasma(ipglasmafile, 0.00731429, BINARY);
+        dipole = new IPGlasma(ipglasmafile, 0.005, BINARY); //0.00731429, BINARY);
     }
     //IPGlasma dipole(argv[1], 0.00731429, BINARY);
 
@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
     else
     {
          cout << "# k  Husimi  montecarloerror" << endl;
-        for (double k=0.5; k<5; k+=0.5)
+        for (double k=0.5; k<4.1; k+=0.5)
         {
             helper.k=k;
             

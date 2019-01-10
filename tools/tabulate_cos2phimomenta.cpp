@@ -1,4 +1,4 @@
-/* Calculate avarage dipole amplitude averaged over overall azimuthal angle of b, keeping angle between b and r fixed 
+/* Calculate cos(2phi) momenta of the dipole amplitude averaged over overall azimuthal angle of b
 */
 
 #include "../src/ipglasma.hpp"
@@ -25,14 +25,16 @@ struct bhelper
     double theta_r_b;
 };
 
-const int INTPOINTS = 3;
-const double INTACCURACY = 0.1;
+const int INTPOINTS = 8;
+const double INTACCURACY = 0.0001;
 double bhelperf_theta(double theta_b, void* p);
+
+int cos2phimom = 1;
 
 int main(int argc, char* argv[])
 {
 	const double fmgev=5.068;
-    // Arguments: ipglasma filename step 
+    // Arguments: ipglasma filename step  cos2phimom
     if (argc != 3)
     {
         cerr << "Arguments: filaneme wlinestepsize [fm] " << endl;
@@ -42,10 +44,10 @@ int main(int argc, char* argv[])
     double step = StrToReal(argv[2]);
     cout << "# Filename: " << fname <<  "  step[fm] " << step <<  endl; 
     double step_gev = step *fmgev;
-    double maxr = 2.5*fmgev;
-    double maxb = 2.5*fmgev;
-    int points_r = 200;
-    int points_b = 200;
+    double maxr = 2.0*fmgev;
+    double maxb = 2.0*fmgev;
+    int points_r = 80 ;
+    int points_b = 80 ;
 
     if (maxr / points_r < step_gev)
     {
@@ -76,21 +78,16 @@ int main(int argc, char* argv[])
     {
 	for (double b=0; b <= maxb; b+=maxb / points_b)
 	{
-    		for (double theta_r_b=0; theta_r_b <= M_PI+0.0001; theta_r_b += M_PI/25.0)
-   		 {
-    
-        		helper.theta_r_b = theta_r_b;
-			helper.r=r;
-			helper.b=b;
-        		gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS);
-        		double result,error;
-			int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 1e-7, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
+		helper.r=r;
+		helper.b=b;
+        	gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS);
+        	double result,error;
+		int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 0, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
+       
         
-        
-       			 gsl_integration_workspace_free(w);
-  			result /= (2.0*M_PI);     
-        		cout << r << " " << b << " " << theta_r_b << " " << result << endl;
-		}
+      		 gsl_integration_workspace_free(w);
+  		result /= (2.0*M_PI);     
+       		cout << r << " " << b << " " << result << endl;
 	}    
     }
     
@@ -100,13 +97,33 @@ int main(int argc, char* argv[])
 }
 
 
-
+double helperf_rb(double theta_rb, void* p);
 double bhelperf_theta(double theta_b, void* p)
 {
+	bhelper *par = (bhelper*)p;
+	par->theta_b = theta_b;
+	gsl_function f;
+	f.params = par;
+	f.function = &helperf_rb;	
+	gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS);
+        double result,error;
+        int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 0, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
+
+
+        gsl_integration_workspace_free(w);
+
+
+	return result;
+}
+
+double helperf_rb(double theta_r_b, void* p)
+{
+
     bhelper* par = (bhelper*)p;
+    double theta_b = par->theta_b;
 
     Vec b(par->b * cos(theta_b), par->b * sin(theta_b));
-    Vec r(par->r * cos(theta_b+par->theta_r_b), par->r * sin(theta_b + par->theta_r_b));
+    Vec r(par->r * cos(theta_b+theta_r_b), par->r * sin(theta_b + theta_r_b));
     
    Vec r2 = r*0.5;
     //Vec q1 = b; // + r2;
@@ -114,7 +131,7 @@ double bhelperf_theta(double theta_b, void* p)
     Vec q1 = b + r2;
     Vec q2 = b - r2;
    
-    return par->glasma->DipoleAmplitude::Amplitude(0.01, q1, q2);
+    return std::pow(std::cos(2.0*theta_r_b), cos2phimom) * par->glasma->DipoleAmplitude::Amplitude(0.01, q1, q2);
  
 
     

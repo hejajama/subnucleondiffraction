@@ -24,8 +24,8 @@ add_executable(
 	)
 
 add_executable(
-	b_r_grid  	
-	tabulate_b_r_angle.cpp
+	tabulate_cos2phimomenta
+	tabulate_cos2phimomenta.cpp
 	../src/dipole.cpp
 	../src/vector.cpp
 	../src/wilsonline.cpp
@@ -34,6 +34,8 @@ add_executable(
 	../src/gdist_dglap.cpp
 	../src/subnucleon_config.cpp
 	)
+
+
 
 add_executable(
 	f2fit
@@ -104,7 +106,7 @@ target_link_libraries(
 	GSL::gslcblas
 )
 target_link_libraries(
-	b_r_grid 
+	tabulate_cos2phimomenta
 	PRIVATE
 	mzipsat
 	amplitude
@@ -112,6 +114,8 @@ target_link_libraries(
 	GSL::gsl
 	GSL::gslcblas
 )
+
+
 
 target_link_libraries(
 	f2fit      
