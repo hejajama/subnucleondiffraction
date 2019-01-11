@@ -42,10 +42,10 @@ int main(int argc, char* argv[])
     double step = StrToReal(argv[2]);
     cout << "# Filename: " << fname <<  "  step[fm] " << step <<  endl; 
     double step_gev = step *fmgev;
-    double maxr = 2.5*fmgev;
-    double maxb = 2.5*fmgev;
-    int points_r = 200;
-    int points_b = 200;
+    double maxr = 1.5*fmgev;
+    double maxb = 1.5*fmgev;
+    int points_r = 15;
+    int points_b = 15;
 
     if (maxr / points_r < step_gev)
     {

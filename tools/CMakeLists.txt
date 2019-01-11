@@ -13,7 +13,7 @@ add_executable(
 	)
 add_executable(
 	b_r_angle 	
-	b_r_angle.cpp
+	tabulate_b_r_angle.cpp
 	../src/dipole.cpp
 	../src/vector.cpp
 	../src/wilsonline.cpp
@@ -70,7 +70,7 @@ add_executable(
 )
 add_executable(
 	wigner
-	wigner.cpp
+	wigner_coef_rint.cpp
 	../src/dipole.cpp
 	../src/diffraction.cpp
 	../src/wilsonline.cpp

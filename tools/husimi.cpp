@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
     else
     {
          cout << "# k  Husimi  montecarloerror" << endl;
-        for (double k=0.5; k<4.1; k+=0.5)
+        for (double k=0.5; k<3.1; k+=0.25)
         {
             helper.k=k;
             
