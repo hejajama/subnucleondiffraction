@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(amplitudelib CXX C Fortran)
 
 set(CMAKE_BUILD_TYPE Release)
+find_package(GSL REQUIRED)
 
 # Git module
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
@@ -19,6 +20,8 @@ link_directories("../amplitudelib_v2/build/lib/")
 # AmplitudeLib headers
 include_directories("../amplitudelib_v2/")
 include_directories("./src/")
+
+include_directories(${GSL_INCLUDE_DIRS})
 
 add_subdirectory(libColorDipole/src/)
 add_subdirectory(src)
