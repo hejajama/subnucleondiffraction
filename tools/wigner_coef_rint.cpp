@@ -1,6 +1,5 @@
 /* Calculate rint dphi int for Wigner coefficients https://arxiv.org/pdf/1609.05773.pdf eqs 19,20
- */
-
+ */ 
 #include "../src/ipglasma.hpp"
 #include "../src/ipsat_proton.hpp"
 #include <tools/tools.hpp>
@@ -37,9 +36,9 @@ double helperf_r(double r, void* p);
 double inthelperf_mc( double *vec, size_t dim, void* par);
 
 int MCPOINTS = 1e6;
-bool MONTECARLO = false;
+bool MONTECARLO = true;;
 
-int wigner_coef = 1;     //1=xW1, 0 = xW0
+int wigner_coef = 0;     //1=xW1, 0 = xW0
 
 gsl_integration_workspace *w_overall;
 gsl_integration_workspace *w_relative;
@@ -86,8 +85,8 @@ int main(int argc, char* argv[])
 */
 
 /* Smallish k*/
-double mink = 0.0256;
-double maxk = 0.26;
+double mink = 0.01; //0.217433*1.2; // 1.6155459071999998; //0.217433;
+double maxk = 13.50;
 double kstep = 1.2;
 // Linear large-k -part
 /*
@@ -287,7 +286,18 @@ double inthelperf_mc( double *vec, size_t dim, void* p)
     par->r = r;
     par->theta_b = overall_rotation;
     par->theta_r_b = theta_r_b;
-    
-    return helperf_rb(theta_r_b, par);
+
+      double result = 0;
+    if (wigner_coef == 0)
+    {
+         result = r * gsl_sf_bessel_J0(par->k*r);
+     }
+     else
+     {
+         result = r * gsl_sf_bessel_Jn(2,par->k*r);
+ }
+
+    return result * helperf_rb(theta_r_b, par);
+ 
 }
 
