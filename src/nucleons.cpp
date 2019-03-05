@@ -430,6 +430,11 @@ Interpolator ReadVMC(std::string fname)
     std::string line;
     std::vector<double> rvals;
     std::vector<double> rhovals;
+    
+    // Interpolate to 0
+    rvals.push_back(0);
+    rhovals.push_back(0);
+    
     while(!f.eof() )
     {
         std::getline(f, line);
