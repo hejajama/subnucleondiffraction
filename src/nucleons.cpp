@@ -12,6 +12,8 @@
 #include <cmath>
 #include <sstream>
 #include <string>
+#include <tools/interpolation.hpp>
+#include <tools/tools.hpp>
 #include <fstream>
 
 
@@ -51,6 +53,8 @@ double Nucleons::Amplitude(double xpom, double q1[2], double q2[2] )
     return 1.0-smat;
 }
 
+// Helper to read VMC density function
+Interpolator ReadVMC(std::string fname="h2.density");
 
 void Nucleons::InitializeTarget()
 {
@@ -81,10 +85,10 @@ void Nucleons::InitializeTarget()
             
         }
         
-        else    // Hulthen
+        else    // Hulthen, or VMC, implemented in DeuteronWaveFunction
         {
             double probability=0;
-        
+            
             Vec tmp;
             do {
                 
@@ -102,6 +106,7 @@ void Nucleons::InitializeTarget()
             //neutron.SetZ(0);
             nucleon_positions.push_back(proton);
             nucleon_positions.push_back(neutron);
+        
         }
 
     }
@@ -172,12 +177,13 @@ void Nucleons::InitializeTarget()
     
 }
 
-Nucleons::Nucleons(std::vector<DipoleAmplitude*> nucleons_)
+Nucleons::Nucleons(std::vector<DipoleAmplitude*> nucleons_) : VMC_interpolator(ReadVMC("h2.density"))
 {
     A=nucleons_.size();
     cout << nucleons_[0]->InfoStr();
     nucleons=nucleons_;
-    DeuteronWF = Hulthen;
+    //DeuteronWF = Hulthen;
+    DeuteronWF = VMC;
     
     if (A > 2)
     {
@@ -216,6 +222,9 @@ std::string Nucleons::InfoStr()
             ss << "# Deuteron wave function: ExtendedHulthen" << endl;
         else if (DeuteronWF == WoodsSaxon)
             ss << "# Deuteron wave function:  WoodsSaxon" << endl;
+        else if (DeuteronWF == VMC)
+            ss << "# Deuteron wave function: VMC" << endl;
+        
         if (deuteron_structure == NUCLEONS)
             ss << "# Deuteron = proton + neutron " << endl;
         else
@@ -247,7 +256,11 @@ Nucleons::~Nucleons()
  * used in IP-Glasma calculations in 1304.3403, 
  * orig. ref. Ann. Rev. Nucl. Part. Sci. 57, 205 (2007).
  * Probability is wavef^2
+ *
+ * Also supports Variational Monte Carlo (VMC) from https://www.phy.anl.gov/theory/research/density2/
  */
+
+
 double Nucleons::DeuteronWaveFunction(double r)
 {
     if (r<1e-10)
@@ -258,6 +271,12 @@ double Nucleons::DeuteronWaveFunction(double r)
         double a = 0.228/FMGEV; // 0.228 1/fm = 0.228/5.068 GeV
         double b =1.18/FMGEV;
         double probability_amp = 1.0/sqrt(2.0*M_PI) * sqrt(a*b*(a+b))/(b-a) * (exp(-a*r) - exp(-b*r))/r;
+        
+        if (1000.0*probability_amp*probability_amp > 1)
+        {
+            cerr << "DeuteronWF rejection sampling gets prob.amp. " <<1000.0*probability_amp*probability_amp << endl;
+            exit(1);
+        }
         return 1000.0*probability_amp*probability_amp;
         // Todo: maximum of this is very small, so rejection sampling does not work well without prefactor
     }
@@ -282,6 +301,32 @@ double Nucleons::DeuteronWaveFunction(double r)
         // I have checked that at r>0.02fm this function is <1, thus rejection sampling works
         // sum*sum, as we return probability which is wavef^2
     }
+    else if (DeuteronWF == VMC)
+    {
+        
+        if (r > VMC_interpolator.MaxX())
+            return 0;
+        
+        // Evaluate at r/2, as r is p-n-distance, VMC takes radius
+        double rhorp = VMC_interpolator.Evaluate(r/2.0);
+        
+        if (rhorp < 0)
+            return 0;    // Crazy things happen at very large r, in practice at r >14fm
+        
+        if (rhorp > 1)
+        {
+            cerr << "Crazy rho_rp(r=" << r << ") = " << rhorp << " at " << LINEINFO << endl;
+            exit(1);
+        }
+        //cout << "hi" << endl;
+        //cout << "VMC r=5: " << vmcinterp.Evaluate(5) << endl;
+        //exit(1);
+        return rhorp;
+        
+    }
+    
+    std::cerr << "Unknown deuteron wave function!" << LINEINFO << endl;
+    exit(1);
 }
 
 struct inthelper_deuteron_z
@@ -371,3 +416,44 @@ std::vector<DipoleAmplitude*> Nucleons::GetNucleons()
 {
     return nucleons;
 }
+
+
+Interpolator ReadVMC(std::string fname)
+{
+    std::ifstream f(fname.c_str());
+    if (!f.is_open())
+    {
+        std::cerr << "Could not open file " << fname << " " << LINEINFO << std::endl;;
+        exit(-1);
+    }
+    
+    std::string line;
+    std::vector<double> rvals;
+    std::vector<double> rhovals;
+    while(!f.eof() )
+    {
+        std::getline(f, line);
+        if (line[0]=='#' or line.length() < 10)   // Comment line, or empty
+        {
+            continue;
+        }
+        
+        // Parse
+        std::stringstream ss(line);
+        // File syntax
+        // R    INTERP(R,RHOL,RLH)    RHORP      DRHORP
+        double r,tmp,rho;
+        ss >> r;
+        ss >> tmp;
+        ss >> rho;
+        rvals.push_back(r*FMGEV);
+        rhovals.push_back(rho);
+        
+    }
+    
+    f.close();
+    
+    Interpolator interp(rvals,rhovals);
+    return interp;
+}
+

@@ -12,6 +12,7 @@
 #include "ipsat_proton.hpp"
 #include "vector.hpp"
 #include "gdist_dglap.hpp"
+#include <tools/interpolation.hpp>
 
 enum DeuteronStructure
 {
@@ -25,7 +26,8 @@ enum DeuteronStructure
 enum DeuteronWaveFunctionType {
     Hulthen,
     ExtendedHulthen,
-    WoodsSaxon
+    WoodsSaxon,
+    VMC // https://www.phy.anl.gov/theory/research/density2/
 };
 
 
@@ -68,6 +70,8 @@ private:
     
     DeuteronStructure deuteron_structure;
     DeuteronWaveFunctionType DeuteronWF;
+    
+    Interpolator VMC_interpolator;
     
     int he3_id; // which He3 configuration we use
     
