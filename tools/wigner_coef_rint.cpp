@@ -14,6 +14,10 @@
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_monte.h>
 #include <gsl/gsl_monte_miser.h>
+extern "C"
+{
+#include "../fourier/fourier.h"
+};
 
 gsl_rng* global_rng;
 using namespace std;
@@ -28,8 +32,8 @@ struct bhelper
     double k;
 };
 
-const int INTPOINTS = 6;
-const double INTACCURACY = 0.0001;
+const int INTPOINTS = 5;
+const double INTACCURACY = 0.00001; //  0.0001
 double helperf_theta(double theta_b, void* p);
 double helperf_r(double r, void* p);
 
@@ -37,6 +41,7 @@ double inthelperf_mc( double *vec, size_t dim, void* par);
 
 int MCPOINTS = 1e6;
 bool MONTECARLO = true;;
+bool FOURIER_ACC = false;
 
 int wigner_coef = 0;     //1=xW1, 0 = xW0
 
@@ -61,6 +66,11 @@ int main(int argc, char* argv[])
 	MCPOINTS = (int)(StrToReal(argv[3]));
     	cout << "# MC, intpoints=" << MCPOINTS << endl;
 }
+    if (FOURIER_ACC)
+	{ cout << "# Using F acceleration" << endl;
+	set_fpu_state();
+	init_workspace_fourier(100);
+	}
 
     cout << "# Filename: " << fname <<  "  step[fm] " << step <<  endl;
     double step_gev = step *fmgev;
@@ -74,8 +84,8 @@ int main(int argc, char* argv[])
     double maxb = 0.61*fmgev;
     double bstep = 0.02 * fmgev;
  */
-    double minb = 0.325*fmgev;
-    double maxb = 0.475*fmgev+0.01;  
+    double minb = 0.450*fmgev;
+    double maxb = 0.550*fmgev+0.01;  
     double bstep = 0.025*fmgev;
 
 /* Large k
@@ -85,10 +95,21 @@ int main(int argc, char* argv[])
 */
 
 /* Smallish k*/
-double mink = 0.01; //0.217433*1.2; // 1.6155459071999998; //0.217433;
-double maxk = 13.50;
-double kstep = 1.2;
+double mink = 0; //0.1; //0.217433*1.2; // 1.6155459071999998; //0.217433;
+double maxk = 3.1;
+double kstep = 0.05;
 // Linear large-k -part
+/*mink=0.1;
+maxk=3.2;
+kstep=1.2;
+*/
+//mink=0.743008*1.2;
+// add only one k
+//maxk=0.743008*1.2+0.1;;
+/*mink=0.05;
+maxk=0.46;
+kstep=0.1;
+*/
 /*
 double mink = 0.25;
 double kstep = 0.25;
@@ -149,7 +170,7 @@ double maxb = 0.461*fmgev;
     
     
     lower[0]=lower[1]=lower[2]=0;
-    upper[0] = 5*5.068 ; // Max r
+    upper[0] = 9*5.068 ; // Max r
     upper[1] = 2.0*M_PI; // theta_r_angle
     upper[2] = 2.0*M_PI; // overall rotation
     
@@ -166,13 +187,15 @@ double maxb = 0.461*fmgev;
     
     
     cout << "#k  b   integral" << endl;
-//    for (double k=mink; k <=kmax;  k+=kstep)
-//    double kstep = kstep_start;
-    for (double k=mink; k<=maxk; k*=kstep)
+    for (double k=mink; k <=maxk;  k+=kstep)
+    //for (double k=mink; k<=maxk; k*=kstep)
     {
-//        if (k >= 0.1)
-//            kstep = kstep2;
-        for (double b=minb; b <= maxb; b+=bstep)
+	if (k>0)
+		kstep=0.1;
+        if (k >= 0.51)
+            kstep = 0.25;
+  
+      for (double b=minb; b <= maxb; b+=bstep)
         {
             
             helper.k=k;
@@ -186,12 +209,15 @@ double maxb = 0.461*fmgev;
                 gsl_monte_miser_integrate(&mc_f, lower, upper, mc_f.dim, MCPOINTS, global_rng, s, &result, &error);
                 gsl_monte_miser_free(s);
             }
-            else
+            else if (FOURIER_ACC)
             {
+		result = fourier_j1(k,&helperf_r,&helper);
+		error=0;
+	    }
+             else { 
                 gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS);
-                
-                int status = gsl_integration_qag(&f, 0, 4*fmgev, 0, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
-                
+                int status = gsl_integration_qag(&f, 0, 9*fmgev, 0, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
+               	 
                 
                 gsl_integration_workspace_free(w);
             }
@@ -217,14 +243,19 @@ double helperf_r(double r, void* p)
     fun.params=par;
     fun.function = helperf_theta;
     int status = gsl_integration_qag(&fun, 0, 2.0*M_PI, 0, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w_overall, &result, &error);
+   
     
     if (wigner_coef == 0)
     {
-        result *= r * gsl_sf_bessel_J0(par->k*r);
+	double j0 = 1;
+	if (FOURIER_ACC == false) j0 = gsl_sf_bessel_J0(par->k*r);
+        result *= r * j0;
     }
     else
     {
-        result *= r * gsl_sf_bessel_Jn(2,par->k*r);
+	double j2 = 1;
+	if (FOURIER_ACC == false) j2 = gsl_sf_bessel_Jn(2,par->k*r);
+        result *= r *j2; 
     }
 
     return result;

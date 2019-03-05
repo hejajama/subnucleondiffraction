@@ -80,6 +80,7 @@ add_executable(
 	../src/ipglasma.cpp
 	../src/wave_function.cpp
 	../src/gdist_dglap.cpp
+	../fourier/fourier.c
 	../src/subnucleon_config.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp
 )
@@ -138,7 +139,7 @@ target_link_libraries(
 	GSL::gslcblas
 )
 target_link_libraries(
-	wigner     
+	wigner 
 	PRIVATE
 	mzipsat
 	amplitude

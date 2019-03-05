@@ -40,6 +40,9 @@ int main(int argc, char* argv[])
     global_rng = gsl_rng_alloc(gsl_rng_default);
     gsl_set_error_handler_off ();
 
+    set_fpu_state();
+    init_workspace_fourier(2000);   // number of bessel zeroes, max 2000
+
     inthelper_wigner helper;
     helper.real_part = true;
     double b=2.5;

@@ -382,7 +382,7 @@ int main(int argc, char* argv[])
     
     if (mode == PRINT_NUCLEUS)
     {
-        /*
+        
         // Assume IPglasma, so crashes for ipsatproton...
         double origin[2]={0,0};
         double max = ((IPGlasma*)amp)->MaxX();
@@ -404,8 +404,8 @@ int main(int argc, char* argv[])
          cout << endl;
         }
        
-       */ 
-        
+       /* 
+       
         double origin[2]={0,0};
         double max = 25;
         double min = -25;
@@ -435,7 +435,7 @@ int main(int argc, char* argv[])
         }
         
         
-        
+       */ 
          
         return 0;
     }

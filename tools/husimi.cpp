@@ -201,7 +201,7 @@ int main(int argc, char* argv[])
     if (COMPUTE_HUSIMI_V2 == false)
     {
         lower[0]=lower[1]=lower[2]=lower[3]=0;
-        upper[0] = 10*5.068 ; // Max r
+        upper[0] = 8*5.068 ; // Max r
         upper[1] = 2.0*M_PI;
         upper[2] = 10*5.068;    // max b
         upper[3] = 2.0*M_PI;
@@ -222,8 +222,8 @@ int main(int argc, char* argv[])
     {
         
         lower[0]=lower[1]=lower[2]=lower[3]=0;
-        upper[0]=10*5.068; // max r
-        upper[1]=10*5.068; // max b2
+        upper[0]=5*5.068; // max r
+        upper[1]=5*5.068; // max b2
         upper[2] = 2.0*M_PI;   // r,b2 angle
         upper[3] = 2.0*M_PI;    // overall rotation
         
@@ -277,7 +277,9 @@ int main(int argc, char* argv[])
     else
     {
          cout << "# k  Husimi  montecarloerror" << endl;
-        for (double k=0.5; k<3.1; k+=0.25)
+	double kstep = 0.25;
+        //for (double k=0.5; k<3.51; k += kstep) //3.6; k+=0.2)
+	for (double k=0.1; k<0.51; k+=0.1)
         {
             helper.k=k;
             
@@ -286,6 +288,8 @@ int main(int argc, char* argv[])
             error /= 2.0*M_PI;
             
             cout << k << " " << result << " " << error << endl;
+
+//            if (k>0.15) kstep = 0.2;
         }
         
     }
