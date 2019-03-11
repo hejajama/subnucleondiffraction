@@ -305,13 +305,19 @@ double Nucleons::DeuteronWaveFunction(double r)
     {
         
         if (r > VMC_interpolator.MaxX())
+        {
             return 0;
+        }
         
         // Evaluate at r/2, as r is p-n-distance, VMC takes radius
         double rhorp = VMC_interpolator.Evaluate(r/2.0);
-        
+
         if (rhorp < 0)
+        {
+            cout << "Skip r that gives interp=" << rhorp << ", this is r = " << r/FMGEV << endl;
             return 0;    // Crazy things happen at very large r, in practice at r >14fm
+        }
+        
         
         if (rhorp > 1)
         {
@@ -321,7 +327,7 @@ double Nucleons::DeuteronWaveFunction(double r)
         //cout << "hi" << endl;
         //cout << "VMC r=5: " << vmcinterp.Evaluate(5) << endl;
         //exit(1);
-        return rhorp;
+        return rhorp/(r*r); // see Hulthen above, remove r^2 Jacobian
         
     }
     
