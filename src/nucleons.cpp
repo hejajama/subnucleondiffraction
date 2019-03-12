@@ -88,7 +88,6 @@ void Nucleons::InitializeTarget()
         else    // Hulthen, or VMC, implemented in DeuteronWaveFunction
         {
             double probability=0;
-            
             Vec tmp;
             do {
                 
@@ -182,7 +181,7 @@ Nucleons::Nucleons(std::vector<DipoleAmplitude*> nucleons_) : VMC_interpolator(R
     A=nucleons_.size();
     cout << nucleons_[0]->InfoStr();
     nucleons=nucleons_;
-    //DeuteronWF = Hulthen;
+    //DeuteronWF = Hutlhen;
     DeuteronWF = VMC;
     
     if (A > 2)
@@ -309,12 +308,13 @@ double Nucleons::DeuteronWaveFunction(double r)
             return 0;
         }
         
-        // Evaluate at r/2, as r is p-n-distance, VMC takes radius
-        double rhorp = VMC_interpolator.Evaluate(r/2.0);
+        // NOTE Vmc data is scaled such that interpolator takes p-n-distance
+        double rhorp = VMC_interpolator.Evaluate(r);
 
         if (rhorp < 0)
         {
-            cout << "Skip r that gives interp=" << rhorp << ", this is r = " << r/FMGEV << endl;
+            if (r/FMGEV < 20)
+                cout << "Skip r that gives interp=" << rhorp << ", this is r = " << r/FMGEV << " fm " << endl;
             return 0;    // Crazy things happen at very large r, in practice at r >14fm
         }
         
@@ -324,10 +324,8 @@ double Nucleons::DeuteronWaveFunction(double r)
             cerr << "Crazy rho_rp(r=" << r << ") = " << rhorp << " at " << LINEINFO << endl;
             exit(1);
         }
-        //cout << "hi" << endl;
-        //cout << "VMC r=5: " << vmcinterp.Evaluate(5) << endl;
-        //exit(1);
-        return rhorp/(r*r); // see Hulthen above, remove r^2 Jacobian
+
+        return rhorp;   // As far as I understand, there is no need for Jacobian here
         
     }
     
@@ -457,7 +455,7 @@ Interpolator ReadVMC(std::string fname)
         ss >> r;
         ss >> tmp;
         ss >> rho;
-        rvals.push_back(r*FMGEV);
+        rvals.push_back(2.0*r*FMGEV); // Scale, so this is p-n-distance
         rhovals.push_back(rho);
         
     }
