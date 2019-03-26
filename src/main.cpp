@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
     {
         cout << "-Q2, -W, -xp: set kinematics" << endl;
         cout << "-real, -imag: set real/imaginary part" << endl;
-        cout << "-dipole A [ipglasma,ipglasma_binary,ipsatproton,smoothnuke] [ipglasmafile ipglasmastep (fm), ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [albacete]" << endl;
+        cout << "-dipole A [ipglasma,ipglasma_binary,ipsatproton,smoothnuke] [ipglasmafile ipglasmastep (fm), ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [albacete] [com]    com: move origi nto Center of Mass (with constituent quark ipsat)" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points/auto" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
@@ -154,6 +154,7 @@ int main(int argc, char* argv[])
         else if (string(argv[i])=="-dipole")
         {
             A = StrToInt(argv[i+1]);
+            
             if (A==1)
             {
                 if (string(argv[i+2])=="ipsatproton")
@@ -172,7 +173,9 @@ int main(int argc, char* argv[])
                             {
                                 ((Ipsat_Proton*)amp)->SetStructure(CENTER_TUBES);
                                 ((Ipsat_Proton*)amp)->SetFluxTubeNormalization(StrToReal(argv[i+5]));
-                            }
+                            } 
+                            else if (string(argv[i+5])=="com")
+                                 ((Ipsat_Proton*)amp)->SetQuarkCenterOfMassToOrigin(true);
                             else if (string(argv[i+5]).substr(0,1)!="-")
                             {
                                 cerr << "Unknown ipsatproton option " << argv[i+4] << endl;
@@ -211,6 +214,7 @@ int main(int argc, char* argv[])
                             Ipsat_Proton *nucleon = new Ipsat_Proton();
                             nucleon->SetProtonWidth(StrToReal(argv[i+3]));
                             nucleon->SetQuarkWidth(StrToReal(argv[i+4]));
+
                             if (string(argv[i+5]) == "ALBACETE")
                                 nucleon->SetShape(ALBACETE);
                             else
@@ -223,6 +227,11 @@ int main(int argc, char* argv[])
                                         nucleon->SetStructure(CENTER_TUBES);
                                         nucleon->SetFluxTubeNormalization(StrToReal(argv[i+5]));
                                     }
+                                    else if (string(argv[i+5])=="com")
+                                    {
+                                         ((Ipsat_Proton*)nucleon)->SetQuarkCenterOfMassToOrigin(true); 
+                                    }
+
                                     else if (string(argv[i+5]).substr(0,1)!="-")
                                     {
                                         cerr << "Unknown ipsatproton option " << argv[i+5] << endl;
