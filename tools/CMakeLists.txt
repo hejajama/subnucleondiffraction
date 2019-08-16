@@ -12,6 +12,18 @@ add_executable(
 	../src/subnucleon_config.cpp
 	)
 add_executable(
+	amplitude_bline
+	amplitude_bline.cpp
+	../src/dipole.cpp
+	../src/vector.cpp
+	../src/wilsonline.cpp
+	../src/ipglasma.cpp
+	../src/ipsat_proton.cpp
+	../src/gdist_dglap.cpp
+	../src/subnucleon_config.cpp
+	)
+
+add_executable(
 	b_r_angle 	
 	b_r_angle.cpp
 	../src/dipole.cpp
@@ -63,7 +75,15 @@ target_link_libraries(
 	GSL::gsl
 	GSL::gslcblas
 )
-
+target_link_libraries(
+	amplitude_bline
+	PRIVATE
+	mzipsat
+	amplitude
+	ColorDipole
+	GSL::gsl
+	GSL::gslcblas
+)
 target_link_libraries(
 	b_r_angle
 	PRIVATE
