@@ -445,7 +445,8 @@ int IPGlasma::LoadBinaryData(std::string fname, double step)
         ycoords[i] -= center;
     }
     
-    SetSchwinger(false); 
+    SetSchwinger(false);
+    return 0;
 }
 
 double IPGlasma::MinX()
@@ -468,7 +469,7 @@ double IPGlasma::XStep()
 std::string IPGlasma::InfoStr()
 {
     std::stringstream ss;
-    ss << "# IPGlasma loaded from file " << datafile << " lattice " << xcoords.size() << "^2 range [" << xcoords[0]/5.068 << ", " << xcoords[xcoords.size()-1]/5.068 << "] fm" ;
+    ss << "# IPGlasma loaded from file " << datafile << " lattice " << xcoords.size() << "^2 range [" << xcoords[0]/5.068 << ", " << xcoords[xcoords.size()-1]/5.068 << "] fm" ;
     if (schwinger) ss << ", schwinger mechanism included, rc=" << schwinger_rc << " GeV^-1";
     return ss.str();
 }
