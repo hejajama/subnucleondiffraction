@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
                 else if (string(argv[i+2])=="ipglasma")
                     amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), TEXT);
                 else if (string(argv[i+2])=="ipglasma_binary")
-                amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), BINARY);
+                    amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), BINARY);
                 else
                 {
                     cerr << "Unknown dipole " << argv[i+1] << endl;
@@ -206,26 +206,27 @@ int main(int argc, char* argv[])
                     std::vector<DipoleAmplitude* > nucleons;
                     for (int j=0; j<A; j++)
                     {
+                        DipoleAmplitude* nucleon;
                         if (string(argv[i+2])=="ipsatproton")
                         {
                             if (j==0)
                                 gd = new DGLAPDist;
                             //Ipsat_Proton *nucleon = new Ipsat_Proton(gd);
-                            Ipsat_Proton *nucleon = new Ipsat_Proton();
-                            nucleon->SetProtonWidth(StrToReal(argv[i+3]));
-                            nucleon->SetQuarkWidth(StrToReal(argv[i+4]));
+                            nucleon = new Ipsat_Proton();
+                            ((Ipsat_Proton*)nucleon)->SetProtonWidth(StrToReal(argv[i+3]));
+                            ((Ipsat_Proton*)nucleon)->SetQuarkWidth(StrToReal(argv[i+4]));
 
                             if (string(argv[i+5]) == "ALBACETE")
-                                nucleon->SetShape(ALBACETE);
+                                ((Ipsat_Proton*)nucleon)->SetShape(ALBACETE);
                             else
                             {
-                                nucleon->SetShape(GAUSSIAN);
+                                ((Ipsat_Proton*)nucleon)->SetShape(GAUSSIAN);
                                 if (argc > i+5)
                                 {
                                     if (string(argv[i+5])=="fluxtube")
                                     {
-                                        nucleon->SetStructure(CENTER_TUBES);
-                                        nucleon->SetFluxTubeNormalization(StrToReal(argv[i+5]));
+                                        ((Ipsat_Proton*)nucleon)->SetStructure(CENTER_TUBES);
+                                        ((Ipsat_Proton*)nucleon)->SetFluxTubeNormalization(StrToReal(argv[i+5]));
                                     }
                                     else if (string(argv[i+5])=="com")
                                     {
@@ -239,9 +240,12 @@ int main(int argc, char* argv[])
                                     }
                                 }
                             }
-                            nucleons.push_back(nucleon);
-
                         }
+                        else if (string(argv[i+2])=="ipglasma_binary")
+                            nucleon = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), BINARY);
+                        else if (string(argv[i+2])=="ipglasma")
+                            nucleon = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), TEXT);
+                        nucleons.push_back(nucleon);
                     }
                     amp = new Nucleons(nucleons);
                     ((Nucleons*) amp)->SetDeuteronStructure(NUCLEONS);

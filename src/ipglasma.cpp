@@ -445,7 +445,8 @@ int IPGlasma::LoadBinaryData(std::string fname, double step)
         ycoords[i] -= center;
     }
     
-    SetSchwinger(false); 
+    SetSchwinger(false);
+    return 0;
 }
 
 double IPGlasma::MinX()
