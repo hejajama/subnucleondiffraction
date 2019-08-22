@@ -63,10 +63,10 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         exit(1);
 #else
         // dipole_amplitude(xBj, r, b, parameterSet) gives amplitude 2(1 - exp(c*T(p)))
- 	double tmpb=0;  double tmpr = r.Len();
+        double tmpb=0;  double tmpr = r.Len();
        	// If we do not have fluctuations, do not modify geometry
-	if (B_q==4.0 and B_p == 0 and saturation  and Qs_fluctuation_sigma==0)
-		return dipole_amplitude_(&xpom, &tmpr, &blen, &IPSAT12_PAR)/2.0;
+        if (B_q==4.0 and B_p == 0 and saturation  and Qs_fluctuation_sigma==0)
+            return dipole_amplitude_(&xpom, &tmpr, &blen, &IPSAT12_PAR)/2.0;
  
         // We have to calculate "gluedist" as in case of ipsat06
         // par 1: m_c=1.27,   2: m_c=1.4

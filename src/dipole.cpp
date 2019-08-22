@@ -146,5 +146,5 @@ void DipoleAmplitude::SetSkewedness(bool s)
 double DipoleAmplitude::Density(Vec b)
 {
     std::cerr << "DipoleAmplitude does not have Density implemented, ignoring..." << std::endl;
-
+    return 0;
 }
