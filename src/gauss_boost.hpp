@@ -10,10 +10,11 @@
  */
 
 #include <tools/tools.hpp>
-#include "wave_function.hpp"
+#include <amplitudelib/wave_function.hpp>
 #include <iostream>
 #include <string>
 
+typedef double REAL;
 
 /* Overlap functions are taken from an article written by Kowalski, Motyka 
  * and Watt, see arXiv: hep-ph/0606272v2

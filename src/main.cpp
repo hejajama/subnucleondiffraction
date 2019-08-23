@@ -25,7 +25,7 @@
 #include "ipglasma.hpp"
 #include "nucleons.hpp"
 #include "dis.hpp"
-#include "virtual_photon.hpp"
+#include <amplitudelib/virtual_photon.hpp>
 #include "gitsha1.h"
 
 using namespace std;
@@ -535,6 +535,7 @@ int main(int argc, char* argv[])
     
     else if (mode == F2)
     {
+        cerr << "NOTE: CHECK THAT THIS WORKS WITH THE WAVE FUNCTIONS FROM AMPLITUDELIB" << endl;
 	FACTORIZE_ZINT=true;
         cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm tot F_L(light) F_L(charm) F_L(tot)" << endl;
         double orig_x = xbj;

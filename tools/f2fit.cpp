@@ -26,7 +26,7 @@
 #include "../src/subnucleon_config.hpp"
 #include "../src/ipglasma.hpp"
 #include "../src/dis.hpp"
-#include "../src/virtual_photon.hpp"
+#include <amplitudelib/virtual_photon.hpp>
 #include "../src/gitsha1.h"
 
 #include <gsl/gsl_rng.h>

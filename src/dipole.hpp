@@ -45,4 +45,12 @@ public:
     virtual double Density(Vec b);  // T_p(b), or whatever replaces T_b
 };
 
+enum Ipsat_version
+{
+    IPSAT06,    // KMW hep-ph/0606272
+    IPSAT12,     // Rezaeian et al, 1212.2974
+    MZSAT,
+    MZNONSAT
+};
+
 #endif

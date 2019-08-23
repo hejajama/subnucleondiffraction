@@ -20,6 +20,12 @@ const REAL MINZ=0.00001;  // Integration limits
 const REAL MAXZ=0.9999;
 
 using Amplitude::SQR;
+const int NC=3;
+
+using Amplitude::ALPHA_e;
+
+//const double ALPHA_e = 1.0/137.035999679;
+const double e = sqrt(4.0*M_PI*ALPHA_e);
 
 GausLC::GausLC(REAL e_f_, REAL N_T_, REAL N_L_, REAL R_T_, REAL R_L_, 
     REAL m_f_, REAL M_V_, int delta_=0 )

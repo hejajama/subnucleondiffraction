@@ -7,7 +7,7 @@
 #include "dis.hpp"
 #include <gsl/gsl_integration.h>
 #include "vector.hpp"
-#include "wave_function.hpp"
+#include <amplitudelib/wave_function.hpp>
 
 using Amplitude::SQR;
 

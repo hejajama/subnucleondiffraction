@@ -17,12 +17,10 @@ add_library(
 	ipglasma.cpp
 	gdist_dglap.cpp
 	wilsonline.cpp
-	virtual_photon.cpp
-	wave_function.cpp
+	#virtual_photon.cpp
+	#wave_function.cpp
 	vector.cpp
 	smooth_ws_nuke.cpp
-	gauss_boost.cpp
-	gaus_lc.cpp
 )
 
 add_executable(
@@ -30,6 +28,8 @@ add_executable(
 	main.cpp
 	diffraction.cpp
 	subnucleon_config.cpp
+	gauss_boost.cpp
+	gaus_lc.cpp
 	dis.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp
 	)

@@ -40,14 +40,6 @@ enum Structure
     CENTER_TUBES,   // Quarks connected by flux tubes that merge at the center of the triangle
 };
 
-enum Ipsat_version
-{
-    IPSAT06,    // KMW hep-ph/0606272
-    IPSAT12,     // Rezaeian et al, 1212.2974
-    MZSAT,
-    MZNONSAT
-};
-
 enum Fluctuation_shape
 {
     FLUCTUATE_QUARKS,
