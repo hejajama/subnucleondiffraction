@@ -247,8 +247,8 @@ if coherent:
             print >> sys.stderr, "No data at tindex " + str(t) + ", skipping..."
             continue
         
-        transverse =  sqr(mean(amp_t_real)) + sqr(mean(amp_t_imag))
-        longitudinal =sqr(mean(amp_l_real)) + sqr(mean(amp_l_imag))
+        transverse =  sqr(np.mean(amp_t_real)) + sqr(np.mean(amp_t_imag))
+        longitudinal =sqr(np.mean(amp_l_real)) + sqr(np.mean(amp_l_imag))
         
         
 
@@ -263,8 +263,8 @@ if coherent:
         #staterr_t = correction_t * np.std(xs_t)/sqrt(len(xs_t))
         # staterr_l =correction_l * np.std(xs_l)/sqrt(len(xs_l))
 
-        staterr_t = correction_t*sqrt( sqr(2.0*mean(amp_t_real)*np.std(amp_t_real)/sqrt(len(amp_t_real)) ) + sqr(2.0*mean(amp_t_imag)*np.std(amp_t_imag)/sqrt(len(amp_t_imag)) ) )
-        staterr_l = correction_l*sqrt( sqr(2.0*mean(amp_l_real)*np.std(amp_l_real)/sqrt(len(amp_l_real)) ) + sqr(2.0*mean(amp_l_imag)*np.std(amp_l_imag)/sqrt(len(amp_l_imag)) ) )
+        staterr_t = correction_t*sqrt( sqr(2.0*np.mean(amp_t_real)*np.std(amp_t_real)/sqrt(len(amp_t_real)) ) + sqr(2.0*np.mean(amp_t_imag)*np.std(amp_t_imag)/sqrt(len(amp_t_imag)) ) )
+        staterr_l = correction_l*sqrt( sqr(2.0*np.mean(amp_l_real)*np.std(amp_l_real)/sqrt(len(amp_l_real)) ) + sqr(2.0*np.mean(amp_l_imag)*np.std(amp_l_imag)/sqrt(len(amp_l_imag)) ) )
 
 #print "old, new staterr: ", staterr_t, err_t
         
