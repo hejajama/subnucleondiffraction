@@ -40,12 +40,14 @@ class DipoleAmplitude
         double N(double r, double xbj, double b);
     
         /* Dipole amplitude integrated over b
+         * \int d^2 b N(r,b)
          */
         double N_bint(double r, double xbj);
     
         double MuSqr(double r) { return mu0*mu0 + C / (r*r); }
     
     /* Dipole amplitude squared integrated over b
+     * \int d^2 b N(r,b)^2
      */
     double N_sqr_bint(double r, double xbj);
     

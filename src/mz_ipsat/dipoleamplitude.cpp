@@ -156,13 +156,18 @@ double DipoleAmplitude::N_bint(double r, double xbj)
     
 }
 
+double inthelperf_sqrbint(double b, void* p)
+{
+    inthelper_bint* par = (inthelper_bint*) p;
+    double n = par->ipsat->N(par->r, par->x, b);
+    return b*n*n;
+}
 double DipoleAmplitude::N_sqr_bint(double r, double xbj)
 {
-    cerr << "TODO: we probably don't even need sqr_bint, and it is not tested!" << endl;
     double musqr =mu0*mu0 + C / (r*r);
     if (!saturation)
     {
-        // int d^2 b N(r)^2 = pi * B * N(r, b=0)
+        // int d^2 b N(r)^2 = pi * B * N(r, b=0)^2
         return M_PI * B_p * N(r, xbj, 0)*N(r, xbj, 0);
     }
     
@@ -185,29 +190,25 @@ double DipoleAmplitude::N_sqr_bint(double r, double xbj)
     }
     else
     {
-        cerr << "Problem with expint functions in N_sqr_bint!" << endl;
-        return 0;
+
+         gsl_function fun; fun.function=inthelperf_sqrbint;
+         inthelper_bint par;
+         par.r=r; par.x=xbj;
+         par.ipsat = this;
+         fun.params=&par;
+        
+         double acc = 0.00001;
+        
+         double result,abserr;
+         gsl_integration_workspace* ws = gsl_integration_workspace_alloc(500);
+         int status = gsl_integration_qag(&fun, 0, 999, 0, acc,
+         500, GSL_INTEG_GAUSS51, ws, &result, &abserr);
+         if (status)
+         cerr << "bintegral failed in IPsat::N_sqr_bint with r=" << r <<", result " << result << " relerror " << abserr/result << endl;
+         gsl_integration_workspace_free(ws);
+        
+        return 2.0*M_PI*result; //2pi from angular integral
     }
-    /*
-     gsl_function fun; fun.function=inthelperf_bint;
-     inthelper_bint par;
-     par.r=r; par.x=xbj;
-     par.ipsat = this;
-     fun.params=&par;
-     
-     double acc = 0.00001;
-     
-     double result,abserr;
-     gsl_integration_workspace* ws = gsl_integration_workspace_alloc(500);
-     int status = gsl_integration_qag(&fun, 0, 999, 0, acc,
-     500, GSL_INTEG_GAUSS51, ws, &result, &abserr);
-     if (status)
-     cerr << "bintegral failed in IPsat::DipoleAmplitude_bit with r=" << r <<", result " << result << " relerror " << abserr/result << endl;
-     gsl_integration_workspace_free(ws);
-     
-     return 2.0*M_PI*result; //2pi from angular integral
-     */
-    
 }
 
 
