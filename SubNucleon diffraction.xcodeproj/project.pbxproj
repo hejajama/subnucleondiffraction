@@ -85,6 +85,8 @@
 		13E399CE1CFF6B61002471F5 /* dis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dis.cpp; path = src/dis.cpp; sourceTree = "<group>"; };
 		13E399CF1CFF6B61002471F5 /* dis.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dis.hpp; path = src/dis.hpp; sourceTree = "<group>"; };
 		13E8924C1D63B62000DA2C38 /* modified_ipsat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = modified_ipsat.cpp; path = tools/modified_ipsat.cpp; sourceTree = "<group>"; };
+		30F7A3C6230E9C15006B8757 /* dipoleamplitude.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dipoleamplitude.hpp; path = src/mz_ipsat/dipoleamplitude.hpp; sourceTree = "<group>"; };
+		30F7A3C7230E9C15006B8757 /* dipoleamplitude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dipoleamplitude.cpp; path = src/mz_ipsat/dipoleamplitude.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,6 +118,8 @@
 		12B5191B1BD9765200230988 = {
 			isa = PBXGroup;
 			children = (
+				30F7A3C7230E9C15006B8757 /* dipoleamplitude.cpp */,
+				30F7A3C6230E9C15006B8757 /* dipoleamplitude.hpp */,
 				13BE4A371EDEA6CC0010843B /* proton_size.cpp */,
 				13BE4A361EDEA6AD0010843B /* proton_size.cpp */,
 				1385C42A1ECC2CB600ABE2EE /* sigmar_chisqr.py */,
@@ -230,6 +234,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 12B5191B1BD9765200230988;
