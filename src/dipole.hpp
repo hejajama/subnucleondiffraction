@@ -43,6 +43,9 @@ public:
     double SaturationScale(double xpom, Vec b);
     
     virtual double Density(Vec b);  // T_p(b), or whatever replaces T_b
+    
+    virtual double Amplitude_bint(double xpom, double r);
+    virtual double Amplitude_sqr_bint(double xpom, double r);
 };
 
 enum Ipsat_version

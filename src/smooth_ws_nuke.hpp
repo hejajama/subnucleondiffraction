@@ -22,6 +22,11 @@ public:
     ~Smooth_ws_nuke();
     double Amplitude(double xpom, double q1[2], double q2[2] );
     std::string InfoStr();
+    
+    double Amplitude_bint(double xpom, double r);
+    double Amplitude_sqr_bint(double xpom, double r);
+    
+    
 private:
     int A;
     DGLAPDist gdist;

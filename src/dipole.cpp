@@ -148,3 +148,15 @@ double DipoleAmplitude::Density(Vec b)
     std::cerr << "DipoleAmplitude does not have Density implemented, ignoring..." << std::endl;
     return 0;
 }
+
+double DipoleAmplitude::Amplitude_bint(double xpom, double r)
+{
+    std::cerr << "Amplitude_bint is not implemented" << std::endl;
+    return 0;
+}
+
+double DipoleAmplitude::Amplitude_sqr_bint(double xpom, double r)
+{
+    std::cerr << "Amplitude_sqr_bint is not implemented" << std::endl;
+    return 0;
+}

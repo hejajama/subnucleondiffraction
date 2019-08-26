@@ -1146,7 +1146,7 @@ double Ipsat_Proton::Amplitude_bint(double xpom, double r)
     if (ipsat == MZSAT or ipsat==MZNONSAT)
         return mzipsat->N_bint(r, xpom);
     
-    cerr << "Amplitude_bint only impelmented for MZfit" << endl;
+    cerr << "Amplitude_bint only impelmented for MZfit (ipsat_version must be " << MZSAT << " or " << MZNONSAT << ", I got " << ipsat << ")" << endl;
     return 0;
         
 }
@@ -1156,7 +1156,7 @@ double Ipsat_Proton::Amplitude_sqr_bint(double xpom, double r)
     if (ipsat == MZSAT or ipsat==MZNONSAT)
         return mzipsat->N_sqr_bint(r, xpom);
     
-    cerr << "Amplitude_bint only impelmented for MZfit" << endl;
+    cerr << "Amplitude_bint_sqr only impelmented for MZfit" << endl;
     return 0;
     
 }

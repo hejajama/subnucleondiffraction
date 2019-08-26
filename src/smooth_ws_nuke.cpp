@@ -10,6 +10,8 @@
 #include "vector.hpp"
 #include <tools/tools.hpp>
 #include <tools/interpolation.hpp>
+#include <gsl/gsl_integration.h>
+#include <gsl/gsl_errno.h>
 #include <cmath>
 #include <vector>
 #include <string>
@@ -25,6 +27,10 @@ int IPSAT12_NUKE_PAR = 2;    // m_c=1.4 GeV
 using Amplitude::SQR;
 
 const double NC=3.0;
+const double MINB = 0;
+const double MAXB=250;
+const int INTDIVISIONS = 5;
+const double INTACC = 0.001;
 
 using namespace std;
 
@@ -73,13 +79,22 @@ Smooth_ws_nuke::Smooth_ws_nuke(int A_, Ipsat_version ipsatv)
 Smooth_ws_nuke::~Smooth_ws_nuke()
 {
     delete T_A_interpolator;
+    delete mzipsat;
 }
 double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
 {
+    Vec v1(q1[0], q1[1]); Vec v2(q2[0],q2[1]);
+    Vec rvec = v1 - v2;
+    Vec bvec = v1+v2;
+    bvec = bvec*0.5;
+    double b = bvec.Len();
+    double r = rvec.Len();
+    double sigmap = 2.0*mzipsat->N_bint(r, xpom);
+    
     if (saturation == false)
     {
-        cerr << "Smooth_ws_nuke::Amplitude does not support nonsat yet" << endl;
-        exit(1);
+        // 0909.1254 eq 14
+        return 1.0/2.0 * sigmap * A *T_A_interpolator->Evaluate(b);
     }
     if (A < 100)
     {
@@ -91,13 +106,7 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
     
     // Total dipole-proton xs
     // \sigma_dip = 2 \int d^2 b N(r,b)
-    Vec v1(q1[0], q1[1]); Vec v2(q2[0],q2[1]);
-    Vec rvec = v1 - v2;
-    Vec bvec = v1+v2;
-    bvec = bvec*0.5;
-    double b = bvec.Len();
-    double r = rvec.Len();
-    double sigmap = 2.0*mzipsat->N_bint(r, xpom);
+    
     
     if (sigmap < 0)
     {
@@ -132,4 +141,81 @@ std::string Smooth_ws_nuke::InfoStr()
     std::stringstream ss;
     ss << "#Optigal Glauber nucleus, A=" << A << endl;;
     return ss.str();
+}
+
+
+
+
+///////// Impact parameter integrals
+struct inthelper_smoothnuke_bint
+{
+    double r,x;
+    unsigned int pow;
+    DipoleAmplitude* dipole;
+};
+double inthelperf_smoothnuke_bint(double b, void* p)
+{
+    inthelper_smoothnuke_bint* par = (inthelper_smoothnuke_bint*) p;
+    
+    // We know/assume that there is no angular dependencce in the dipole amplitude
+    // And construct q1 and q2 vectors, just put everything along x axis
+    Vec vecb(b,0);
+    Vec halfvecr(par->r,0);
+    halfvecr = halfvecr*0.5;
+    Vec q1 = vecb + halfvecr;
+    Vec q2 = vecb - halfvecr;
+    
+    
+    return b*std::pow(par->dipole->Amplitude(par->x, q1,q2), par->pow);
+}
+
+
+double Smooth_ws_nuke::Amplitude_bint(double xpom, double r)
+{
+   
+    gsl_function fun; fun.function=inthelperf_smoothnuke_bint;
+    inthelper_smoothnuke_bint par;
+    par.r=r; par.x=xpom;
+    par.dipole = this;
+    par.pow=1;
+    fun.params=&par;
+    
+    double acc = 0.00001;
+    
+    double result,abserr;
+    gsl_integration_workspace* ws = gsl_integration_workspace_alloc(INTDIVISIONS);
+    int status = gsl_integration_qag(&fun, MINB, MAXB, 0, INTACC,
+                                     INTDIVISIONS, GSL_INTEG_GAUSS51, ws, &result, &abserr);
+    if (status)
+        cerr << "bintegral failed in Smooth_ws_nuke::DipoleAmplitude_bint with r=" << r <<", result " << result << " relerror " << abserr/result << endl;
+    
+    gsl_integration_workspace_free(ws);
+    
+    return 2.0*M_PI*result; //2pi from angular integral
+
+    
+}
+
+double Smooth_ws_nuke::Amplitude_sqr_bint(double xpom, double r)
+{
+    gsl_function fun; fun.function=inthelperf_smoothnuke_bint;
+    inthelper_smoothnuke_bint par;
+    par.r=r; par.x=xpom;
+    par.dipole = this;
+    par.pow=2;
+    fun.params=&par;
+    
+    double acc = 0.00001;
+    
+    double result,abserr;
+    gsl_integration_workspace* ws = gsl_integration_workspace_alloc(INTDIVISIONS);
+    int status = gsl_integration_qag(&fun, MINB, MAXB, 0, INTACC,
+                                     INTDIVISIONS, GSL_INTEG_GAUSS51, ws, &result, &abserr);
+    if (status)
+    cerr << "bintegral failed in Smooth_ws_nuke::DipoleAmplitude_bint with r=" << r <<", result " << result << " relerror " << abserr/result << endl;
+    
+    gsl_integration_workspace_free(ws);
+    
+    return 2.0*M_PI*result; //2pi from angular integral
+    
 }
