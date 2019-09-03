@@ -120,6 +120,8 @@ double DipoleAmplitude::N_bint(double r, double xbj)
     if (a==0) // Basically so small r that xg =0 as we are outside the dglap evolution grid
         return 0;
     
+    
+    /*
     gsl_sf_result sinres;
     gsl_sf_result cosres;
     int sinint = gsl_sf_Shi_e(a, &sinres);
@@ -135,23 +137,33 @@ double DipoleAmplitude::N_bint(double r, double xbj)
         // in the region where the contribution anyway is small
         return 2.0*M_PI*B_p * ( M_EULER - cosres.val + log(a) + sinres.val);
     }
+     */
+    //return 0;
     
+    gsl_sf_result  glsres;
+    int expint = gsl_sf_expint_Ei_e(-a, &glsres);
+    if (expint == GSL_SUCCESS)
+    {
+        // B (EulerGamma - ExpIntegralEi[-a] + Log[a])
+        return  2.0*M_PI*B_p * (M_EULER - glsres.val + log(a));
+    }
     gsl_function fun; fun.function=inthelperf_bint;
     inthelper_bint par;
     par.r=r; par.x=xbj;
     par.ipsat = this;
     fun.params=&par;
     
-    double acc = 0.00001;
+    double acc = 0.01;
     
     double result,abserr;
-    gsl_integration_workspace* ws = gsl_integration_workspace_alloc(500);
-    int status = gsl_integration_qag(&fun, 0, 999, 0, acc,
-                                     500, GSL_INTEG_GAUSS51, ws, &result, &abserr);
+    gsl_integration_workspace* ws = gsl_integration_workspace_alloc(5);
+    int status = gsl_integration_qag(&fun, 0, 20, 0, acc,
+                                     5, GSL_INTEG_GAUSS51, ws, &result, &abserr);
     if (status)
         cerr << "bintegral failed in IPsat::DipoleAmplitude_bit with r=" << r <<", result " << result << " relerror " << abserr/result << endl;
     gsl_integration_workspace_free(ws);
     
+    //cout << "Full numerics estimate (r=" << r << ", x=" << xbj << "): " << 2.0*M_PI*result << endl;
     return 2.0*M_PI*result; //2pi from angular integral
     
 }
@@ -163,7 +175,7 @@ double inthelperf_sqrbint(double b, void* p)
     return b*n*n;
 }
 double DipoleAmplitude::N_sqr_bint(double r, double xbj)
-{
+{    
     double musqr =mu0*mu0 + C / (r*r);
     if (!saturation)
     {

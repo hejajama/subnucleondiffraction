@@ -46,6 +46,7 @@ public:
     
     virtual double Amplitude_bint(double xpom, double r);
     virtual double Amplitude_sqr_bint(double xpom, double r);
+
 };
 
 enum Ipsat_version

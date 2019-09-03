@@ -74,6 +74,9 @@ Smooth_ws_nuke::Smooth_ws_nuke(int A_, Ipsat_version ipsatv)
     T_A_interpolator->SetOverflow(0);
     T_A_interpolator->SetUnderflow(0);
     T_A_interpolator->SetFreeze(true);
+    
+    sigmadip_cache_r=99999;
+    sigmadip_cache_x=9999;
 }
 
 Smooth_ws_nuke::~Smooth_ws_nuke()
@@ -89,7 +92,21 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
     bvec = bvec*0.5;
     double b = bvec.Len();
     double r = rvec.Len();
-    double sigmap = 2.0*mzipsat->N_bint(r, xpom);
+    
+    double sigmap;
+    
+    if (std::abs(r - sigmadip_cache_r)/std::min(sigmadip_cache_r,r) < 0.001 and std::abs(xpom - sigmadip_cache_x)/std::min(sigmadip_cache_x,xpom) < 0.001)
+    {
+        sigmap = sigmadip_cache;
+    }
+    else
+    {
+        sigmap = 2.0*mzipsat->N_bint(r, xpom);
+        sigmadip_cache_x = xpom;
+        sigmadip_cache_r=r;
+        sigmadip_cache = sigmap;
+    }
+    
     
     if (saturation == false)
     {
@@ -113,6 +130,7 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
         cerr << "ERROR: sigma_p= " << sigmap << ", r=" << r <<", xpom=" << xpom << endl;
     }
     
+    // TODO this assumes small r
     double res = 1.0 - std::exp(- 1.0/2.0 * A * T_A_interpolator->Evaluate(b)*sigmap);
     
     if (res < 0 or res > 1)
@@ -139,7 +157,7 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
 std::string Smooth_ws_nuke::InfoStr()
 {
     std::stringstream ss;
-    ss << "#Optigal Glauber nucleus, A=" << A << endl;;
+    ss << "#Optical Glauber nucleus, A=" << A << endl;;
     return ss.str();
 }
 

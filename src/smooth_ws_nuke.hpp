@@ -34,6 +34,10 @@ private:
     MZ_ipsat::DipoleAmplitude *mzipsat;
     Ipsat_version ipsat_version;
     bool saturation;
+    
+    double sigmadip_cache_r;
+    double sigmadip_cache_x;
+    double sigmadip_cache;
 };
 
 #endif /* smooth_ws_nuke_hpp */
