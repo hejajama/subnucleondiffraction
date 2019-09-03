@@ -29,3 +29,6 @@ set_target_properties(subnucleondiffraction PROPERTIES
 set_target_properties(ddis PROPERTIES
      LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib
     ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib )
+set_target_properties(mzipsat PROPERTIES
+     LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib
+    ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib )
