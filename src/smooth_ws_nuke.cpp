@@ -37,6 +37,7 @@ using namespace std;
 Smooth_ws_nuke::Smooth_ws_nuke(int A_, Ipsat_version ipsatv)
 {
     ipsat_version = ipsatv;
+    smooth_approximation = false;
     
     if (ipsat_version == MZSAT)
     {
@@ -93,6 +94,14 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
     double b = bvec.Len();
     double r = rvec.Len();
     
+    if (smooth_approximation)
+    {
+        // KT (41): Assumes large A and small dipole xs, not really realistic
+        
+         return 1.0 - std::exp( -r*r * M_PI*M_PI / (2.0 * NC) * mzipsat->Alphas_xg(xpom, mzipsat->MuSqr(r)) * A * T_A_interpolator->Evaluate(b));
+    }
+    
+    
     double sigmap;
     
     if (std::abs(r - sigmadip_cache_r)/std::min(sigmadip_cache_r,r) < 0.001 and std::abs(xpom - sigmadip_cache_x)/std::min(sigmadip_cache_x,xpom) < 0.001)
@@ -140,15 +149,7 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
     
     return res;
     
-    // KT (41): Assumes large A and small dipole xs, not really realistic
-    /*
-    double r = std::sqrt( SQR(q1[0]-q2[0]) + SQR(q1[1]-q2[1]) );
     
-    // Take the nucleon density at the geometric center of the two quarks
-    double b = std::sqrt( SQR( (q1[0]+q2[0])/2.0 ) + SQR( (q1[1]+q2[1])/2.0) );
-    
-    return 1.0 - std::exp( -r*r * M_PI*M_PI / (2.0 * NC) * mzipsat->Alphas_xg(xpom, mzipsat->MuSqr(r)) * A * T_A_interpolator->Evaluate(b));
-     */
     
     
    
@@ -157,7 +158,9 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
 std::string Smooth_ws_nuke::InfoStr()
 {
     std::stringstream ss;
-    ss << "#Optical Glauber nucleus, A=" << A << endl;;
+    ss << "Optical Glauber nucleus, A=" << A ;
+    if (smooth_approximation) ss << " using smooth nucleus approx KT (41)";
+    ss << endl;
     return ss.str();
 }
 

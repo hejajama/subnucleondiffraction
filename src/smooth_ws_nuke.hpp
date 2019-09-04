@@ -26,6 +26,8 @@ public:
     double Amplitude_bint(double xpom, double r);
     double Amplitude_sqr_bint(double xpom, double r);
     
+    void SetSmoothApproximation(bool s) { smooth_approximation = s; }
+    
     
 private:
     int A;
@@ -38,6 +40,8 @@ private:
     double sigmadip_cache_r;
     double sigmadip_cache_x;
     double sigmadip_cache;
+    
+    bool smooth_approximation; // use approx valid at small r&large A, KT (41)
 };
 
 #endif /* smooth_ws_nuke_hpp */
