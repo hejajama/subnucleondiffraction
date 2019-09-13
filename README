@@ -1,20 +1,30 @@
 Subnucleondiffraction code
 H. Mäntysaari and B. Schenke
-<mantysaari@bnl.gov>, 2015-2018
+<heikki.mantysaari@jyu.fi>, 2015-2019
+
+THIS IS A MODIFICATION OF THE VECTOR MESON PRODUCTION CODE FOR DIFFRACTIVE DIJET
+PRODUCTION. IT IS NOT GUARANTEED TO BE CORRECT....
 
 References:
 H. Mäntysaari, B. Schenke
 Phys.Rev. D94 (2016) no.3, 034042 
 Phys.Rev.Lett. 117 (2016) no.5, 052301
+Phys.Lett. B772 (2017) 832-838  (nuclei)
 
 This code requires my "amplitudelib" helper library
-Check that you have downloaded it from git and succesfully
-compiled (using CMake). The produced libraries should be
-found in the directory
-../amplitudelib_v2/build/lib/
+It should be found on directory ../amplitudelib_v2
+Installation:
+git clone https://github.com/hejajama/amplitudelib.git amplitudelib_v2
+cd amplitudelib_v2
+mkdir build
+cd build
+cmake ..
+make
 
-How to compile:
-
+After that, you can compile this
+Double check that you have the dijet branch active (master branch calculates exclusive VM production)
+So "git branch" should result "dijet"
+Building:
 mkdir build
 cd build
 cmake ..
@@ -22,6 +32,10 @@ make
 
 Code requires GSL, and C++ and Fortran compilers. CMake takes care of
 finding the correct compiler flags etc.
+
+If Fortran compiler is not available, go to src/ipsat_proton.hpp and disable
+#define USE_FORTRAN_IPSAT12
+And remove Fortran files form CMake
 
 Part of this code package is 
 libColorDipole (IPsat parametrization from Phys.Rev. D87 (2013) no.3, 034002)
@@ -31,15 +45,26 @@ How to run:
 In the main directory:
 See ./build/bin/subnucleondiffraction -help
 Examples
+./build/bin/subnucleondiffraction -dipole 1 ipglasma_binary FILENAME -Q2 1 -real 
+
+
+The output is scattering amplitude (real or imaginary part), as a function of angle between the two jets.
+Note that in case of transverse polarization this amplitude is a vector
+
+Many coefficients are not inlcuded here, so don't think this gives cross section. But convergence can be tested...
+
+Coherent XS is average of the amplitudes, incoherent is the variance
+Calculate real and imag parts using the same GSL_RNG_SEED!!!!!
+Be careful with real and imag parts when calculating <A> and <|A|Note that in case of transverse polarization this amplitude is a vector
+
+Many coefficients are not inlcuded here, so don't think this gives cross section. But convergence can be tested...
+
+Coherent XS is average of the amplitudes, incoherent is the variance
+Calculate real and imag parts using the same GSL_RNG_SEED!!!!!
+Be careful with real and imag parts when calculating <A> and <|A|> (this code does not do it, but you can check tools/spectra.py)
 
 Random seed is set by GSL_RNG_SEED enviromental variable. One MUST use the same RNG_SEED when calculating real and 
 imaginary parts!
 
-Round proton is "ipsatproton 0 4"
-Q_s fluctautoins for constituent quarks are set as:
--qsfluct 0.5 -qsfluctshape quarks 
-
-IP-Glasma input (file containing N^2 wilson lines) is used as follows:
--dipole 1 ipglasma FILENAME stepsize
-step size is in GeV^-1
+Round IPsat proton is "ipsatproton 0 4"
 

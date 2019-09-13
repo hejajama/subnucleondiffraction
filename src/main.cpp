@@ -416,24 +416,26 @@ int main(int argc, char* argv[])
     
     else if (mode == AMPLITUDE_DT)
     {
-        cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
-        cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
+        cout << "# Amplitude as a function of angle between P and Delta, Q^2= " << Qsqr << endl;
+        cout << "# theta  amplitude  " << endl;
 
         double tstep = 0.1;
-        for (t=0.04159 + M_PI - tstep*10 ; t<=M_PI; t+=tstep)
+        for (t=0 ; t<=M_PI*1.0001; t+=tstep)
         {
-            double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
-            if (xpom > 0.02)
-            {
-                cerr << "xpom = " << xpom << ", can't do this!" << endl;
-                //continue;
-            }
+            double xpom = 0.01; // Uses fixed x now, with ipglasma this has no effect
             
             if(auto_mcintpoints)
                 MCINTPOINTS = MCpoints(t);
             
             cout.precision(5);
             
+            // Only Longitudinal:
+            double lng = 0;
+            if (Qsqr > 0)
+            {
+                lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
+            }
+            cout << t << " " << lng << endl;
             /*
             double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
             double lng = 0;
@@ -445,7 +447,8 @@ int main(int argc, char* argv[])
             cout << trans  << " " << lng << endl;
             */
             
-            
+            // All components
+            /*
             diff.SetDijetComponent(X);
             double xcomp =diff.ScatteringAmplitude(xpom, Qsqr, t, T);
             diff.SetDijetComponent(Y);
@@ -454,52 +457,15 @@ int main(int argc, char* argv[])
             double mfcomp =diff.ScatteringAmplitude(xpom, Qsqr, t, T);
 
             cout << t << " " << xcomp << " " << ycomp <<" " << mfcomp << endl;
-             
+             */
             
-            // L
-            /*
-            xpom=1e-4;
-            double xcomp =diff.ScatteringAmplitude(xpom, Qsqr, t, L);
-            cout << t << " " << xcomp << endl;
-            */
-            // Larger t step probably useful at large t
-            /*
-            if (t>0.08)
-                tstep = 0.015;
-            if (t>=0.4 )
-                tstep = 0.05;
-                */
-        }
-    }
-    else if (mode == CORRECTIONS)
-    {
-        cout << "# Real part correction" << endl;
-        cout << "# t  transverse  longitudinal" << endl;
-        double tstep=0.02;
-        for (t=0; t<=2.5; t+=tstep)
-        {
-            double xpom = (mjpsi*mjpsi+Qsqr+t)/(w*w+Qsqr-mp*mp);
-            if (xpom > 0.01)
-            {
-                cerr << "xpom = " << xpom << ", can't do this!" << endl;
-                continue;
-            }
-            
-            cout.precision(5);
-            double res_t = diff.Correction(xpom, Qsqr, t, T);
-            double res_l=0;
-            if (Qsqr > 0)
-                res_l= diff.Correction(xpom, Qsqr, t, L);
-            cout << t << " ";
-            cout.precision(10);
-            cout << res_t << " " << res_l   << endl;
-            //if (t>0.5)
-            //    tstep=0.1;
+
         }
     }
     
     else if (mode == F2)
     {
+        //// TODO NOT WELL TESTED IN DIJET CODE!
 	FACTORIZE_ZINT=true;
         cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm tot F_L(light) F_L(charm) F_L(tot)" << endl;
         double orig_x = xbj;

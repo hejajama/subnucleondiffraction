@@ -278,7 +278,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         double dphi = t;
         double Q2=Qsqr;
         double z0=0.5; double z1=0.5;
-        double mq=0.14;
+        double mq=1.4;
         double eps = std::sqrt(Q2*z0*z1+mq*mq);
         // Construct dot product
         // Note that now all angles are measured w.r.t. p0, which is set to point along the x axis
@@ -293,24 +293,38 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         std::complex<double> exponent = std::exp( -imag* ( b_dot_p0plusp1 + r_dot_p0minusp1/2.0 )  );
         
         complex<double> result;
+        
+        // NOTE
+        // Here the full photon wave function coeffs are not impelmented.
+        // For simple testing, we just take the part of the wave function that depends on
+        // dipole size r
+        
         // L
         if (pol == L)
         {
             result = r*b*exponent * amp * gsl_sf_bessel_K0(eps*r);
+            // Longitudinal photon wave function = K_0(eps*r)
         }
         
         // T
         if (pol == T)
         {
+            // Wave function is K_1(eps*r), or in mass term K_0(eps*r)
+            // As transverse xs is \sim | polarizationvector*r |^2, so amplitude
+            // is polarizatoinvector * r, and eventually we polvec.r polvec.r' = r.r'
+            // So the amplitude is a vector, and we need to compute separately its x and y
+            // components
+            /// TODO: chec that factors of r are correct here!
             if (dijet_component == X)
-                result = b*exponent * amp * eps*gsl_sf_bessel_K1(eps*r) * r*sin(theta_r);
-                 ///result = r*b*exponent * amp * eps*r*gsl_sf_bessel_K1(eps*r) * r*sin(theta_r)/(r*r);
+                result = r*b*exponent * amp * eps*gsl_sf_bessel_K1(eps*r) * r*sin(theta_r) / r;
             else if (dijet_component == Y)
-                result = r*b*exponent * amp * eps*r*gsl_sf_bessel_K1(eps*r) * r*cos(theta_r)/(r*r);
+                result = r*b*exponent * amp * eps*r*gsl_sf_bessel_K1(eps*r) * r*cos(theta_r)/r;
             else // mass term
                 result = mq*r*b*exponent * amp * gsl_sf_bessel_K0(eps*r);
             
         }
+        
+    // Note Jacobian r*b is included already
         
         if (REAL_PART)
             return result.real();
@@ -320,47 +334,8 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         
     }
     
-    
-    if (FACTORIZE_ZINT)
-    {
-        if (pol == T)
-            res *= wavef->PsiSqr_T_intz(Qsqr, r)/(4.0*M_PI);   // Note: 4pi factor is in PsiSqr_T_intz function!
-        else 
-            res *= wavef->PsiSqr_L_intz(Qsqr, r)/(4.0*M_PI);	// BUt not in VirtualPhoton, which is used here        
-
-	res *= amp_real; 	/// include only real part
-	
-        if (REAL_PART)
-            res *= std::cos( b*delta*std::cos(theta_b));    // Neglect z now
-        else
-            res *= -std::sin( b*delta*std::cos(theta_b));
-    }
-    else
-    {
-        if (pol == T)
-            res *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
-        else
-            res *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
-        // As this integrand is now not integrated over z
-        std::complex<double> imag(0,1);
-        std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r)  )  );
-        //std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b)  )  );
-        std::complex<double> prod = amp * exponent;
-        if (REAL_PART)
-            res *= prod.real();
-            //res *=std::cos( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
-        else
-            res *= prod.imag();
-            //res *=-std::sin( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
-    }
-    
-    if (std::isnan(res) or std::isinf(res))
-    {
-        cerr << "Amplitude integral is " << res << " dipole " << amp << " xp=" << xpom << " Q^2=" << Qsqr << " t="<< t << " r=" << r << " theta_r="<<theta_r << " b="<< b << "theta_b="<< theta_b << " z=" << z << endl;
-    }
-    
-    return res;
-    
+    cerr << "This code only calculates DIJET!" << endl;
+    exit(1);
 
 }
 
