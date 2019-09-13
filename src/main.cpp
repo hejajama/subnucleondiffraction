@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
     {
         cout << "-Q2, -W: set kinematics" << endl;
         cout << "-real, -imag: set real/imaginary part" << endl;
-        cout << "-dipole A [ipglasma,ipsatproton,smoothnuke] [ipglasmafile, ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [albacete]" << endl;
+        cout << "-dipole A [ipglasma,ipglasma_binary,ipsatproton,smoothnuke] [ipglasmafile, ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [albacete]" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points/auto" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
@@ -174,6 +174,8 @@ int main(int argc, char* argv[])
                 }
                 else if (string(argv[i+2])=="ipglasma")
                     amp = new IPGlasma(argv[i+3]);
+                else if (string(argv[i+2])=="ipglasma_binary")
+                    amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), BINARY);
                 else
                 {
                     cerr << "Unknown dipole " << argv[i+1] << endl;
