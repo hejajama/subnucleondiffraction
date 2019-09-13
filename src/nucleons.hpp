@@ -12,12 +12,24 @@
 #include "ipsat_proton.hpp"
 #include "vector.hpp"
 #include "gdist_dglap.hpp"
+#include <tools/interpolation.hpp>
 
 enum DeuteronStructure
 {
     NUCLEONS,   // Independent p and n
     TUBE    // Connect nucleons by a tube
 };
+
+// Hulthen:
+// Extended Hulthen: Phys. Rev. 151, 772
+// WoodsSaxon is parameters from PHOBOS Glauber 1408.2549
+enum DeuteronWaveFunctionType {
+    Hulthen,
+    ExtendedHulthen,
+    WoodsSaxon,
+    VMC // https://www.phy.anl.gov/theory/research/density2/
+};
+
 
 class Nucleons : public DipoleAmplitude
 {
@@ -41,9 +53,12 @@ public:
     double DeuteronTubeDensity(Vec b);  // Model deuteron as a Gaussian tube
     
     std::vector<DipoleAmplitude*> GetNucleons();
+	std::vector<Vec> GetNucleonPositions() { return nucleon_positions; }
     
     DeuteronStructure GetDeuteronStructure() { return deuteron_structure; }
     void SetDeuteronStructure(DeuteronStructure d) { deuteron_structure = d; }
+    void SetDeuteronWF(DeuteronWaveFunctionType wf) { DeuteronWF = wf; }
+    DeuteronWaveFunctionType GetDeuteronWF() { return DeuteronWF; }
     
 private:
     int A;
@@ -54,6 +69,9 @@ private:
     double ws_ra;
     
     DeuteronStructure deuteron_structure;
+    DeuteronWaveFunctionType DeuteronWF;
+    
+    Interpolator VMC_interpolator;
     
     int he3_id; // which He3 configuration we use
     
