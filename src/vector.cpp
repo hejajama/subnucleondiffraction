@@ -98,6 +98,20 @@ std::ostream& operator<<(std::ostream& os, Vec& ic)
         ", " << ic.GetZ() << "), |vec| = " << ic.Len() << " ";
 }
 
+void Vec::Rotate2D(double angle)
+{
+    // Rotate counterclokwise by angle [rad]
+    double s = std::sin(angle);
+    double c = std::cos(angle);
+    
+    double oldx = x;
+    double oldy = y;
+    
+    x = c*oldx + s*oldy;
+    y = -s*oldx + c*oldy;
+    
+}
+
 /////////////////////
 // Geometry
 // Weiszfeld's algorithm to calculate geometric median (Fermat point)

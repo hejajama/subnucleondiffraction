@@ -247,11 +247,11 @@ IPGlasma::IPGlasma(std::string file, double step, WilsonLineDataFileType type)
 // Note that here step is in fm!
 int IPGlasma::LoadData(std::string fname, double step, WilsonLineDataFileType type)
 {
-    if (type == BINARY)
-        return LoadBinaryData(fname, step);
-    
     // Load data
     datafile=fname;
+    
+    if (type == BINARY)
+        return LoadBinaryData(fname, step);
     
     // Syntax: x y [fm/indeces] matrix elements Re Im for elements (0,0), (0,1), (0,2), (1,0), ...
     std::ifstream f(fname.c_str());

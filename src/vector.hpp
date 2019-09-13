@@ -33,6 +33,8 @@ class Vec
         void operator*=(REAL c);
         Vec operator*(REAL c);
     
+        void Rotate2D(double angle);  // rotate x,y coords counterclockwise
+    
         double operator*(Vec &v);   // dot product
     
         REAL Len();
