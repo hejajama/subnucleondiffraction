@@ -1,7 +1,7 @@
 /*
  * Diffraction at sub-nucleon scale
  * Dipole amplitude for a proton that consists of quarks
- * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015
+ * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015-2018
  */
 
 
@@ -18,12 +18,19 @@
 #include "vector.hpp"
 #include "mz_ipsat/dipoleamplitude.hpp"
 
+
+// If Fortran compiler is not available, uncommet this
+// In that case, IPSAT12 does not work!
+#define USE_FORTRAN_IPSAT12
+
+
 // How are the hotspots distributed
 enum Proton_shape
 {
     GAUSSIAN,
     EXPONENTIAL,
     ALBACETE,   // implement 1605.09176
+    MORELAND    // Scott Moreland pA bayesian analysis
 };
 
 // Quark structure
@@ -31,14 +38,6 @@ enum Structure
 {
     QUARKS,     // Gaussians around quarks
     CENTER_TUBES,   // Quarks connected by flux tubes that merge at the center of the triangle
-};
-
-enum Ipsat_version
-{
-    IPSAT06,    // KMW hep-ph/0606272
-    IPSAT12,     // Rezaeian et al, 1212.2974
-    MZSAT,
-    MZNONSAT
 };
 
 enum Fluctuation_shape
@@ -90,6 +89,7 @@ public:
     
     double GetQsFluctuation(double x, double y);   // return Exp(f(x,y)) that multiplies xg
     void SetQsFluctuation(double s);    // Set sigma for ln Q_s fluctuation
+    double GetQuarkQsFluctuation(unsigned int i);   // Get Q_s fluctuation for the given quark
     
     void SetFluctuationShape(Fluctuation_shape s);
     Fluctuation_shape GetFluctuationShape();

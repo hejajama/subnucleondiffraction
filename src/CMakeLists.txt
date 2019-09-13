@@ -5,27 +5,32 @@ add_library(
 	STATIC
 	mz_ipsat/dipoleamplitude.cpp
 	mz_ipsat/dglap_cpp/AlphaStrong.cpp
-	mz_ipsat/dglap_cpp/EvolutionLO.cpp
+	mz_ipsat/dglap_cpp/EvolutionLO_nocoupling.cpp
 	)
+
+add_library(
+	ddis
+	STATIC
+	nucleons.cpp
+	ipsat_proton.cpp
+	dipole.cpp
+	ipglasma.cpp
+	gdist_dglap.cpp
+	wilsonline.cpp
+	#virtual_photon.cpp
+	#wave_function.cpp
+	vector.cpp
+	smooth_ws_nuke.cpp
+)
 
 add_executable(
 	subnucleondiffraction	
-	dipole.cpp
-	gauss_boost.cpp
-	wave_function.cpp
 	main.cpp
 	diffraction.cpp
-	gdist_dglap.cpp
-	vector.cpp
-	wilsonline.cpp
-	ipglasma.cpp
 	subnucleon_config.cpp
-	ipsat_proton.cpp
-	nucleons.cpp
-	virtual_photon.cpp
-	dis.cpp
-	smooth_ws_nuke.cpp
+	gauss_boost.cpp
 	gaus_lc.cpp
+	dis.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp
 	)
 
@@ -35,6 +40,7 @@ find_package(GSL REQUIRED)    #
 target_link_libraries(
 	subnucleondiffraction
 	PRIVATE
+	ddis
 	amplitude
 	ColorDipole
 	mzipsat

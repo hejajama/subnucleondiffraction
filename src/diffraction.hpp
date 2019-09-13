@@ -8,7 +8,7 @@
 #define diffraction_hpp
 
 #include "dipole.hpp"
-#include "wave_function.hpp"
+#include <amplitudelib/wave_function.hpp>
 #include <tools/config.hpp>
 
 using namespace Amplitude;

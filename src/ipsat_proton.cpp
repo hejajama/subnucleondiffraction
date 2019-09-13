@@ -19,9 +19,11 @@
 #include "mz_ipsat/dipoleamplitude.hpp"
 
 // IPsat 2012
+#ifdef USE_FORTRAN_IPSAT12
 extern "C" {
        double dipole_amplitude_(double* xBj, double* r, double* b, int* param);
      };
+#endif
 
 int IPSAT12_PAR = 2;    // m_c=1.4 GeV
 
@@ -47,43 +49,31 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
     
     double tpsum = 0;
     tpsum = Density(b);
-    
+    double blen = b.Len();
+    // pi^2/2Nc as * xg
+    double ipsat_exponent = 0;
     if (ipsat == IPSAT06)
     {
-        double skew=1.0;
-        if (skewedness and r.Len() < MAXR_SKEW)
-        {
-            double skew_lambda = LogDerivative_xg(xpom, r.Len());
-            skew = Skewedness(skew_lambda);
-        }
-        //std::cout << "skew at r=" << r.Len() << " is " << skew << std::endl;
-        if (saturation)
-            return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew*gdist->Gluedist(xpom, r.LenSqr()) * tpsum  );
-        else
-            return r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew * gdist->Gluedist(xpom, r.LenSqr()) * tpsum  ;
+        ipsat_exponent = gdist->Gluedist(xpom, r.LenSqr());
     }
     else if (ipsat == IPSAT12)
     {
-        
-        
-        if (!saturation)
-        {
-            std::cerr << "Nonsat is not defined for ipsat2012" << std::endl;
-            exit(1);
-        }
+#ifndef USE_FORTRAN_IPSAT12
+        cerr << "IPsat12 support is not complied (requires Fortran compiler!)" << endl;
+        exit(1);
+#else
         // dipole_amplitude(xBj, r, b, parameterSet) gives amplitude 2(1 - exp(c*T(p)))
+        double tmpb=0;  double tmpr = r.Len();
+       	// If we do not have fluctuations, do not modify geometry
+        if (B_q==4.0 and B_p == 0 and saturation  and Qs_fluctuation_sigma==0)
+            return dipole_amplitude_(&xpom, &tmpr, &blen, &IPSAT12_PAR)/2.0;
+ 
         // We have to calculate "gluedist" as in case of ipsat06
-        double tmpb=b.Len(); //0;
-        double tmpr = r.Len();
-        
         // par 1: m_c=1.27,   2: m_c=1.4
         double n = dipole_amplitude_(&xpom, &tmpr, &tmpb, &IPSAT12_PAR)/2.0;
-        
-        if (n>=1) return 1; if (n<=0) return 0;
-        
-        return n;
-        
-        double c = std::log(1.0-n);
+       
+ 
+        double c = -std::log(1.0-n);
         
         if (std::isnan(c) or std::isinf(c))
         {
@@ -92,44 +82,49 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
             //
             // NOTE: When you calculate F_2, be very careful! This may have significant effect
             // Also, in case of light mesons, there could be some effect!
-            return 1.0;
+            
+            // Fall back to round proton! This gives approximately 1 if impact parameter is not crazy
+            double tmpb = b.Len();
+            return dipole_amplitude_(&xpom, &tmpr, &tmpb, &IPSAT12_PAR)/2.0;
+            //return 1.0;
         }
         
         double tp = 1.0/(2.0*M_PI*4.0)*std::exp(- tmpb*tmpb / (2.0*4.0));
         c /= tp;
         
-        // now c ~ pi^2/(2Nc) as*xg * r^2
-        /*
-        double lqcd_amir=0.156;
-        double musqr_amir =4.0/(tmpr*tmpr) + 1.51;
-        double as_amir = 12.0*M_PI / ( (33.0 - 2.0*4.0)*log(musqr_amir / (lqcd_amir*lqcd_amir)) );
-        return -c * 2.0*3.0 / (M_PI*M_PI) / as_amir / (tmpr*tmpr);*/
-        
-        
-        double skew=1.0; // now c contains xg that is modified by skewedness correction if enabled
-        if (skewedness and tmpr < MAXR_SKEW)
-        {
-            double skew_lambda = LogDerivative_xg(xpom, r.Len());
-            if (std::isnan(skew_lambda))
-            {
-                std::cerr << "skew nan at xpom=" << xpom << " r = " << r.Len() << std::endl;
-                skew=1.0;
-            }
-            else
-                skew = Skewedness(skew_lambda);
-        }
-        return 1.0 - std::exp( GetQsFluctuation(b.GetX(),b.GetY())*skew*c * 1.0/quarks.size()*tpsum);
+        ipsat_exponent = c / r.LenSqr();
+#endif
     }
-    else if (ipsat == MZSAT or ipsat==MZNONSAT)
+    else if (ipsat == MZSAT or ipsat == MZNONSAT)
     {
-        return mzipsat->N(r.Len(), xpom, b.Len());
-            
+        const double Nc=3;
+        ipsat_exponent = M_PI * M_PI / (2.0*Nc) * mzipsat->Alphas_xg(xpom, mzipsat->MuSqr(r.Len()));
     }
     else
     {
         std::cerr << "UNKNOWN IPSAT VERSION!" << std::endl;
         exit(1);
     }
+    
+    double skew = 1.0;
+    if (skewedness and r.Len() < MAXR_SKEW)
+    {
+        double skew_lambda = LogDerivative_xg(xpom, r.Len());
+        if (isnan(skew_lambda))
+            cerr << "NaN skew, probably too large r=" << r.Len() << "? Neglecting skew now.. " << LINEINFO << endl;
+        else
+            skew = Skewedness(skew_lambda);
+    }
+    double tmpb=b.Len(); double tmpr=r.Len();
+    
+    
+    if (saturation)
+        return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew* ipsat_exponent * tpsum  );
+    else
+        return r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew* ipsat_exponent * tpsum;
+    
+
+   
     return 0;
     
 }
@@ -170,6 +165,10 @@ double Ipsat_Proton::Amplitude_Tp(double xpom, double r, double tp)  // Dipole a
 {
     if (ipsat == IPSAT12)
     {
+#ifndef USE_FORTRAN_IPSAT12
+        cerr << "IPsat12 support is not complied (requires Fortran compiler!)" << endl;
+        exit(1);
+#else
         if (!saturation)
         {
             std::cerr << "Nonsat is not defined for ipsat2012" << std::endl;
@@ -195,6 +194,7 @@ double Ipsat_Proton::Amplitude_Tp(double xpom, double r, double tp)  // Dipole a
         c *= tp;
         
         return 1.0 - std::exp(c);
+#endif
     }
     else
     {
@@ -274,6 +274,32 @@ void Ipsat_Proton::InitializeTarget()
             
         }
      }
+    else if (shape == MORELAND)
+    {
+        // Scott's Python script converted to C++
+        // see original in scott_sampler/sampler.py
+        // Numbers are in fm, converted to GeV^-1 at the end
+        // NOTE: Some parameters also copied to SampleQSFluctuations
+        double radius = 0.87;
+        double structure_parameter = 0.3;
+        unsigned int constituent_number=5;
+        double sigma_fluct=0.81;
+        double constituent_width = 0.2 + structure_parameter*(radius - 0.2);
+        double sampling_radius = std::sqrt( std::pow(radius,2) - std::pow(constituent_width,2));
+        double gamma_shape = 1./(constituent_number*std::pow(sigma_fluct,2) );
+        
+        for (unsigned int i=0; i < constituent_number; i++)
+        {
+            double qx = gsl_ran_gaussian(global_rng, sampling_radius);
+            double qy = gsl_ran_gaussian(global_rng, sampling_radius);
+            Vec tmpvec(qx*FMGEV,qy*FMGEV,0);
+            Vec tmpvec3d(qx*FMGEV,qy*FMGEV,0);  // Not really 3d!
+            quarks.push_back(tmpvec);
+            quark_bp.push_back(constituent_width*constituent_width*FMGEV*FMGEV);
+            quarks3d.push_back(tmpvec3d);
+            
+        }
+    }
         // Sample uncorrelated quark positions
      else {
          
@@ -338,8 +364,9 @@ void Ipsat_Proton::InitializeTarget()
             
         }
      }
-    SampleQsFluctuations();
     
+    SampleQsFluctuations();
+
     // set center of mass to origin
     if (origin_at_center_of_mass)
     {
@@ -367,6 +394,7 @@ void Ipsat_Proton::InitializeTarget()
         center3d = GeometricMedian(quarks3d);
         NormalizeFluxTubeThickness();
     }
+    
 }
 
 /*
@@ -380,6 +408,8 @@ void Ipsat_Proton::SampleQsFluctuations()
     
     if (std::abs(Qs_fluctuation_sigma) < 1e-10)
     {
+        for (int i=0; i < quarks.size(); i++)
+            qs_fluctuations_quarks.push_back(1.0);
         return; // No fluctuations
     }
     
@@ -398,25 +428,38 @@ void Ipsat_Proton::SampleQsFluctuations()
     
     if (fluctuation_shape == FLUCTUATE_QUARKS)
     {
+        
+        
+    
         // Saturation scale of each quark fluctuates from a Gaussian distribution
         // Note that as Q_s^2 ~ xg * T_q, and we get ln Q_s^2 fluctuations from
         // a Gaussian distribution, this same distribution can be used to describe
         // the normalization fluctuations of quarks
         
         
-        
         int nq  = quarks.size();
         double sum=0;
         for (int i=0; i<nq; i++)
         {
-            double f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
-            double fluct = std::exp(f)/lognormal_mean;
-            qs_fluctuations_quarks.push_back(fluct);
-            sum+=fluct;
+            double f = 1;
+            if (shape == MORELAND)
+            {
+                double sigma_fluct=0.81;
+                double gamma_shape = 1./(nq*std::pow(sigma_fluct,2) );
+                f=gsl_ran_gamma(global_rng, gamma_shape, 1./gamma_shape);
+            }
+            else
+            {
+                f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
+                f = std::exp(f)/lognormal_mean;
+            }
+            qs_fluctuations_quarks.push_back(f);
+            sum+=f;
         }
         cout << "# Sampled " << nq << " quark fluctuations ";
         for (int i=0; i<nq; i++) cout << qs_fluctuations_quarks[i] << " ";
         cout << " average Q_s^2 fluctuation " << sum/nq << endl;
+        
     }
     else if (fluctuation_shape == LOCAL_FLUCTUATIONS)
     {
@@ -440,7 +483,6 @@ void Ipsat_Proton::SampleQsFluctuations()
                 double fluct;
                 if (Qs_fluctuation_sigma > 0)
                 {
-                    //f = fluct;  // no b dependence
                     double f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
                     fluct = std::exp(f)/lognormal_mean;
                     fluct_coef_sum += fluct; pts++; stdev += std::pow(1.0-fluct,2.0);
@@ -462,6 +504,20 @@ void Ipsat_Proton::SampleQsFluctuations()
     }
     
 }
+
+/*
+ * Get Q_s fluctuation of the given quark
+ */
+double Ipsat_Proton::GetQuarkQsFluctuation(unsigned int i)
+{
+    if (i >= qs_fluctuations_quarks.size())
+    {
+        cout << "Warning, asked Q_s fluctuations for quark " << i << "/" <<qs_fluctuations_quarks.size() << endl;
+        return 1.0;
+    }
+    return qs_fluctuations_quarks[i];
+}
+
 
 /*
  * Get Q_s fluctuations on the transverse plane
@@ -502,7 +558,7 @@ void Ipsat_Proton::Init()
     shape = GAUSSIAN;
     skewedness=false;
     Qs_fluctuation_sigma=0;
-    fluctuation_shape = LOCAL_FLUCTUATIONS;
+    fluctuation_shape = FLUCTUATE_QUARKS;
     proton_structure = QUARKS ;
     fluxtube_normalization = -1;
     origin_at_center_of_mass = false;
@@ -512,9 +568,14 @@ void Ipsat_Proton::Init()
 }
 Ipsat_Proton::Ipsat_Proton()
 {
-    gdist = new DGLAPDist();
-    allocated_gdist = true;
+    
+    allocated_gdist = false;
+    
+#ifdef USE_FORTRAN_IPSAT12
     ipsat = IPSAT12;
+#else
+    ipsat = MZSAT;
+#endif
     saturation=true;
     
                                            // (4.939286653112, 1.1, 0.009631194037871, 3.058791613883, 1.342035015621);
@@ -528,22 +589,35 @@ Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
     if (version == MZSAT)
     {
         ipsat = MZSAT;
-        mzipsat = new MZ_ipsat::DipoleAmplitude(2.146034445992, 1.1, 0.09665075464199, 2.103826220003, 1.351650642298);
+        double C=2.2894; double mu0 = std::sqrt(1.1); double lambdag=0.08289; double Ag=2.1953; double mc=1.3528;
+        mzipsat = new MZ_ipsat::DipoleAmplitude(C, mu0, lambdag , Ag , mc );
         mzipsat->SetSaturation(true);
         saturation = true;
     }
     else if (version == MZNONSAT)
     {
+        double C = 4.2974; double mu0=std::sqrt(1.1); double lambdag = -0.006657; double Ag=3.0391; double mc = 1.3504;
         ipsat=MZNONSAT;
-        mzipsat = new MZ_ipsat::DipoleAmplitude(4.939286653112, 1.1, -0.009631194037871, 3.058791613883, 1.342035015621);
+        mzipsat = new MZ_ipsat::DipoleAmplitude(C, mu0, lambdag, Ag, mc);
         mzipsat->SetSaturation(false);
         saturation=false;
         
     }
     else if (version == IPSAT12)
     {
+#ifndef USE_FORTRAN_IPSAT12
+        cerr << "IPsat12 support is not complied (requires Fortran compiler!)" << endl;
+        exit(1);
+#endif
         ipsat = IPSAT12;
         saturation=true;
+    }
+    else if (version == IPSAT06)
+    {
+        gdist = new DGLAPDist();
+        allocated_gdist=true;
+        saturation = true;
+        
     }
     Init();
     
@@ -585,16 +659,28 @@ double Ipsat_Proton::xg(double x, double r)
     }
     else if (ipsat == IPSAT12)
     {
+#ifndef USE_FORTRAN_IPSAT12
+        cerr << "IPsat12 support is not complied (requires Fortran compiler!)" << endl;
+        exit(1);
+#else
         double tmpb = 0;
         
         double n = dipole_amplitude_(&x, &r, &tmpb, &IPSAT12_PAR)/2.0;
         double exp = std::log(1.0-n);
         // exp is -pi^2 r^2/(2Nc) as xg T(0)
         double musqr = 4.0/(r*r) + 1.428;   // 1.428 corresponds to m_c=1.4 GeV
+        if (IPSAT12_PAR != 2)
+        {
+            cerr << "Warning: mc=1.4 parameters used when extracting xg, but we have mc=1.27 IPsat! " << LINEINFO << endl;
+        }
         double as = 12.0*M_PI / ( (33.0-2.0*3.0)*log(musqr/(0.156*0.156) ) );
         
         return -2.0*3.0/ (M_PI*M_PI * as* r*r * 1.0/(2.0*M_PI*4.0))*exp;
-        
+#endif
+    }
+    else if (ipsat == MZSAT or ipsat==MZNONSAT)
+    {
+        return mzipsat->xg(x, mzipsat->MuSqr(r));
     }
     else
     {
@@ -658,13 +744,13 @@ double inthelperf_exponential3d(double z, void *p)
 
 double Ipsat_Proton::QuarkThickness(double r, int i)
 {
-    if (shape == GAUSSIAN or shape == ALBACETE)
+    if (shape == GAUSSIAN or shape == ALBACETE or shape==MORELAND)
     {
         double bp = quark_bp[i];
         double fluct = 1.0;
         if (fluctuation_shape == FLUCTUATE_QUARKS)
         {
-            fluct = qs_fluctuations_quarks[i];
+            fluct = GetQuarkQsFluctuation(i);
         }
         return fluct/(2.0*M_PI*bp)*std::exp(- r*r / (2.0*bp));
     }
@@ -691,6 +777,11 @@ double Ipsat_Proton::QuarkThickness(double r, int i)
         
         // 2d exponential
         //return fluct/(2.0*M_PI*bp*bp)*std::exp(- r / bp);
+    }
+    else
+    {
+        cerr << "Constituent shape unknown! " << LINEINFO << endl;
+        exit(1);
     }
 }
 
@@ -945,6 +1036,8 @@ std::string Ipsat_Proton::InfoStr()
         ss << "Gaussian distribution exp(-b^2/(2B_p))";
     else if (shape == EXPONENTIAL)
         ss << "Exponential distribution, exp(-b/B)";
+    else if (shape==MORELAND)
+        ss << "Scott Moreland's protons";
     
     ss << endl;
     
@@ -962,11 +1055,11 @@ std::string Ipsat_Proton::InfoStr()
     else ss << "disabled";
     ss << endl <<"# ";
     if (ipsat == IPSAT06)
-        ss << "IPsat version: 2006 (KMW)";
+        ss << "IPsat version: 2006 (arXiv:hep-ph/0304189)";
     else if (ipsat == IPSAT12)
-        ss << "IPsat version: 2012";
+        ss << "IPsat version: 2012 (arXiv:1212.2974)";
     else if (ipsat == MZSAT or ipsat==MZNONSAT)
-        ss << "MZipsat fit";
+        ss << "MZipsat fit (arXiv:1804.05311)";
     ss << ". Skewedness in dipole amplitude: ";
     if (skewedness)
         ss << " Enabled";
@@ -1053,7 +1146,7 @@ double Ipsat_Proton::Amplitude_bint(double xpom, double r)
     if (ipsat == MZSAT or ipsat==MZNONSAT)
         return mzipsat->N_bint(r, xpom);
     
-    cerr << "Amplitude_bint only impelmented for MZfit" << endl;
+    cerr << "Amplitude_bint only impelmented for MZfit (ipsat_version must be " << MZSAT << " or " << MZNONSAT << ", I got " << ipsat << ")" << endl;
     return 0;
         
 }
@@ -1063,7 +1156,7 @@ double Ipsat_Proton::Amplitude_sqr_bint(double xpom, double r)
     if (ipsat == MZSAT or ipsat==MZNONSAT)
         return mzipsat->N_sqr_bint(r, xpom);
     
-    cerr << "Amplitude_bint only impelmented for MZfit" << endl;
+    cerr << "Amplitude_bint_sqr only impelmented for MZfit" << endl;
     return 0;
     
 }

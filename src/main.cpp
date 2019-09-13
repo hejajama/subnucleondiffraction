@@ -25,7 +25,7 @@
 #include "ipglasma.hpp"
 #include "nucleons.hpp"
 #include "dis.hpp"
-#include "virtual_photon.hpp"
+#include <amplitudelib/virtual_photon.hpp>
 #include "gitsha1.h"
 
 using namespace std;

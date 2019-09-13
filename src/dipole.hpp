@@ -43,6 +43,18 @@ public:
     double SaturationScale(double xpom, Vec b);
     
     virtual double Density(Vec b);  // T_p(b), or whatever replaces T_b
+    
+    virtual double Amplitude_bint(double xpom, double r);
+    virtual double Amplitude_sqr_bint(double xpom, double r);
+
+};
+
+enum Ipsat_version
+{
+    IPSAT06,    // KMW hep-ph/0606272
+    IPSAT12,     // Rezaeian et al, 1212.2974
+    MZSAT,
+    MZNONSAT
 };
 
 #endif

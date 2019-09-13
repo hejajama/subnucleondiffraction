@@ -18,6 +18,7 @@ link_directories("../amplitudelib_v2/build/lib/")
 
 # AmplitudeLib headers
 include_directories("../amplitudelib_v2/")
+include_directories("./src/")
 
 add_subdirectory(libColorDipole/src/)
 add_subdirectory(src)
@@ -25,3 +26,9 @@ add_subdirectory(tools)
 
 set_target_properties(subnucleondiffraction PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" )
+set_target_properties(ddis PROPERTIES
+     LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib
+    ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib )
+set_target_properties(mzipsat PROPERTIES
+     LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib
+    ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib )

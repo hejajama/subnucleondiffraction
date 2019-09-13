@@ -10,9 +10,11 @@
  */
 
 #include <tools/tools.hpp>
-#include "wave_function.hpp"
+#include <amplitudelib/wave_function.hpp>
 #include <iostream>
 #include <string>
+
+typedef double REAL;
 
 class GausLC : public WaveFunction {
     public:

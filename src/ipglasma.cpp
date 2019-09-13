@@ -156,6 +156,12 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
         return 1;
     if (result < 0)
         return 0;
+
+    if (isnan(result))
+    {
+        cerr << "Wilson line trance NaN, quark coords " << q1[0] << ", " << q1[1] << " and " << q2[0] << ", " << q2[1] << endl;
+	exit(1);
+    } 
      
     return result;
 }
@@ -168,6 +174,9 @@ double IPGlasma::AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] 
         or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
         or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
         return 0;
+double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
+        if (r < std::abs( xcoords[1] - xcoords[0]))
+                        return 0;
     
     // First find corresponding grid indeces
     WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
@@ -220,16 +229,37 @@ WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
 
 IPGlasma::IPGlasma(std::string file)
 {
+    int load = LoadData(file, 5.12/512.0);     // By default assume lattice spacing 0.01fm, or 5.12fm 512^2 lattice
+
+    if (load<0)
+        exit(1);
+}
+
+IPGlasma::IPGlasma(std::string file, double step, WilsonLineDataFileType type)
+{
+   int load =LoadData(file, step, type);
+    
+    if (load<0)
+        exit(1);
+}
+
+
+// Note that here step is in fm!
+int IPGlasma::LoadData(std::string fname, double step, WilsonLineDataFileType type)
+{
     // Load data
-    datafile = file;
+    datafile=fname;
+    
+    if (type == BINARY)
+        return LoadBinaryData(fname, step);
+    
     // Syntax: x y [fm/indeces] matrix elements Re Im for elements (0,0), (0,1), (0,2), (1,0), ...
-    std::ifstream f(file.c_str());
+    std::ifstream f(fname.c_str());
     
     if (!f.is_open())
     {
-        std::cerr << "Could not open file " << file << " " << LINEINFO << std::endl;;
-        exit(1);
-        return;
+        std::cerr << "Could not open file " << fname << " " << LINEINFO << std::endl;;
+        return -1;
     }
     std::string line;
     
@@ -251,7 +281,6 @@ IPGlasma::IPGlasma(std::string file)
         // Datafile is in fm, but we want to use GeVs in this code
         // Once we have load all points, we will sift all coordinates such that 0 is at the center
         
-        double step = 5.12/512.0; // 1024^2, L=5.12 fm
 
         x = step*x*FMGEV;
         y = step*y*FMGEV;
@@ -302,6 +331,18 @@ IPGlasma::IPGlasma(std::string file)
     }
     f.close();
     
+    if (xcoords.size() != ycoords.size())
+    {
+        cerr << "xcoords.size() != ycoords.size(), probably uncomplete input data? Datafile " << fname << " -  " << LINEINFO << endl;
+        return -1;
+    }
+
+    if (xcoords.size() < 10 or ycoords.size()<10)
+    {
+        cerr << "Grid size is " << xcoords.size() << " x " << ycoords.size() << ", this makes no sense! File " << fname << " - " << LINEINFO << endl;
+        return -1;
+    }
+    
 
     
     // Now, given that we have a point (x,y), we can find the index xind such that
@@ -311,10 +352,101 @@ IPGlasma::IPGlasma(std::string file)
     // Of course this is symmetric and we could just as well swap xind and yind
 
    SetSchwinger(false); 
-    //std::cout <<"# Loaded " << wilsonlines.size() << " Wilson lines from file " << file << ", grid size " << xcoords.size() << " x " << ycoords.size() << " grid range [" << xcoords[0] << ", " << xcoords[xcoords.size()-1] << "]" << " step size " << xcoords[1]-xcoords[0] << " GeV^-1" << std::endl;
+   // std::cout <<"# Loaded " << wilsonlines.size() << " Wilson lines from file " << datafile << ", grid size " << xcoords.size() << " x " << ycoords.size() << " grid range [" << xcoords[0] << ", " << xcoords[xcoords.size()-1] << "]" << " step size " << xcoords[1]-xcoords[0] << " GeV^-1" << std::endl;
 
         
+    return 0;
+}
+
+
+/*
+ * Load data from binary file
+ */
+int IPGlasma::LoadBinaryData(std::string fname, double step)
+{
+    std::ifstream InStream;
+    InStream.precision(10);
+    InStream.open(fname.c_str(), std::ios::in | std::ios::binary);
+    int N;
+    int Nc;
+    double L,a;
     
+    if(InStream.is_open())
+    {
+        // READING IN PARAMETERS -----------------------------------------------------------------//
+        double temp;
+        InStream.read(reinterpret_cast<char*>(&N), sizeof(int));
+        InStream.read(reinterpret_cast<char*>(&Nc), sizeof(int));
+        InStream.read(reinterpret_cast<char*>(&L), sizeof(double));
+        InStream.read(reinterpret_cast<char*>(&a), sizeof(double));
+        InStream.read(reinterpret_cast<char*>(&temp), sizeof(double));
+        
+        std::cout << "# BINARY Size is " << N << ", Nc " << Nc << ", length is [fm] " << L << ", a is [fm]" << a << "  (user specified " << step << ")" << std::endl;
+        
+        // Init Wilson lines - fill in later
+        wilsonlines.clear();
+        for (unsigned int i=0; i<N*N; i++)
+        {
+            WilsonLine w;
+            wilsonlines.push_back(w);
+        }
+        
+        
+        // READING ACTUAL DATA --------------------------------------------------------------------//
+        double ValueBuffer;
+        int INPUT_CTR=0;
+        double re,im;
+        
+        while( InStream.read(reinterpret_cast<char*>(&ValueBuffer), sizeof(double)))
+        {
+            if(INPUT_CTR%2==0)              //this is the real part
+            {
+                re=ValueBuffer;
+            }
+            else                            // this is the imaginary part, write then to variable //
+            {
+                im=ValueBuffer;
+                
+                int TEMPINDX=((INPUT_CTR-1)/2);
+                int PositionIndx = TEMPINDX / 9;
+                int ix = PositionIndx / N;
+                int iy = PositionIndx - N*ix;
+                
+                
+                int MatrixIndx=TEMPINDX - PositionIndx*9;
+                int j=MatrixIndx/3;
+                int k=MatrixIndx-j*3;
+                
+                int indx = N*iy + ix;
+                wilsonlines[indx].Set(j,k, std::complex<double> (re,im));
+            }
+            INPUT_CTR++;
+        }
+    }
+    else
+    {
+        std::cerr << "ERROR COULD NOT OPEN FILE";
+    }
+    
+    InStream.close();
+    
+    // Fill x and y coordinate values in GeV^-1
+    for (unsigned int i=0; i<N; i++)
+    {
+        xcoords.push_back(i*a*5.068);
+        ycoords.push_back(i*a*5.068);
+    }
+    
+    // Shift coordinates s.t. 0 fm is at the center
+    double center = xcoords[xcoords.size()/2];
+    for (int i=0; i<xcoords.size(); i++)
+    {
+        xcoords[i] -= center;
+        ycoords[i] -= center;
+    }
+    
+    SetSchwinger(false);
+    return 0;
 }
 
 double IPGlasma::MinX()
@@ -337,7 +469,7 @@ double IPGlasma::XStep()
 std::string IPGlasma::InfoStr()
 {
     std::stringstream ss;
-    ss << "# IPGlasma loaded from file " << datafile ;
+    ss << "# IPGlasma loaded from file " << datafile << " lattice " << xcoords.size() << "^2 range [" << xcoords[0]/5.068 << ", " << xcoords[xcoords.size()-1]/5.068 << "] fm" ;
     if (schwinger) ss << ", schwinger mechanism included, rc=" << schwinger_rc << " GeV^-1";
     return ss.str();
 }
