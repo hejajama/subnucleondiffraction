@@ -347,9 +347,6 @@ int main(int argc, char* argv[])
     cout << "# " << InfoStr() << endl;
     //cout << "# " << *wavef << endl;
     
-    double mp = 0.938;
-    double mjpsi = wavef->MesonMass();
-    
     
     if (mode == PRINT_NUCLEUS)
     {
