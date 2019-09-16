@@ -199,22 +199,39 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     if (DIJET)
     {
-        double pt0  =0.5;
-        double pt1 = 0.5;
         double dphi = t;
-        double Q2=Qsqr;
+        
+        // Setup: select kinematics (jet rapidities = z1,z2)
         double z0=0.5; double z1=0.5;
+        // Quark flavor, note that currently only one mass for quarks is supported
         double mq=1.4;
         // sum_f e_f^2
         double efsum = std::pow(2.0/3.0,2.0); //charm
-        double eps = std::sqrt(Q2*z0*z1+mq*mq);
+        double eps = std::sqrt(Qsqr*z0*z1+mq*mq);
+        
+        // Set jet pt's, vary angle
+        /*
+        double pt0  =0.5;
+        double pt1 = 0.5;
+        
+        
         // Construct dot product
         // Note that now all angles are measured w.r.t. p0, which is set to point along the x axis
         // b . (p0 + p1)
         double b_dot_p0plusp1 = b*pt0*cos(theta_b) + b*pt1*cos(dphi - theta_b);
         // r . (p0 - p1)
         double r_dot_p0minusp1 =r*pt0*cos(theta_r) - r*pt1*cos(dphi - theta_r);
-
+         */
+        
+        // Set Delta = \vec p1 + \vec p2, P = 1/2 (\vec p1 - \vec p2)
+        double delta = 0.2;
+        double P = 1.0;     // k in 1511.07452
+        
+        // t is angle between P and delta
+        // Now all angles are measured wrt delta, which we choose to point along the x axis
+        double b_dot_p0plusp1 = b*delta*std::cos(theta_b);
+        double r_dot_p0minusp1 = r*P*std::cos(dphi - theta_r);
+        
         
         std::complex<double> imag(0,1);
         std::complex<double> exponent = std::exp( -imag* ( b_dot_p0plusp1 + r_dot_p0minusp1/2.0 )  );

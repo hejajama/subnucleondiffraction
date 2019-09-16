@@ -372,8 +372,9 @@ int main(int argc, char* argv[])
         cout << "# Amplitude as a function of angle between P and Delta, Q^2= " << Qsqr << endl;
         cout << "# theta  amplitude  " << endl;
 
-        double tstep = 0.1;
-        for (t=0 ; t<=M_PI*1.0001; t+=tstep)
+        const int tpoints = 15;
+        double tstep = M_PI / tpoints;
+        for (t=0 ; t<=M_PI+tstep/2.0; t+=tstep)
         {
             double xpom = 0.01; // Uses fixed x now, with ipglasma this has no effect
             
@@ -491,7 +492,7 @@ string InfoStr()
 {
     stringstream info;
     
-    info << "Parameters: MCINTPOINTS: " << MCINTPOINTS << " ZINT_INTERVALS " << ZINT_INTERVALS << " MCINTACCURACY " << MCINTACCURACY << " ZINT _RELACCURACY " << ZINT_RELACCURACY;
+    info << "Parameters: MCINTPOINTS: " << MCINTPOINTS << " ";
     info << ". Integration method ";
     if (MCINT == MISER)
         info << "MISER";
@@ -506,9 +507,6 @@ string InfoStr()
     if (REAL_PART) info << "# Real part";
     else info << "# Imaginary part";
     
-    if (FACTORIZE_ZINT)
-        info <<". z integral factorized";
-    else info << ". z integral not factorized";
     
     
     return info.str();
@@ -517,10 +515,5 @@ string InfoStr()
 
 int MCpoints(double t)
 {
-    if (t<0.1)
-        return 5e6;
-    else if (t<0.6)
-        return 1e7;
-    else
-        return 1e8;
+    exit(1); //Todo
 }
