@@ -1,6 +1,6 @@
 /*
  * Diffraction at sub-nucleon scale
- * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015
+ * Heikki Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2019
  */
 
 #include <iostream>
@@ -16,8 +16,6 @@
 
 #include "dipole.hpp"
 #include "diffraction.hpp"
-#include "gauss_boost.hpp"
-#include "gaus_lc.h"
 #include "smooth_ws_nuke.hpp"
 #include "ipsat_proton.hpp"
 #include "vector.hpp"
@@ -39,7 +37,6 @@ gsl_rng* global_rng;
 enum MODE
 {
     AMPLITUDE_DT,   // Calculate amplitude as a function of t, real/imag part set by other cli argument
-    CORRECTIONS ,    // Caluclate corrections, require dipole amplitude with rotational symmetry
     PRINT_NUCLEUS,
     F2,             // Calculate F2
     SATURATION_SCALE    // Print saturation scale on a g gripd
@@ -74,7 +71,6 @@ int main(int argc, char* argv[])
     double qsfluct_sigma=0;
     Fluctuation_shape fluctshape = LOCAL_FLUCTUATIONS;
     bool auto_mcintpoints = false;
-    std::string wavef_file = "";
     bool schwinger = false;
     double schwinger_rc = 0;
     int rng_offset=0;
@@ -129,19 +125,6 @@ int main(int argc, char* argv[])
             REAL_PART = true;
         else if (string(argv[i])=="-imag")
             REAL_PART = false;
-        else if (string(argv[i])=="-wavef")
-        {
-            if (string(argv[i+1])=="gauslc")
-                wavef_model = GAUSLC;
-            else if (string(argv[i+1])=="boostedgaussian")
-                wavef_model = BOOSTEDGAUSSIAN;
-            else
-            {
-                cerr << "Unknown wave function " << argv[i+1] << endl;
-                exit(1);
-                
-            }
-        }
         else if (string(argv[i])=="-dipole")
         {
             A = StrToInt(argv[i+1]);
@@ -149,26 +132,21 @@ int main(int argc, char* argv[])
             {
                 if (string(argv[i+2])=="ipsatproton")
                 {
-                    amp = new Ipsat_Proton(IPSAT12);
+                    amp = new Ipsat_Proton(MZSAT);
                     ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+3]));
                     ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+4]));
-                    if (string(argv[i+5]) == "ALBACETE")
-                        ((Ipsat_Proton*)amp)->SetShape(ALBACETE);
-                    else
+                    ((Ipsat_Proton*)amp)->SetShape(GAUSSIAN);
+                    if (argc > i+5)
                     {
-                        ((Ipsat_Proton*)amp)->SetShape(GAUSSIAN);
-                        if (argc > i+5)
+                        if (string(argv[i+5])=="fluxtube")
                         {
-                            if (string(argv[i+5])=="fluxtube")
-                            {
-                                ((Ipsat_Proton*)amp)->SetStructure(CENTER_TUBES);
-                                ((Ipsat_Proton*)amp)->SetFluxTubeNormalization(StrToReal(argv[i+5]));
-                            }
-                            else if (string(argv[i+5]).substr(0,1)!="-")
-                            {
-                                cerr << "Unknown ipsatproton option " << argv[i+4] << endl;
-                                exit(1);
-                            }
+                            ((Ipsat_Proton*)amp)->SetStructure(CENTER_TUBES);
+                            ((Ipsat_Proton*)amp)->SetFluxTubeNormalization(StrToReal(argv[i+5]));
+                        }
+                        else if (string(argv[i+5]).substr(0,1)!="-")
+                        {
+                            cerr << "Unknown ipsatproton option " << argv[i+4] << endl;
+                            exit(1);
                         }
                     }
                 }
@@ -237,8 +215,6 @@ int main(int argc, char* argv[])
         }
         else if (string(argv[i])=="-skewedness")
             skewedness = true;
-        else if (string(argv[i])=="-corrections")
-            mode = CORRECTIONS;
         else if (string(argv[i])=="-qsfluct")
             qsfluct_sigma = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-qsfluctshape")
@@ -255,8 +231,6 @@ int main(int argc, char* argv[])
         }
         else if (string(argv[i])=="-satscale")
             mode = SATURATION_SCALE;
-        else if (string(argv[i])=="-wavef_file")
-            wavef_file = argv[i+1];
         else if (string(argv[i])=="-F2")
         {
             mode = F2;
@@ -293,24 +267,6 @@ int main(int argc, char* argv[])
     global_rng = gsl_rng_alloc(rngtype);
     gsl_rng_set(global_rng, seed);
 
-    
-    WaveFunction *wavef;
-    if (wavef_model == GAUSLC)
-    {
-        if (wavef_file == "") wavef_file = "gaus-lc.dat";
-        wavef = new GausLC(wavef_file);
-        cout << "# " << *(GausLC*)wavef << endl;
-    }
-    else if (wavef_model == BOOSTEDGAUSSIAN)
-    {
-        if (wavef_file == "") wavef_file = "gauss-boosted.dat";
-        wavef = new BoostedGauss(wavef_file);
-        cout << "# " << *(BoostedGauss*)wavef << endl;
-    }
-
-    
-    
-    
     amp->SetSkewedness(skewedness);
     if (qsfluct_sigma > 0)
     {
@@ -339,7 +295,7 @@ int main(int argc, char* argv[])
 
     amp->InitializeTarget();
     
-    
+    WaveFunction *wavef = new VirtualPhoton;    // Not used...
 
     Diffraction diff(*amp, *wavef);
     

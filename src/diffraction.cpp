@@ -27,55 +27,6 @@ Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
 }
 
 
-
-
-/*
- * Derivative of the ampltiude, only for rotationally symmetric amplitude
- * Calculate d ln N / d y, y = ln 1/x
- */
-struct AmplitudeDerHeler
-{
-    Diffraction* diff;
-    Polarization pol;
-    double Qsqr;
-    double t;
-};
-
-double AmplitudeDerHelperf(double y, void* p)
-{
-    AmplitudeDerHeler* par = (AmplitudeDerHeler*)p;
-    double x = exp(-y);
-    double res = std::log(par->diff->ScatteringAmplitudeRotationalSymmetry(x, par->Qsqr, par->t, par->pol));
-    return res;
-}
-double Diffraction::LogDerivative(double xpom, double Qsqr, double t, Polarization pol)
-{
-    gsl_function F;
-    F.function=&AmplitudeDerHelperf;
-    AmplitudeDerHeler par; par.Qsqr=Qsqr; par.t=t; par.pol=pol;
-    par.diff  = this;
-    F.params = &par;
-    double result,abserr;
-    double y = std::log(1.0/xpom);
-    gsl_deriv_central (&F, y, 0.1 , &result, &abserr);
-    
-    //cout << "Der " << result << " err " << abserr << endl;
-    return result;
-}
-
-/* Calculate total correction
- */
-double Diffraction::Correction(double xpom, double Qsqr, double t, Polarization pol)
-{
-    double lambda = LogDerivative(xpom, Qsqr, t, pol);
-    
-    double beta = std::tan(lambda*M_PI/2.0);
-    
-    double Rg = 1.0; //std::pow(2.0, 2.0*lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(lambda+5.0/2.0)/gsl_sf_gamma(lambda+4.0);
-    return (1.0+beta*beta)*Rg*Rg;
-}
-
-
 /* 
  * Diffractive scattering amplitude
  * t: squared momentum transfer
@@ -124,21 +75,12 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     // Dipole size up to 10 GeV^-1
     // MC integration parameters: b, theta_b, r, theta_r, Z
     double *lower, *upper;
-    if (FACTORIZE_ZINT or DIJET)
-    {
-        lower = new double[4];
-        upper = new double[4];
-    }
-    else
-    {
-        lower = new double[5];
-        upper = new double[5];
-        lower[4]=zlimit; // Min z
-        upper[4]=1.0 - lower[4];    // Max z
-    }
     
+    lower = new double[4];
+    upper = new double[4];
+   
     lower[0]=lower[1]=lower[2]=lower[3]=0;
-    upper[0] = 100  ; //1*5.068; //100; // Max b
+    upper[0] = 25*5.068;  ; //1*5.068; //100; // Max b
     upper[1] = 2.0*M_PI;
     upper[2] = 10*5.068;//20; //0.5*5.068;  // Max r
     upper[3] = 2.0*M_PI;
@@ -146,8 +88,6 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     gsl_monte_function F;
     F.f = &Inthelperf_amplitude_mc;
     F.dim = 4;
-    if (FACTORIZE_ZINT == false and DIJET==false)
-        F.dim = 5;
     F.params = &helper;
     
     double result,error;
@@ -196,9 +136,6 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
     helper->theta_r = vec[3];
     
     double z = 0.5;// Put z=0.5 as it sets b to the geometric average of quarks
-    
-    if (!FACTORIZE_ZINT and !DIJET)
-        z = vec[4];
         
     return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z, helper->polarization);
     
@@ -234,32 +171,21 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
         
     // Recall quark and gluon positions:
-    // Quark: b + zr
-    // Antiquark: b - (1-z) r
-    
-    // If do like Lappi, Mantysaari: set z=1/2 here
+    // Quark: b + 1/2 r
+    // Antiquark: b - 1/2 r
+
     
     double bx = b*cos(theta_b);
     double by = b*sin(theta_b);
     double rx = r*cos(theta_r);
     double ry = r*sin(theta_r);
     
-    // q and antiq positions
-    double tmpz = z;
-    z=0.5; // Do not use z when calcualting antiquark/quark positions, just b is geometric mean
-    if (FACTORIZE_ZINT)
-    //    std::cerr << "Check FACTORIZE_ZINT code!" << std::endl;
-        z=0.5;      // Use b as geometric average, decouple zintegral
-    
-    
-    double qx = bx + z*rx; double qy = by + z*ry;
-    double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
-    
-    z = tmpz;
 
-    double res = 0;
     
-    res = 2.0 * r * b;  // r and b from Jacobians, 2 as we have written sigma_qq = 2 N
+    
+    double qx = bx + rx/2.0; double qy = by + ry/2.0;
+    double qbarx = bx - rx/2.0; double qbary = by - ry/2.0;
+
     
     double delta = std::sqrt(t);
     
@@ -279,6 +205,8 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         double Q2=Qsqr;
         double z0=0.5; double z1=0.5;
         double mq=1.4;
+        // sum_f e_f^2
+        double efsum = std::pow(2.0/3.0,2.0); //charm
         double eps = std::sqrt(Q2*z0*z1+mq*mq);
         // Construct dot product
         // Note that now all angles are measured w.r.t. p0, which is set to point along the x axis
@@ -286,7 +214,6 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         double b_dot_p0plusp1 = b*pt0*cos(theta_b) + b*pt1*cos(dphi - theta_b);
         // r . (p0 - p1)
         double r_dot_p0minusp1 =r*pt0*cos(theta_r) - r*pt1*cos(dphi - theta_r);
-        
 
         
         std::complex<double> imag(0,1);
@@ -304,6 +231,12 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         {
             result = r*b*exponent * amp * gsl_sf_bessel_K0(eps*r);
             // Longitudinal photon wave function = K_0(eps*r)
+            
+            // Constants, following (20) in 1511.07452
+            // Not including (2pi)^2 delta(z_0+z_1 -1)
+            const int Nc=3;
+            const double alpha_em = 1.0/137.0;
+            result *=Nc*alpha_em * efsum * z0*z1 * 8.0*z0*z1*eps*eps / std::pow(2.0, 8.0);
         }
         
         // T
@@ -321,6 +254,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
                 result = r*b*exponent * amp * eps*r*gsl_sf_bessel_K1(eps*r) * r*cos(theta_r)/r;
             else // mass term
                 result = mq*r*b*exponent * amp * gsl_sf_bessel_K0(eps*r);
+            // Coeffs missing
             
         }
         

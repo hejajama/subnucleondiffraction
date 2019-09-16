@@ -34,8 +34,6 @@ public:
     double ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z, Polarization pol=T);
     
     
-    double LogDerivative(double xpom, double Qsqr, double t, Polarization pol=T);   // der ln A / der y
-    double Correction(double xpom, double Qsqr, double t, Polarization pol=T);
     
     void SetNumOfAverages(int n);
     
