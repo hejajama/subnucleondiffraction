@@ -369,7 +369,7 @@ int main(int argc, char* argv[])
     
     else if (mode == AMPLITUDE_DT)
     {
-        cout << "# Amplitude as a function of angle between P and Delta, Q^2= " << Qsqr << endl;
+        cout << "# Amplitude as a function of angle between vecs (see diffraction.cpp), Q^2= " << Qsqr << endl;
         cout << "# theta  amplitude  " << endl;
 
         const int tpoints = 15;
@@ -389,7 +389,7 @@ int main(int argc, char* argv[])
             {
                 lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
             }
-            cout << t << " " << lng << endl;
+            cout << t << " 0 " << lng << endl;
             /*
             double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
             double lng = 0;
