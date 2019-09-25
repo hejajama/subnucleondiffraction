@@ -46,9 +46,11 @@ public:
 
     void SetSchwinger(bool s, double rc=0);
     
+    void SetPeriodicBoundaryConditions(bool s) { periodic_boundary_conditions = s; }
 
 private:
     
+    bool periodic_boundary_conditions;
     
     std::vector< double > xcoords;
     std::vector< double > ycoords;

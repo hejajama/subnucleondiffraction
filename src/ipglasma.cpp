@@ -32,11 +32,14 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
     
     // Out of grid? Return 0 (probably very large dipole)
 
-    if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
-        or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
-        or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
-        or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
-            return 0;
+    if (periodic_boundary_conditions == false)
+    {
+        if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
+            or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
+            or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
+            or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
+                return 0;
+    }
   
 
     double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
@@ -208,6 +211,34 @@ double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
 
 WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
 {
+    
+    if (periodic_boundary_conditions)
+    {
+        double L = xcoords[xcoords.size()-1]-xcoords[0];
+        if (x < xcoords[0])
+        {
+            while (x < xcoords[0])
+                x += L;
+        }
+    
+        if (x > xcoords[0])
+        {
+            while (x > xcoords[0])
+                x -= L;
+        }
+        if (y < ycoords[0])
+        {
+            while (y < ycoords[0])
+                y += L;
+        }
+        
+        if (y > xcoords[0])
+        {
+            while (y > xcoords[0])
+                y -= L;
+        }
+    }
+    
     int xind = FindIndex(x, xcoords);
     int yind = FindIndex(y, ycoords);
     
@@ -229,6 +260,7 @@ WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
 
 IPGlasma::IPGlasma(std::string file)
 {
+    periodic_boundary_conditions = false;
     int load = LoadData(file, 5.12/512.0);     // By default assume lattice spacing 0.01fm, or 5.12fm 512^2 lattice
 
     if (load<0)
@@ -237,6 +269,7 @@ IPGlasma::IPGlasma(std::string file)
 
 IPGlasma::IPGlasma(std::string file, double step, WilsonLineDataFileType type)
 {
+    periodic_boundary_conditions=false;
    int load =LoadData(file, step, type);
     
     if (load<0)
