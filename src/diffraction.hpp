@@ -44,7 +44,14 @@ public:
     
     void SetDijetComponent(DIJET_COMPONENT c) { dijet_component=c; }
     DIJET_COMPONENT GetDijetComponent() { return dijet_component; }
+
+    void SetP(double p) { P=p; }
+    void SetDelta(double D) { Delta = D; }
 private:
+    // Kinematics
+    double P;
+    double Delta;
+
     DipoleAmplitude* dipole;
     WaveFunction* wavef;
     int num_of_averages;

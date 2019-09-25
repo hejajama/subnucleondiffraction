@@ -204,7 +204,8 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         // Setup: select kinematics (jet rapidities = z1,z2)
         double z0=0.5; double z1=0.5;
         // Quark flavor, note that currently only one mass for quarks is supported
-        double mq=1.4;
+        double mq=1.28;
+        //mq=0.14;
         // sum_f e_f^2
         double efsum = std::pow(2.0/3.0,2.0); //charm
         double eps = std::sqrt(Qsqr*z0*z1+mq*mq);
@@ -224,12 +225,12 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
          */
         
         // Set Delta = \vec p1 + \vec p2, P = 1/2 (\vec p1 - \vec p2)
-        double delta = 0.2;
-        double P = 1.0;     // k in 1511.07452
+        //double Delta = 0.4; // Members of the class
+        //double P = 2.2;     // k in 1511.07452
         
         // t is angle between P and delta
         // Now all angles are measured wrt delta, which we choose to point along the x axis
-        double b_dot_p0plusp1 = b*delta*std::cos(theta_b);
+        double b_dot_p0plusp1 = b*Delta*std::cos(theta_b);
         double r_dot_p0minusp1 = r*P*std::cos(dphi - theta_r);
         
         

@@ -74,6 +74,9 @@ int main(int argc, char* argv[])
     bool schwinger = false;
     double schwinger_rc = 0;
     int rng_offset=0;
+
+    double P=1;
+    double Delta=0.4;
     
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2017" << endl;
@@ -99,6 +102,7 @@ int main(int argc, char* argv[])
         cout << "-wavef gauslc/boostedgaussian" << endl;
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
         cout << "-schwinger r_c" << endl;
+        cout << "-P, -Delta: set kinematics" << endl;
         return 0;
     }
     
@@ -246,6 +250,10 @@ int main(int argc, char* argv[])
         }
         else if (string(argv[i])=="-rng_offset")
             rng_offset = StrToInt(argv[i+1]);
+        else if (string(argv[i])=="-P")
+            P = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-Delta")
+            Delta = StrToReal(argv[i+1]);
         else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -369,8 +377,11 @@ int main(int argc, char* argv[])
     
     else if (mode == AMPLITUDE_DT)
     {
-        cout << "# Amplitude as a function of angle between P and Delta, Q^2= " << Qsqr << endl;
+        cout << "# Amplitude as a function of angle between P=" << P <<" and Delta=" << Delta <<", Q^2= " << Qsqr << endl;
         cout << "# theta  amplitude  " << endl;
+    
+        diff.SetP(P);
+        diff.SetDelta(Delta);
 
         const int tpoints = 15;
         double tstep = M_PI / tpoints;
@@ -389,7 +400,7 @@ int main(int argc, char* argv[])
             {
                 lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
             }
-            cout << t << " " << lng << endl;
+            cout << t << " 0 " << lng << endl;
             /*
             double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
             double lng = 0;

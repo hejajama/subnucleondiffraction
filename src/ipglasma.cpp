@@ -425,7 +425,7 @@ int IPGlasma::LoadBinaryData(std::string fname, double step)
     }
     else
     {
-        std::cerr << "ERROR COULD NOT OPEN FILE";
+        std::cerr << "ERROR COULD NOT OPEN FILE " << fname << std::endl  ;
     }
     
     InStream.close();
