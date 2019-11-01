@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
             {
                 if (string(argv[i+2])=="ipsatproton")
                 {
-                    amp = new Ipsat_Proton(IPSAT12);
+                    amp = new Ipsat_Proton(MZSAT);
                     ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+3]));
                     ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+4]));
                     if (string(argv[i+5]) == "ALBACETE")
