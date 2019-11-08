@@ -224,9 +224,9 @@ WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
                 x += L;
         }
     
-        if (x > xcoords[0])
+        if (x > xcoords[xcoords.size()-1])
         {
-            while (x > xcoords[0])
+            while (x > xcoords[xcoords.size()-1])
                 x -= L;
         }
         if (y < ycoords[0])
@@ -235,7 +235,7 @@ WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
                 y += L;
         }
         
-        if (y > xcoords[0])
+        if (y > xcoords[ycoords.size()-1])
         {
             while (y > xcoords[0])
                 y -= L;
@@ -540,6 +540,8 @@ int levi_civita(int i, int j, int k)
 
 std::complex<double> IPGlasma::BaryonOperator(double xpom, double q1[2], double q2[2], double q3[2])
 {
+    if (periodic_boundary_conditions == false)
+    {
     if (     q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
           or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
           or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
@@ -548,7 +550,7 @@ std::complex<double> IPGlasma::BaryonOperator(double xpom, double q1[2], double 
           or q3[1] < xcoords[1]  or q3[1] > xcoords[xcoords.size()-1]
         )
         return 0;
-    
+    }
 
     double  r12 = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
     double  r23 = sqrt( pow(q2[0]-q3[0],2) + pow(q2[1]-q3[1],2));
