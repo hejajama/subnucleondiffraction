@@ -30,14 +30,17 @@ const int NC=3;
 double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
 {
     
+    
     // Out of grid? Return 0 (probably very large dipole)
 
-    if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
-        or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
-        or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
-        or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
-            return 0;
-  
+    if (periodic_boundary_conditions == false)
+    {
+        if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
+            or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
+            or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
+            or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
+                return 0;
+    }
 
     double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
 
@@ -169,11 +172,15 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
 double IPGlasma::AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] )
 {
     // Out of grid? Return 1 (probably very large dipole)
-    if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
-        or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
-        or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
-        or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
-        return 0;
+    if (periodic_boundary_conditions == false)
+    {
+        if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
+            or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
+            or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
+            or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
+            return 0;
+    }
+    
 double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
         if (r < std::abs( xcoords[1] - xcoords[0]))
                         return 0;
@@ -208,6 +215,33 @@ double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
 
 WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
 {
+    if (periodic_boundary_conditions)
+    {
+        double L = xcoords[xcoords.size()-1]-xcoords[0];
+        if (x < xcoords[0])
+        {
+            while (x < xcoords[0])
+                x += L;
+        }
+    
+        if (x > xcoords[0])
+        {
+            while (x > xcoords[0])
+                x -= L;
+        }
+        if (y < ycoords[0])
+        {
+            while (y < ycoords[0])
+                y += L;
+        }
+        
+        if (y > xcoords[0])
+        {
+            while (y > xcoords[0])
+                y -= L;
+        }
+    }
+    
     int xind = FindIndex(x, xcoords);
     int yind = FindIndex(y, ycoords);
     
@@ -229,6 +263,7 @@ WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
 
 IPGlasma::IPGlasma(std::string file)
 {
+    periodic_boundary_conditions = false;
     int load = LoadData(file, 5.12/512.0);     // By default assume lattice spacing 0.01fm, or 5.12fm 512^2 lattice
 
     if (load<0)
@@ -237,6 +272,7 @@ IPGlasma::IPGlasma(std::string file)
 
 IPGlasma::IPGlasma(std::string file, double step, WilsonLineDataFileType type)
 {
+    periodic_boundary_conditions = false;
    int load =LoadData(file, step, type);
     
     if (load<0)
@@ -483,4 +519,68 @@ void IPGlasma::SetSchwinger(bool s, double rc)
 {
     schwinger = s;
     schwinger_rc = rc;
+}
+
+/*
+ * Evaluate Baryon operator as defined in 1310.0378
+ * B = epsilon_(ijk) epsilon_(lmn) S^(im)(u) S^jl(v) S^(kn)(w)
+ */
+
+int levi_civita(int i, int j, int k)
+{
+    if (i==j or i==k or j==k) return 0;
+    if (i>=4 or j>=4 or k>=4 or i<0 or j < 0 or k<0)
+    {
+        cerr << "levi_civita requires i,j,k=1,2,3! " << LINEINFO << endl;
+        exit(1);
+    }
+    return -(i-j)*(i-k)*(j-k)/2;
+}
+
+
+std::complex<double> IPGlasma::BaryonOperator(double xpom, double q1[2], double q2[2], double q3[2])
+{
+    if (     q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
+          or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
+          or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
+          or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1]
+          or q3[0] < xcoords[0]  or q3[0] > xcoords[xcoords.size()-1]
+          or q3[1] < xcoords[1]  or q3[1] > xcoords[xcoords.size()-1]
+        )
+        return 0;
+    
+
+    double  r12 = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
+    double  r23 = sqrt( pow(q2[0]-q3[0],2) + pow(q2[1]-q3[1],2));
+    double  r13 = sqrt( pow(q1[0]-q3[0],2) + pow(q1[1]-q3[1],2));
+    WilsonLine wq1 = GetWilsonLine(q1[0], q1[1]);
+    WilsonLine wq2 = GetWilsonLine(q2[0], q2[1]);
+    WilsonLine wq3 = GetWilsonLine(q3[0], q3[1]);
+    
+    std::complex<double> result=0;
+    for (unsigned int i=0; i<3; i++)
+    {
+        for (unsigned int j=0; j<3; j++)
+        {
+            for (unsigned int k=0; k<3; k++)
+            {
+                for (unsigned int l=0; l<3; l++)
+                {
+                    for (unsigned int m=0; m<3; m++)
+                    {
+                        for (unsigned int n=0; n<3; n++)
+                        {
+                            
+                            if (i==j or i==k or j==k or l==m or l==n or m==n) continue;
+                            
+                            std::complex<double> levi(levi_civita(i+1,j+1,k+1) * levi_civita(l+1, m+1, n+1),0);
+                            result +=  levi * wq1.Element(i,m) * wq2.Element(j, l) * wq3.Element(k,n);
+                            
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return result;
 }

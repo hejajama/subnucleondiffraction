@@ -32,6 +32,9 @@ public:
     // Array points are x and y coordinates
     double Amplitude(double xpom, double q1[2], double q2[2]);
     double AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] );
+    
+    // Baryon operator from 1310.0378
+    std::complex<double> BaryonOperator(double xpom, double q1[2], double q2[2], double q3[2]);
 
     WilsonLine& GetWilsonLine( double x, double y); // Find Wilson line that corresponds to the coordinate
     
@@ -46,13 +49,15 @@ public:
 
     void SetSchwinger(bool s, double rc=0);
     
-
+    void SetPeriodicBoundaryConditions(bool s) { periodic_boundary_conditions = s; }
 private:
     
     
     std::vector< double > xcoords;
     std::vector< double > ycoords;
     std::vector< WilsonLine  > wilsonlines;
+    
+    bool periodic_boundary_conditions;
 
     bool schwinger; // true if we use schwinger mechanism
     double schwinger_rc; // Use Schwinger for dipoles larger than schwinger_rc
