@@ -14,7 +14,7 @@ git_describe(GIT_DESCRIBE)
 git_local_changes(GIT_LOCAL_CHANGES)
 
 # Directory where you have build AmplitudeLib libraries 
-link_directories("../amplitudelib_v2/build/lib/")
+link_directories("../amplitudelib_oberon/build/lib/")
 
 # AmplitudeLib headers
 include_directories("../amplitudelib_v2/")

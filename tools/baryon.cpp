@@ -21,6 +21,8 @@ using namespace std;
 double L = 7*Amplitude::FMGEV;
 const double MCINTACCURACY=0.1;
 
+bool totxs = false;
+
 struct inthelper
 {
     IPGlasma *glasma;
@@ -57,11 +59,19 @@ double inthelperf_mc(double* vec, size_t dim, void* p)
     double q3v[2]={q3.GetX(), q3.GetY()};
     
     complex<double> baryon = par->glasma->BaryonOperator(0.01, q1v,q2v,q3v);
-    
+    //complex<double> baryon = par->glasma->Amplitude(0.01, q1v, q2v);
+
+    if (totxs)
+        baryon = 1.0 + baryon/6.0;
+
+    double normalization = std::pow(L, 2);
+    if (totxs == false)    
+        normalization=1;
+
     if (par->imaginary_part == false)
-        return baryon.real() * density / std::pow(L, 2);
+        return baryon.real() * density / normalization;
     else
-        return baryon.imag() * density / std::pow(L, 2);
+        return baryon.imag() * density /normalization;
 }
 
 
@@ -80,9 +90,12 @@ int main(int argc, char* argv[])
     global_rng = gsl_rng_alloc(gsl_rng_default);
     gsl_set_error_handler_off ();
     
-    IPGlasma glasma(fname, 0.0, BINARY);
-    glasma.SetPeriodicBoundaryConditions(true);
-	
+    //IPGlasma glasma(fname, 0.01, TEXT);
+    //glasma.SetPeriodicBoundaryConditions(true);
+	IPGlasma glasma(fname, 0.01, BINARY);
+    glasma.SetPeriodicBoundaryConditions(false);
+    totxs = true;
+
     inthelper helper;
     helper.glasma = &glasma;
 	
@@ -108,6 +121,7 @@ int main(int argc, char* argv[])
         if (iter>=4)
         {
             cerr << "Mcintegral didn't converge  "<< endl;
+            break;
             //return 0;
         }
         //gsl_monte_plain_integrate
@@ -125,7 +139,7 @@ int main(int argc, char* argv[])
     do
     {
         iter++;
-        if (iter>=4)
+        if (iter>=3)
         {
             cerr << "Imaginary part mcintegral didn't converge, result " << result_imag << " +/- " << abserr << endl;
             break;
