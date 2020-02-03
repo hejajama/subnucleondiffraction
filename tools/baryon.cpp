@@ -19,6 +19,7 @@ using namespace std;
 
 
 double L = 7*Amplitude::FMGEV;
+const double MAXDIST = 3 *Amplitude::FMGEV; // Max q distance from the center
 const double MCINTACCURACY=0.1;
 
 bool totxs = false;
@@ -30,25 +31,29 @@ struct inthelper
 };
 
 // Baryon profile
-double T_baryon(Vec v1, Vec v2, Vec v3)
+double T_baryon(Vec v1, Vec v2)
 {
     const double B=4;
     
-    return 1.0/std::pow(2.0*M_PI*B, 3) * std::exp(-(v1.LenSqr() + v2.LenSqr() + v3.LenSqr())/(2.0*B));
+    
+    return 1.0/std::pow(2.0*M_PI*B, 2) * std::exp(-(v1.LenSqr() + v2.LenSqr()))/(2.0*B));
 }
 
-// MC vector: (bx,by,q1x,q1y,q2x,q2y,q3x,q3y)
+// MC vector: (b1x,b1y,q1x,q1y,q2x,q2y)
+// Location for vec q3 is fixed by q1+q2+q3=0
+// q1,q2 are measured w.r.t. impact parameter
 double inthelperf_mc(double* vec, size_t dim, void* p)
 {
     inthelper *par = (inthelper*)p;
     
+    Vec b(vec[0],vec[1]);
     Vec q1(vec[2],vec[3]);
     Vec q2(vec[4],vec[5]);
-    Vec q3(vec[6],vec[7]);
+    Vec q3 = -q1; q3 = q3 - q2;
+   
+    double density = T_baryon(q1,q2);
     
-    double density = T_baryon(q1,q2,q3);
     
-    Vec b(vec[0],vec[1]);
     // b independent target -> more statistics
     q1 = q1 + b;
     q2 = q2+b;
@@ -100,13 +105,13 @@ int main(int argc, char* argv[])
     helper.glasma = &glasma;
 	
 
-    size_t dim=8;
+    size_t dim=6;
     gsl_monte_function fun;
     fun.params=&helper;
     fun.f = inthelperf_mc;
     fun.dim=dim;
-    double min[8] = {-L/2.0, -L/2.0, -L/2.0, -L/2.0, -L/2.0,-L/2.0,-L/2.0,-L/2.0 };
-    double max[8] = {L/2.0, L/2.0, L/2.0, L/2.0, L/2.0,L/2.0,L/2.0,L/2.0 };
+    double min[6] = {-L/2.0, -L/2.0, -MAXDIST,-MAXDIST,-MAXDIST,-MAXDIST };
+    double max[6] = {L/2.0, L/2.0, MAXDIST,MAXDIST,MAXDIST, MAXDIST };
     
     gsl_monte_miser_state *s = gsl_monte_miser_alloc (dim);
     double result_real=0; double result_imag=0;
