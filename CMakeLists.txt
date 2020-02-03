@@ -13,8 +13,10 @@ get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(GIT_DESCRIBE)
 git_local_changes(GIT_LOCAL_CHANGES)
 
+find_package(GSL REQUIRED) 
+
 # Directory where you have build AmplitudeLib libraries 
-link_directories("../amplitudelib_v2/build/lib/")
+link_directories("../amplitudelib_oberon/build/lib/")
 
 # AmplitudeLib headers
 include_directories("../amplitudelib_v2/")
