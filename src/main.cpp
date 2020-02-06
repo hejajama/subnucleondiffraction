@@ -549,8 +549,8 @@ int main(int argc, char* argv[])
         cout << "#Maxr = " << f2.MaxR() << endl;
         // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
         // Note* 4pi, as convention in BoostedGaussian and VirtualPhoton classes are different!!!
-        double xs_t = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
-        double xs_l = 4.0*M_PI*f2.ScatteringAmplitude(xbj, Qsqr, 0, L);
+        double xs_t = f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
+        double xs_l = f2.ScatteringAmplitude(xbj, Qsqr, 0, L);
         double structurefun = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l+xs_t);
         double fl_light =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*xs_l;
         
@@ -565,8 +565,8 @@ int main(int argc, char* argv[])
         if (xbj_c < 0.01 or true)
         {
             cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
-            xs_t_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj_c, Qsqr, 0, T);
-            xs_l_c = 4.0*M_PI*f2.ScatteringAmplitude(xbj_c, Qsqr, 0, L);
+            xs_t_c = f2.ScatteringAmplitude(xbj_c, Qsqr, 0, T);
+            xs_l_c = f2.ScatteringAmplitude(xbj_c, Qsqr, 0, L);
             structurefun_c = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c+xs_t_c);
             fl_c =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c);
         }
@@ -581,8 +581,8 @@ int main(int argc, char* argv[])
         if (xbj_b < 0.01 and false)
         {
             cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
-            xs_t_b = 4.0*M_PI*f2.ScatteringAmplitude(xbj_b, Qsqr, 0, T);
-            xs_l_b = 4.0*M_PI*f2.ScatteringAmplitude(xbj_b, Qsqr, 0, L);
+            xs_t_b = f2.ScatteringAmplitude(xbj_b, Qsqr, 0, T);
+            xs_l_b = f2.ScatteringAmplitude(xbj_b, Qsqr, 0, L);
             structurefun_b = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_b+xs_t_b);
             fl_b =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c);
         }

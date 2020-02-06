@@ -269,9 +269,9 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     if (FACTORIZE_ZINT)
     {
         if (pol == T)
-            res *= wavef->PsiSqr_T_intz(Qsqr, r)/(4.0*M_PI);   // Note: 4pi factor is in PsiSqr_T_intz function!
+            res *= wavef->PsiSqr_T_intz(Qsqr, r);   // Note: 4pi factor is in PsiSqr_T_intz function!
         else 
-            res *= wavef->PsiSqr_L_intz(Qsqr, r)/(4.0*M_PI);	// BUt not in VirtualPhoton, which is used here        
+            res *= wavef->PsiSqr_L_intz(Qsqr, r);	// BUt not in VirtualPhoton, which is used here        
 
 	res *= amp_real; 	/// include only real part
 	
