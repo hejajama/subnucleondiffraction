@@ -235,7 +235,7 @@ WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
                 y += L;
         }
         
-        if (y > xcoords[ycoords.size()-1])
+        if (y > ycoords[ycoords.size()-1])
         {
             while (y > xcoords[0])
                 y -= L;
@@ -549,7 +549,7 @@ std::complex<double> IPGlasma::BaryonOperator(double xpom, double q1[2], double 
           or q3[0] < xcoords[0]  or q3[0] > xcoords[xcoords.size()-1]
           or q3[1] < xcoords[1]  or q3[1] > xcoords[xcoords.size()-1]
         )
-        return 0;
+        return -6;
     }
 
     double  r12 = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
