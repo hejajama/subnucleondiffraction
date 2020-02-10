@@ -158,7 +158,7 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
 std::string Smooth_ws_nuke::InfoStr()
 {
     std::stringstream ss;
-    ss << "Optical Glauber nucleus, A=" << A ;
+    ss << "# Optical Glauber nucleus, A=" << A ;
     if (smooth_approximation) ss << " using smooth nucleus approx KT (41)";
     ss << endl;
     return ss.str();
