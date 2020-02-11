@@ -21,6 +21,7 @@ using namespace std;
 double L = 5*Amplitude::FMGEV;
 const double MAXDIST = 5 *Amplitude::FMGEV; // Max q distance from the center
 const double MCINTACCURACY=0.1;
+double probeB=4.0;
 
 bool totxs = false;
 bool normalize_area = true;
@@ -35,7 +36,7 @@ struct inthelper
 // Baryon profile
 double T_baryon(Vec v1, Vec v2)
 {
-    const double B=4.0;
+    const double B=probeB;
 //    Vec center = v1+v2;
 //    center = center + v3;
 //    center = center*0.333;
@@ -93,6 +94,7 @@ int main(int argc, char* argv[])
     int mcintpoints = StrToReal(argv[2]);
     L = StrToReal(argv[3])*Amplitude::FMGEV;
     string mode = argv[4];
+    probeB=StrToReal(argv[5]);
     if (mode == "baryon")
         dipole = false;
     else if (mode == "dipole")
@@ -103,20 +105,20 @@ int main(int argc, char* argv[])
         exit(1);
     }
     cout << "# Filename: " << fname << " points " << mcintpoints  << " L = " << L/Amplitude::FMGEV << " fm" << endl;
-    cout <<"# Mode: " << mode << endl;
+    cout <<"# Mode: " << mode << " probe size " << probeB << " GeV^(-2)" <<  endl;
     
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
     gsl_set_error_handler_off ();
    
 
-    bool periodicboundary = true;
+    bool periodicboundary = false;
     //IPGlasma glasma(fname, 0.01, TEXT);
     //glasma.SetPeriodicBoundaryConditions(true);
 	IPGlasma glasma(fname, 0.01, BINARY);
     glasma.SetPeriodicBoundaryConditions(periodicboundary);
     totxs = true;
-    normalize_area = true;;
+    normalize_area = true;
 
     cout << "# Compute totxs: " << totxs << " normalize area: " << normalize_area << " periodic boundary conditions: " << periodicboundary << endl;
 
