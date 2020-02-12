@@ -154,6 +154,17 @@ double Ipsat_Proton::Density(Vec b)
         return density;
         
     }
+    else if (proton_structure == TRIANGULAR)
+    {
+        // Effective b is b(1 + e_2 cos(2(th-angle_epsilon_2)) + e_3 (3(th - angle_epsilon_3))
+        double th = std::atan2(b.GetY(), b.GetX());
+        double beff = b.Len() * (1.0 + epsilon_2*std::cos(2.0*(th - angle_epsilon_2))
+                                 + epsilon_3*std::cos(3.0*(th - angle_epsilon_3)));
+        
+        const double Bsize = 4.0; // TODO hardcoded
+        return 1.0 / (2.0*M_PI*Bsize)*std::exp(- beff*beff / (2.0*Bsize));
+        
+    }
     else{
         cerr << "Unkown proton profile!" << endl;
         exit(1);
@@ -216,6 +227,37 @@ void Ipsat_Proton::InitializeTarget()
     
     quarks.clear();
     quark_bp.clear();
+    
+    if (proton_structure == TRIANGULAR)
+    {
+        cout << "# Initializing target, maximum |e_2| is " << B_p << ", maximum |e_3|=" << B_q << endl;
+        epsilon_2=-1000;
+        epsilon_3 = -1000;
+        
+        if (std::abs(B_p)>0.01)
+        {
+            while (std::abs(epsilon_2) > B_p)
+                epsilon_2 = 2.0*B_p * (gsl_rng_uniform(global_rng) - 0.5);
+            // This loop was really not necessary now, but needed if we use a Gaussian
+            // distribution for eccentricities
+        }
+        else
+            epsilon_2=0;
+        
+        if (std::abs(B_q)>0.01)
+        {
+            while (std::abs(epsilon_3) > B_q)
+                epsilon_3 = 2.0*B_q*(gsl_rng_uniform(global_rng)-0.5);
+            // This loop was really not necessary now, but needed if we use a Gaussian
+            // distribution for eccentricities
+        }
+        else
+            epsilon_3=0;
+        
+        cout << "# Initialized e_2=" << epsilon_2 << ", e_3=" << epsilon_3 << endl;
+        angle_epsilon_2 = 2.0*M_PI*gsl_rng_uniform(global_rng);
+        angle_epsilon_3 = 2.0*M_PI*gsl_rng_uniform(global_rng);
+    }
     
     // Correlated sampling
     if (shape == ALBACETE)
