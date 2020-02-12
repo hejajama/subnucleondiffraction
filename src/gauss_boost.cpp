@@ -91,6 +91,8 @@ BoostedGauss::BoostedGauss(std::string file)
     }
     f.close();
 
+    MINZ=0.00001;  // Integration limits
+    MAXZ=0.9999;
 }
 
 
