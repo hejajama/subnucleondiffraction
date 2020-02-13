@@ -116,8 +116,24 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
             skew = Skewedness(skew_lambda);
     }
     double tmpb=b.Len(); double tmpr=r.Len();
-    
-    
+   
+
+    // Test: add dependence on orientation
+    // Poor man's gradient
+    double dxy = 0.01;
+    Vec bx(b.GetX()+dxy, b.GetY());
+    Vec by(b.GetX(), b.GetY()+dxy);
+    double dTdx = (Density(bx) - tpsum)/dxy;
+    double dTdy = (Density(by) - tpsum)/dxy;
+    Vec gradient(dTdx,dTdy);
+
+    // Largest scattering amptliude when r is parallel to b
+    // Add for testing scaling Qs^2 -> Qs^2(0.5 + cos^2)
+    if (tpsum > 0.0001)
+{
+    tpsum *= (0.5 + std::pow( gradient*r / (gradient.Len()*r.Len()) , 2.0) );
+    //cout << "r " << r << " gradient " << gradient << " modification " << (0.5 + std::pow( gradient*r / (gradient.Len()*r.Len()) , 2.0) ) << endl;
+}    
     if (saturation)
         return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew* ipsat_exponent * tpsum  );
     else
@@ -152,6 +168,17 @@ double Ipsat_Proton::Density(Vec b)
         density = FluxTubeThickness(b);
         density *= quarks.size(); // Because this sum is later normalized by 1/N_q
         return density;
+        
+    }
+    else if (proton_structure == TRIANGULAR)
+    {
+        // Effective b is b(1 + e_2 cos(2(th-angle_epsilon_2)) + e_3 (3(th - angle_epsilon_3))
+        double th = std::atan2(b.GetY(), b.GetX());
+        double beff = b.Len() * (1.0 + epsilon_2*std::cos(2.0*(th - angle_epsilon_2))
+                                 + epsilon_3*std::cos(3.0*(th - angle_epsilon_3)));
+        
+        const double Bsize = 4.0; // TODO hardcoded
+        return 1.0 / (2.0*M_PI*Bsize)*std::exp(- beff*beff / (2.0*Bsize));
         
     }
     else{
@@ -216,6 +243,37 @@ void Ipsat_Proton::InitializeTarget()
     
     quarks.clear();
     quark_bp.clear();
+    
+    if (proton_structure == TRIANGULAR)
+    {
+        cout << "# Initializing target, maximum |e_2| is " << B_p << ", maximum |e_3|=" << B_q << endl;
+        epsilon_2=-1000;
+        epsilon_3 = -1000;
+        
+        if (std::abs(B_p)>0.01)
+        {
+            while (std::abs(epsilon_2) > B_p)
+                epsilon_2 = 2.0*B_p * (gsl_rng_uniform(global_rng) - 0.5);
+            // This loop was really not necessary now, but needed if we use a Gaussian
+            // distribution for eccentricities
+        }
+        else
+            epsilon_2=0;
+        
+        if (std::abs(B_q)>0.01)
+        {
+            while (std::abs(epsilon_3) > B_q)
+                epsilon_3 = 2.0*B_q*(gsl_rng_uniform(global_rng)-0.5);
+            // This loop was really not necessary now, but needed if we use a Gaussian
+            // distribution for eccentricities
+        }
+        else
+            epsilon_3=0;
+        
+        cout << "# Initialized e_2=" << epsilon_2 << ", e_3=" << epsilon_3 << endl;
+        angle_epsilon_2 = 2.0*M_PI*gsl_rng_uniform(global_rng);
+        angle_epsilon_3 = 2.0*M_PI*gsl_rng_uniform(global_rng);
+    }
     
     // Correlated sampling
     if (shape == ALBACETE)

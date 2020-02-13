@@ -147,6 +147,8 @@ int main(int argc, char* argv[])
                             ((Ipsat_Proton*)amp)->SetStructure(CENTER_TUBES);
                             ((Ipsat_Proton*)amp)->SetFluxTubeNormalization(StrToReal(argv[i+5]));
                         }
+                         else if (string(argv[i+5])=="eccentric")
+                                ((Ipsat_Proton*)amp)->SetStructure(TRIANGULAR);
                         else if (string(argv[i+5]).substr(0,1)!="-")
                         {
                             cerr << "Unknown ipsatproton option " << argv[i+4] << endl;

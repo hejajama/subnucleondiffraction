@@ -38,6 +38,7 @@ enum Structure
 {
     QUARKS,     // Gaussians around quarks
     CENTER_TUBES,   // Quarks connected by flux tubes that merge at the center of the triangle
+    TRIANGULAR  // shape controlled by epsilon_2 and epsilon_3
 };
 
 enum Fluctuation_shape
@@ -156,6 +157,13 @@ private:
     bool origin_at_center_of_mass;    // If true, move quarks s.t. their center of mass is at b=0
     
     gsl_integration_workspace *intworkspace_zint;   // Used to calculate z int of exponential/fluxtube distribution
+    
+    // eccentricities, used with ProtonSahpe TRIANGULAR
+    double epsilon_2;
+    double epsilon_3;
+    // angles related to "event planes"
+    double angle_epsilon_2;
+    double angle_epsilon_3;
 };
 
 #endif /* ipsat_proton_hpp */
