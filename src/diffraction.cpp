@@ -80,9 +80,9 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     upper = new double[4];
    
     lower[0]=lower[1]=lower[2]=lower[3]=0;
-    upper[0] = 25*5.068;  ; //1*5.068; //100; // Max b
+    upper[0] = 5*5.068;  ; //1*5.068; //100; // Max b
     upper[1] = 2.0*M_PI;
-    upper[2] = 10*5.068;//20; //0.5*5.068;  // Max r
+    upper[2] = 5*5.068;//20; //0.5*5.068;  // Max r
     upper[3] = 2.0*M_PI;
     
     gsl_monte_function F;
@@ -204,8 +204,8 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         // Setup: select kinematics (jet rapidities = z1,z2)
         double z0=0.5; double z1=0.5;
         // Quark flavor, note that currently only one mass for quarks is supported
-        double mq=1.28;
-        //mq=0.14;
+//        double mq=1.28;
+        double mq=0.14;
         // sum_f e_f^2
         double efsum = std::pow(2.0/3.0,2.0); //charm
         double eps = std::sqrt(Qsqr*z0*z1+mq*mq);

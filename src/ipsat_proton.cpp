@@ -174,11 +174,17 @@ double Ipsat_Proton::Density(Vec b)
     {
         // Effective b is b(1 + e_2 cos(2(th-angle_epsilon_2)) + e_3 (3(th - angle_epsilon_3))
         double th = std::atan2(b.GetY(), b.GetX());
-        double beff = b.Len() * (1.0 + epsilon_2*std::cos(2.0*(th - angle_epsilon_2))
+        double beff2 = b.LenSqr() * (1.0 + epsilon_2*std::cos(2.0*(th - angle_epsilon_2))
                                  + epsilon_3*std::cos(3.0*(th - angle_epsilon_3)));
+
+        if (1.0 + epsilon_2*std::cos(2.0*(th - angle_epsilon_2))  + epsilon_3*std::cos(3.0*(th - angle_epsilon_3)) < 0)
+        {
+            cerr << "Negative effective b! " << LINEINFO << endl;
+            exit(1);
+     } 
         
         const double Bsize = 4.0; // TODO hardcoded
-        return 1.0 / (2.0*M_PI*Bsize)*std::exp(- beff*beff / (2.0*Bsize));
+        return 1.0 / (2.0*M_PI*Bsize)*std::exp(- beff2 / (2.0*Bsize));
         
     }
     else{
