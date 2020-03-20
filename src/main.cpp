@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
                     }
                 }
                 else if (string(argv[i+2])=="ipglasma")
-                    amp = new IPGlasma(argv[i+3]);
+                    amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]));
                 else if (string(argv[i+2])=="ipglasma_binary")
                     amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), BINARY);
                 else
