@@ -24,6 +24,17 @@ add_executable(
 	../src/subnucleon_config.cpp
 	)
 add_executable(
+	average_baryon 	
+	average_baryon.cpp
+	../src/dipole.cpp
+	../src/vector.cpp
+	../src/wilsonline.cpp
+	../src/ipglasma.cpp
+	../src/ipsat_proton.cpp
+	../src/gdist_dglap.cpp
+	../src/subnucleon_config.cpp
+)	
+add_executable(
 	amplitude_bline
 	amplitude_bline.cpp
 	../src/dipole.cpp
@@ -83,7 +94,16 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	ColorDipole
+	#ColorDipole
+	GSL::gsl
+	GSL::gslcblas
+)
+target_link_libraries(
+	average_baryon 
+	PRIVATE
+	mzipsat
+	amplitude
+	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
 )
@@ -92,7 +112,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	ColorDipole
+	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
 )
@@ -101,7 +121,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	ColorDipole
+	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
 )
@@ -110,7 +130,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	ColorDipole
+	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
 )
@@ -119,7 +139,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	ColorDipole
+	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
 )
@@ -129,7 +149,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	ColorDipole
+	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
 )

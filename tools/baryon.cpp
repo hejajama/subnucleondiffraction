@@ -86,7 +86,27 @@ double inthelperf_mc(double* vec, size_t dim, void* p)
 
 
 
+double inthelperf_dipole_mc(double* vec, size_t dim, void* p)
+{
+    inthelper *par = (inthelper*)p;
+    
+    Vec b(vec[0],vec[1]);
+    Vec q1(vec[2],vec[3]);
+   
+    double density = 1.0/(2.0*M_PI*probeB) * std::exp(-q1.LenSqr() / (2.0*probeB) );
+    
+    double q1v[2]={q1.GetX()+b.GetX(), q1.GetY()+b.GetY()};
+    double q2v[2]={b.GetX() - q1.GetX() , b.GetY()-q1.GetY()};
+    
+    double dipole = par->glasma->Amplitude(0.01, q1v, q2v);
+    
+    double normalization = std::pow(L, 2);
+    if (normalize_area == false)    
+        normalization=1;
 
+    return density*dipole/normalization;
+
+}
 int main(int argc, char* argv[])
 {
     // Arguments: ipglasma filename  b  schwinger_r
@@ -95,10 +115,17 @@ int main(int argc, char* argv[])
     L = StrToReal(argv[3])*Amplitude::FMGEV;
     string mode = argv[4];
     probeB=StrToReal(argv[5]);
+    size_t dim = 4;
     if (mode == "baryon")
+    {
         dipole = false;
+        dim=6;
+    }
     else if (mode == "dipole")
+    {
         dipole = true;
+        dim=4;
+    }
     else
     {
         cerr << "Unknown mode " << mode << endl;
@@ -112,14 +139,34 @@ int main(int argc, char* argv[])
     gsl_set_error_handler_off ();
    
 
-    bool periodicboundary = false;
+    bool periodicboundary = true;
     //IPGlasma glasma(fname, 0.01, TEXT);
-    //glasma.SetPeriodicBoundaryConditions(true);
+    //glasma.SetPeriodicBoundaryConditions(false);
 	IPGlasma glasma(fname, 0.01, BINARY);
     glasma.SetPeriodicBoundaryConditions(periodicboundary);
     totxs = true;
     normalize_area = true;
 
+/*
+    // test
+    for (double th = 0; th <= 2.0*M_PI; th+=0.1)
+    {
+        double a = 5;
+        double q1[2] = {-a,-a};
+        double q2[2] = {a,-a};
+        double q3[2] = {0, (std::sqrt(3)-1.0)*a};
+        Vec q1v (q1[0], q1[1] ); q1v.Rotate2D(th); q1[0] = q1v.GetX(); q1[1] = q1v.GetY(); 
+        Vec q2v (q2[0], q2[1] ); q2v.Rotate2D(th); q2[0] = q2v.GetX(); q2[1] = q2v.GetY();
+        Vec q3v (q3[0], q3[1] ); q3v.Rotate2D(th); q3[0] = q3v.GetX(); q3[1] = q3v.GetY();
+
+        std::complex<double> b = glasma.BaryonOperator(0.01, q1,q2,q3);
+        std::complex<double> b2 = glasma.BaryonOperator(0.01, q3,q1,q2);
+        std::complex<double> b3 = glasma.BaryonOperator(0.01, q1,q3,q2);
+        cout << th << " " << b.real() << " " << b.imag() << endl; // " " << b2.real() << " " << b2.imag() << " " << b3.real() << " " << b3.imag() << endl; 
+
+    }
+exit(1);
+*/
     cout << "# Compute totxs: " << totxs << " normalize area: " << normalize_area << " periodic boundary conditions: " << periodicboundary << endl;
 
     inthelper helper;
@@ -127,14 +174,31 @@ int main(int argc, char* argv[])
     helper.imaginary_part=false;
 	
 
-    size_t dim=6;
     gsl_monte_function fun;
     fun.params=&helper;
-    fun.f = inthelperf_mc;
+    double *min;
+    double *max;
+    if (dipole == false)
+    {
+        dim=6;
+        min = new double[dim];
+        max = new double[dim]; 
+        min[0] = -L/2; min[1] = -L/2; min[2] = -MAXDIST; min[3]=-MAXDIST; min[4]=-MAXDIST; min[5]=-MAXDIST;
+        max[0] = L/2; max[1] = L/2; max[2] = MAXDIST; max[3]=MAXDIST; max[4]=MAXDIST; max[5]=MAXDIST;
+
+        fun.f = inthelperf_mc;
+    }
+    else
+    {
+        dim=4;
+        min = new double[dim];
+        max =new double[dim];
+        min[0]=-L/2; min[1]=-L/2;  min[2] = -MAXDIST; min[3]=-MAXDIST;
+        max[0] = L/2; max[1] = L/2; max[2] = MAXDIST; max[3]=MAXDIST;
+        fun.f = inthelperf_dipole_mc;
+   }
+     
     fun.dim=dim;
-    double min[6] = {-L/2.0, -L/2.0, -MAXDIST,-MAXDIST,-MAXDIST,-MAXDIST };
-    double max[6] = {L/2.0, L/2.0, MAXDIST,MAXDIST,MAXDIST, MAXDIST };
-    
     gsl_monte_miser_state *s = gsl_monte_miser_alloc (dim);
     double result_real=0; double result_imag=0;
     
@@ -163,12 +227,12 @@ int main(int argc, char* argv[])
 
 
     double imag_abserr; iter=0;
-   
+  /* 
     //// Imaginary
     iter=0;
     result_imag=0;
     helper.imaginary_part=true;
-/*    do
+    do
     {
         iter++;
         if (iter>=3)
@@ -186,6 +250,8 @@ int main(int argc, char* argv[])
 */
     cout << result_real  << " " << result_imag << endl;
     //gsl_monte_plain_free (s);
+    delete [] min;
+    delete[] max; 
     gsl_monte_miser_free(s);
     
     

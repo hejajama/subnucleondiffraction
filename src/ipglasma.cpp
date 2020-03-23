@@ -584,5 +584,7 @@ std::complex<double> IPGlasma::BaryonOperator(double xpom, double q1[2], double 
             }
         }
     }
+    //if (std::abs(result.imag()/result.real()) > 0.1)
+    ////cout << result << endl;
     return result;
 }
