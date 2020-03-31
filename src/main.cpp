@@ -385,7 +385,7 @@ int main(int argc, char* argv[])
         diff.SetP(P);
         diff.SetDelta(Delta);
 
-        const int tpoints = 15;
+        const int tpoints = 14;
         double tstep = M_PI / tpoints;
         for (t=0 ; t<=M_PI+tstep/2.0; t+=tstep)
         {
