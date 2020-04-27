@@ -39,20 +39,21 @@ int main(int argc, char* argv[])
         return 1;
     }
     string fname = argv[1];
-    double step = StrToReal(argv[2]);
-    cout << "# Filename: " << fname <<  "  step[fm] " << step <<  endl; 
-    double step_gev = step *fmgev;
+    //double step = StrToReal(argv[2]);
+    int points_r = StrToInt(argv[2]);
+    cout << "# Filename: " << fname <<  "  step[fm] " <<  endl; 
     double maxr = 3.0*fmgev;
     double maxb = 3.0*fmgev;
-    int points_r = 300;
-    int points_b = 300;
+    double step_gev = maxr/points_r;
+//    int points_r = 300;
+    int points_b = points_r; //300;
 
-    if (maxr / points_r < step_gev)
+/*    if (maxr / points_r < step_gev)
     {
          cerr << "Step size is less than grid spacing!" << endl;
          exit(1);
     }
-    
+ */   
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
     gsl_set_error_handler_off ();
@@ -63,7 +64,7 @@ int main(int argc, char* argv[])
     else
         wlinetype=BINARY; 
 
-    IPGlasma glasma(fname, step, wlinetype);
+    IPGlasma glasma(fname, step_gev, wlinetype);
     bhelper helper;
     helper.glasma = &glasma;
     

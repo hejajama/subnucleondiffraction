@@ -42,7 +42,7 @@ target_link_libraries(
 	PRIVATE
 	ddis
 	amplitude
-	#ColorDipole
+	ColorDipole
 	mzipsat
 	GSL::gsl
 	GSL::gslcblas

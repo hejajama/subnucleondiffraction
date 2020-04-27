@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 # project name and enable C++ support
-project(amplitudelib CXX C) # Fortran)
+project(amplitudelib CXX C Fortran)
 
 set(CMAKE_BUILD_TYPE Release)
 
@@ -22,7 +22,7 @@ link_directories("../amplitudelib_oberon/build/lib/")
 include_directories("../amplitudelib_v2/")
 include_directories("./src/")
 
-#add_subdirectory(libColorDipole/src/)
+add_subdirectory(libColorDipole/src/)
 add_subdirectory(src)
 add_subdirectory(tools)
 

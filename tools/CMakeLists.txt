@@ -11,6 +11,18 @@ add_executable(
 	../src/gdist_dglap.cpp
 	../src/subnucleon_config.cpp
 	)
+add_executable(
+	baryon_triangle	
+	baryon_triangle.cpp
+	../src/dipole.cpp
+	../src/vector.cpp
+	../src/wilsonline.cpp
+	../src/ipglasma.cpp
+	../src/ipsat_proton.cpp
+	../src/gdist_dglap.cpp
+	../src/subnucleon_config.cpp
+	)
+
 
 add_executable(
 	average_amplitude	
@@ -69,6 +81,17 @@ add_executable(
 	../src/gdist_dglap.cpp
 	../src/subnucleon_config.cpp
 	)
+add_executable(
+	tabulate_b_r
+	tabulate_b_r.cpp
+	../src/dipole.cpp
+	../src/vector.cpp
+	../src/wilsonline.cpp
+	../src/ipglasma.cpp
+	../src/ipsat_proton.cpp
+	../src/gdist_dglap.cpp
+	../src/subnucleon_config.cpp
+	)
 
 add_executable(
 	f2fit
@@ -117,7 +140,25 @@ target_link_libraries(
 	GSL::gslcblas
 )
 target_link_libraries(
+	baryon_triangle
+	PRIVATE
+	mzipsat
+	amplitude
+	#ColorDipole
+	GSL::gsl
+	GSL::gslcblas
+)
+target_link_libraries(
 	amplitude_bline
+	PRIVATE
+	mzipsat
+	amplitude
+	#ColorDipole
+	GSL::gsl
+	GSL::gslcblas
+)
+target_link_libraries(
+	tabulate_b_r
 	PRIVATE
 	mzipsat
 	amplitude
