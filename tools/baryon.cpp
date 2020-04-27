@@ -26,6 +26,7 @@ double probeB=4.0;
 bool totxs = false;
 bool normalize_area = true;
 bool dipole = false; // compute dipole instead of baryon
+bool slopeb2=false;
 
 struct inthelper
 {
@@ -37,15 +38,11 @@ struct inthelper
 double T_baryon(Vec v1, Vec v2)
 {
     const double B=probeB;
-//    Vec center = v1+v2;
-//    center = center + v3;
-//    center = center*0.333;
-    Vec center(0,0,0);
-    v1 = v1 - center;
-    v2 = v2 - center;
-    
-    return 1.0/std::pow(2.0*M_PI*B, 2) * std::exp(-(v1.LenSqr() + v2.LenSqr())/(2.0*B));
+    // At this stage v1,v2 are vectors pointing from b to quark 1 or 2
+    double x = 2.0/3.0; 
+    return 3.0/std::pow(2.0*M_PI*B/x, 2) * std::exp(-2*x*(v1.LenSqr() + v2.LenSqr() + v1*v2)/(2.0*B));
 }
+//
 // MC vector: (b1x,b1y,q1x,q1y,q2x,q2y)
 // Location for vec q3 is fixed by q1+q2+q3=0
 // q1,q2 are measured w.r.t. impact parameter
@@ -69,6 +66,8 @@ double inthelperf_mc(double* vec, size_t dim, void* p)
         baryon = par->glasma->BaryonOperator(0.01, q1v,q2v,q3v);
         if (totxs)
             baryon = 1.0 + baryon/6.0;
+        if (slopeb2)
+            baryon *= b.LenSqr()/2.0;
     }
     else
     {
@@ -93,7 +92,7 @@ double inthelperf_dipole_mc(double* vec, size_t dim, void* p)
     Vec b(vec[0],vec[1]);
     Vec q1(vec[2],vec[3]);
    
-    double density = 1.0/(2.0*M_PI*probeB) * std::exp(-q1.LenSqr() / (2.0*probeB) );
+    double density = 1.0/(M_PI*probeB) * std::exp(-2.*q1.LenSqr() / (2.0*probeB) );
     
     double q1v[2]={q1.GetX()+b.GetX(), q1.GetY()+b.GetY()};
     double q2v[2]={b.GetX() - q1.GetX() , b.GetY()-q1.GetY()};
@@ -121,6 +120,12 @@ int main(int argc, char* argv[])
         dipole = false;
         dim=6;
     }
+    else if (mode == "elastic_slope_baryon")
+    {
+        dipole=false;
+        dim=6;
+        slopeb2=true;
+    }
     else if (mode == "dipole")
     {
         dipole = true;
@@ -139,13 +144,13 @@ int main(int argc, char* argv[])
     gsl_set_error_handler_off ();
    
 
-    bool periodicboundary = true;
+    bool periodicboundary = false;
     //IPGlasma glasma(fname, 0.01, TEXT);
     //glasma.SetPeriodicBoundaryConditions(false);
 	IPGlasma glasma(fname, 0.01, BINARY);
     glasma.SetPeriodicBoundaryConditions(periodicboundary);
     totxs = true;
-    normalize_area = true;
+    normalize_area = false;
 
 /*
     // test
