@@ -32,6 +32,8 @@ class Vec
         Vec operator-(Vec& v);
         void operator*=(REAL c);
         Vec operator*(REAL c);
+        void Rotate3D(Vec n, double th);
+        void Rotate3D(double alpha, double beta, double gamma);
     
         void Rotate2D(double angle);  // rotate x,y coords counterclockwise
     

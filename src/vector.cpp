@@ -112,6 +112,42 @@ void Vec::Rotate2D(double angle)
     
 }
 
+// 3D rotation, following notation from Wikipedia https://en.wikipedia.org/wiki/Rotation_matrix#In_three_dimensions
+void Vec::Rotate3D(double alpha, double beta, double gamma)
+{
+    double newx = x*cos(alpha)*cos(beta) +  z* ( cos(alpha)*cos(gamma)*sin(beta) + sin(alpha)*sin(gamma) ) +  y*(-cos(gamma)*sin(alpha)+ cos(alpha)*sin(beta)*sin(gamma) );
+    double newy = x*cos(beta)*sin(alpha)+z*(cos(gamma)*sin(alpha)*sin(beta)-cos(alpha)*sin(gamma))+y*(cos(alpha)*cos(gamma)+sin(alpha)*sin(beta)*sin(gamma));
+    double newz = z*cos(beta)*cos(gamma) - x*sin(beta) +  y*cos(beta)*sin(gamma);
+
+    x=newx;
+    y=newy;
+    z=newz;
+}
+
+// 3D rotation, given vector around which to rotate, and angle theta
+// Can be used for random 3d rotations, see https://math.stackexchange.com/questions/442418/random-generation-of-rotation-matrices
+void Vec::Rotate3D(Vec n, double th)
+{
+    if (n.LenSqr() > 1.001 or n.LenSqr() < 0.999)
+    {
+        std::cerr<< "ERROR; Vec::Rotate3D requires vector n to be a unit vector!" << endl;
+    }
+
+    double n1 = n.GetX();
+    double n2 = n.GetY();
+    double n3 = n.GetZ();
+    double cth = cos(th);
+    double sth = sin(th);
+
+    double newx = x*(cth + n1*n1*(1.0-cth)) + y*(n1*n2*(1.0-cth) - n3*sth) + z*(n1*n3*(1.0-cth) + n2*sth);
+    double newy = x*(n1*n2*(1.0-cth) + n3*sth) + y*(cth + n2*n2*(1.0-cth)) + z*(n2*n3*(1.0-cth) - n1*sth);
+    double newz = x*(n1*n3*(1.0-cth) - n2*sth) + y*(n2*n3*(1.0-cth) + n1*sth) + z*(cth + n3*n3*(1.0-cth));
+
+    x=newx;
+    y=newy;
+    z=newz;
+}
+
 /////////////////////
 // Geometry
 // Weiszfeld's algorithm to calculate geometric median (Fermat point)
@@ -132,7 +168,7 @@ Vec GeometricMedian(std::vector<Vec> &points)
         double normalization = 0;
         Vec newvec(0,0,0);
         for (unsigned int j=0; j<points.size(); j++)
-        {
+       { 
             Vec dist = points[j] - y;
             normalization += 1.0 / dist.Len();
             
