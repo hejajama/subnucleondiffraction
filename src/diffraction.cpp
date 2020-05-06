@@ -97,19 +97,19 @@ struct Inthelper_amplitude
     double b;
     double theta_b;
     double z;
-    Polarization polarization;
+    DVCS_COMPONENT comp;
 };
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par);
 
-double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Polarization pol)
+double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, DVCS_COMPONENT comp)
 {
     Inthelper_amplitude helper;
     helper.diffraction = this;
     helper.xpom = xpom;
     helper.Qsqr = Qsqr;
     helper.t = t;
-    helper.polarization=pol;
+    helper.comp=comp;
 
     
     
@@ -196,7 +196,7 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
     if (!FACTORIZE_ZINT)
         z = vec[4];
         
-    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z, helper->polarization);
+    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z, helper->comp);
     
     /*
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(ZINT_INTERVALS);
@@ -221,10 +221,10 @@ double Inthelperf_amplitude_z(double z, void* p)
 {
     Inthelper_amplitude *helper = (Inthelper_amplitude*)p;
     
-    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z);
+    return 0; //helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z);
 }
 
-double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol)
+double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double delta, double r, double theta_r, double b, double theta_b, double z, DVCS_COMPONENT comp)
 { 
     
         
@@ -243,69 +243,62 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     double tmpz = z;
     z=0.5; // Do not use z when calcualting antiquark/quark positions, just b is geometric mean
     if (FACTORIZE_ZINT)
-    //    std::cerr << "Check FACTORIZE_ZINT code!" << std::endl;
-        z=0.5;      // Use b as geometric average, decouple zintegral
-    
+    {
+        cerr << "Facrtorized zint not supported!" << endl;
+        exit(1);
+    }
     
     double qx = bx + z*rx; double qy = by + z*ry;
     double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
     
     z = tmpz;
 
-    double res = 0;
+    std::complex<double> res = 0;
     
-    res = 2.0 * r * b;  // r and b from Jacobians, 2 as we have written sigma_qq = 2 N
+    res = r * b;  // r and b from Jacobians
+    // Compared to subnulceondiff code, no factor 2
     
-    double delta = std::sqrt(t);
+    //double delta = std::sqrt(t);
     
     double x1[2] = {qx,qy};
     double x2[2] = {qbarx, qbary};
     double amp_real = dipole->Amplitude(xpom, x1, x2 );
-    double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
+    double amp_imag = 0; // todo: check imaginary part, should vanihs... dTipole->AmplitudeImaginaryPart(xpom, x1, x2);
     std::complex<double> amp(amp_real, amp_imag);
     //amp = amp.real();   // Disable possible imag part for now
+    //
+    // DEGBUG TEST
+    //double cb=0.0;
+    //amp = 1.0 - std::exp(-r*r*1*1/4.0*std::exp(-b*b/8.0) * (1.0 - cb*(0.5 - SQR(std::cos(theta_r - theta_b)) ) ) );
     
-    
-    if (FACTORIZE_ZINT)
-    {
-        if (pol == T)
-            res *= wavef->PsiSqr_T_intz(Qsqr, r);   // Note: 4pi factor is in PsiSqr_T_intz function!
-        else 
-            res *= wavef->PsiSqr_L_intz(Qsqr, r);	// BUt not in VirtualPhoton, which is used here        
-
-	res *= amp_real; 	/// include only real part
-	
-        if (REAL_PART)
-            res *= std::cos( b*delta*std::cos(theta_b));    // Neglect z now
-        else
-            res *= -std::sin( b*delta*std::cos(theta_b));
-    }
+    double phasedelta = (2.0*z - 1.0)/2.0*delta*r*std::cos(theta_r);
+        
+    std::complex<double> imag(0,1);
+    double mf = 0.14;
+    // Eqs from Farids note (60)-(64)
+    // Without prefactor (4 Nc qf^2)^2/(2pi)^2
+    double epscale = std::sqrt(z*(1.0-z)*Qsqr + mf*mf); 
+   if (comp == TT)
+       res *= std::exp(-imag*( b*delta*std::cos(theta_b) + phasedelta)) * (z*z + SQR(1.0-z)) * epscale * gsl_sf_bessel_K1(epscale*r) * amp/r; 
+   else if (comp == LL)
+        res = 0;
+    else if (comp == TTflip)
+        res*= -2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - 2.0*theta_r)) * z*(1.0-z)* epscale * gsl_sf_bessel_K1(epscale*r) * amp/r; 
+   else if (comp == LT)
+        res *= -std::sqrt(2) * imag * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * z*(1.0-z)*(2.0*z-1.)*std::sqrt(Qsqr) * gsl_sf_bessel_K0(epscale*r) * amp/r; 
+    else if (comp == TL)
+        res = 0;
     else
-    {
-        if (pol == T)
-            res *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
-        else
-            res *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
-        // As this integrand is now not integrated over z
-        std::complex<double> imag(0,1);
-        std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r)  )  );
-        //std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b)  )  );
-        std::complex<double> prod = amp * exponent;
-        if (REAL_PART)
-            res *= prod.real();
-            //res *=std::cos( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
-        else
-            res *= prod.imag();
-            //res *=-std::sin( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
+        {
+        cerr << "Unknown component!" << endl; exit(1);
     }
-    
-    if (std::isnan(res) or std::isinf(res))
-    {
-        cerr << "Amplitude integral is " << res << " dipole " << amp << " xp=" << xpom << " Q^2=" << Qsqr << " t="<< t << " r=" << r << " theta_r="<<theta_r << " b="<< b << "theta_b="<< theta_b << " z=" << z << endl;
-        exit(1);
-    }
-    
-    return res;
+    // dz measure
+    res /= 4.0*M_PI;
+
+    if (REAL_PART)
+        return res.real();
+    else
+        return res.imag();
     
 
 }
@@ -323,29 +316,7 @@ double inthelperf_amplitude_rotationalsym_z(double z, void* p);
 double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t, Polarization pol)
 {
     
-    Inthelper_amplitude par;
-    par.diffraction = this;
-    par.xpom=xpom; par.Qsqr = Qsqr; par.t=t;
-    par.polarization= pol;
-    
-    gsl_function f;
-    f.params = &par;
-    f.function = inthelperf_amplitude_rotationalsym_b;
-    gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
-    double result,error;
-    int status = gsl_integration_qag(&f, 0, 100, 0, 0.0001, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
-    
-    if (status)
-        cerr << "#bint failed, result " << result << " relerror " << error << " t " <<t << endl;
-    
-    gsl_integration_workspace_free(w);
-    
-    if (std::isnan(result))
-    {
-        cerr<< "Diffraction::ScatteringAmplitudeRotationalSymmetry result is NaN, xpom=" << xpom << " t=" << t << endl;
-    }
-    
-    return result;
+    return 0;;
 }
 
 double Diffraction::ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z, Polarization pol)
@@ -439,7 +410,8 @@ double inthelperf_amplitude_rotationalsym_z(double z, void* p)
     Inthelper_amplitude *par = (Inthelper_amplitude*)p;
     
     // Note: no jacobian here, it is included in ScatteringAmplitudeRotationalSymmetryIntegrand
-    return par->diffraction->ScatteringAmplitudeRotationalSymmetryIntegrand(par->xpom, par->Qsqr, par->t, par->r, par->b, z, par->polarization);
+    return 0;
+    //return par->diffraction->ScatteringAmplitudeRotationalSymmetryIntegrand(par->xpom, par->Qsqr, par->t, par->r, par->b, z, par->polarization);
 }
 
 // Helpers
