@@ -263,7 +263,8 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     double x1[2] = {qx,qy};
     double x2[2] = {qbarx, qbary};
     double amp_real = dipole->Amplitude(xpom, x1, x2 );
-    double amp_imag = 0; // todo: check imaginary part, should vanihs... dTipole->AmplitudeImaginaryPart(xpom, x1, x2);
+    //double amp_imag = 0; // todo: check imaginary part, should vanihs... dTipole->AmplitudeImaginaryPart(xpom, x1, x2);
+    double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
     std::complex<double> amp(amp_real, amp_imag);
     //amp = amp.real();   // Disable possible imag part for now
     //
@@ -294,6 +295,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     }
     // dz measure
     res /= 4.0*M_PI;
+    ///NOTE: in main.cpp I multiply by 4pi!
 
     if (REAL_PART)
         return res.real();
