@@ -270,15 +270,39 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     //
     // DEGBUG TEST
     //double cb=0.0;
-    //amp = 1.0 - std::exp(-r*r*1*1/4.0*std::exp(-b*b/8.0) * (1.0 - cb*(0.5 - SQR(std::cos(theta_r - theta_b)) ) ) );
+    //double qs2=0.2;
+    //std::complex<double> amp = 1.0 - std::exp(-r*r*qs2/4.0*std::exp(-b*b/8.0) * (1.0 - cb*(0.5 - SQR(std::cos(theta_r - theta_b)) ) ) );
     
     double phasedelta = (2.0*z - 1.0)/2.0*delta*r*std::cos(theta_r);
         
     std::complex<double> imag(0,1);
     double mf = 0.14;
+    double epscale2 = mf; // Q'^2=0
+    double epscale = std::sqrt(z*(1.0-z)*Qsqr + mf*mf); 
+
+    double K1_eps2 = gsl_sf_bessel_K1(epscale2*r);
+    double K1_eps = gsl_sf_bessel_K1(epscale*r);
+    double K0_eps = gsl_sf_bessel_K0(epscale*r);
     // Eqs from Farids note (60)-(64)
     // Without prefactor (4 Nc qf^2)^2/(2pi)^2
-    double epscale = std::sqrt(z*(1.0-z)*Qsqr + mf*mf); 
+   if (comp == TT)
+       res *= std::exp(-imag*( b*delta*std::cos(theta_b) + phasedelta)) * (
+             (z*z + SQR(1.0-z)) * epscale * K1_eps * epscale2*K1_eps2
+             + mf*mf*K0_eps*gsl_sf_bessel_K0(epscale2*r) )
+        * amp;
+   else if (comp == LL)
+        res = 0;
+    else if (comp == TTflip)
+        res*= -2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - 2.0*theta_r)) * z*(1.0-z)* epscale * K1_eps * epscale2*K1_eps2 * amp;
+   else if (comp == LT)
+        res *= -std::sqrt(2) * imag * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * z*(1.0-z)*(2.0*z-1.)*std::sqrt(Qsqr) * K0_eps* epscale2*K1_eps2 * amp;
+    else if (comp == TL)
+        res = 0;
+    else
+        {
+        cerr << "Unknown component!" << endl; exit(1);
+    }
+    /*
    if (comp == TT)
        res *= std::exp(-imag*( b*delta*std::cos(theta_b) + phasedelta)) * (z*z + SQR(1.0-z)) * epscale * gsl_sf_bessel_K1(epscale*r) * amp/r; 
    else if (comp == LL)
@@ -293,6 +317,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         {
         cerr << "Unknown component!" << endl; exit(1);
     }
+*/
     // dz measure
     res /= 4.0*M_PI;
     ///NOTE: in main.cpp I multiply by 4pi!
