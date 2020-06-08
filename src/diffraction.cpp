@@ -12,6 +12,7 @@
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_bessel.h>
 #include "subnucleon_config.hpp"
+#include "gauss_boost.hpp"
 
 using namespace std;
 
@@ -257,7 +258,11 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     res = r * b;  // r and b from Jacobians
     // Compared to subnulceondiff code, no factor 2
-    
+   
+    // For VM, need scalar part. Assume BG here
+    BoostedGauss *BG = (BoostedGauss*)wavef;
+    double MV = BG->MesonMass();
+ 
     //double delta = std::sqrt(t);
     
     double x1[2] = {qx,qy};
@@ -276,19 +281,56 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         
     std::complex<double> imag(0,1);
     double mf = 0.14;
+    if (comp == VM_LL or comp==VM_TT or comp==VM_TTflip or comp==VM_LT or comp==VM_TL)
+    {
+        mf = BG->QuarkMass();
+    }
+
+    double Q = std::sqrt(Qsqr);
     // Eqs from Farids note (60)-(64)
     // Without prefactor (4 Nc qf^2)^2/(2pi)^2
+
     double epscale = std::sqrt(z*(1.0-z)*Qsqr + mf*mf); 
+    double epscale2 = mf; // Q'^2=0
+    double k1_eps1 = gsl_sf_bessel_K1(epscale*r); 
+    double k1_eps2 = gsl_sf_bessel_K1(epscale2*r); 
+
+    double k0_eps1 = gsl_sf_bessel_K0(epscale*r);
    if (comp == TT)
-       res *= std::exp(-imag*( b*delta*std::cos(theta_b) + phasedelta)) * (z*z + SQR(1.0-z)) * epscale * gsl_sf_bessel_K1(epscale*r) * amp/r; 
+       res *= std::exp(-imag*( b*delta*std::cos(theta_b) + phasedelta)) * (
+             (z*z + SQR(1.0-z)) * epscale * k1_eps1 * epscale2*k1_eps2
+             + mf*mf*k0_eps1*gsl_sf_bessel_K0(epscale2*r) )
+        * amp;
    else if (comp == LL)
         res = 0;
     else if (comp == TTflip)
-        res*= -2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - 2.0*theta_r)) * z*(1.0-z)* epscale * gsl_sf_bessel_K1(epscale*r) * amp/r; 
+        res*= -2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - 2.0*theta_r)) * z*(1.0-z)* epscale * k1_eps1 * epscale2*k1_eps2 * amp;
    else if (comp == LT)
-        res *= -std::sqrt(2) * imag * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * z*(1.0-z)*(2.0*z-1.)*std::sqrt(Qsqr) * gsl_sf_bessel_K0(epscale*r) * amp/r; 
+        res *= -std::sqrt(2) * imag * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * z*(1.0-z)*(2.0*z-1.)*std::sqrt(Qsqr) * k0_eps1* epscale2*k1_eps2 * amp;
     else if (comp == TL)
         res = 0;
+    else if (comp == VM_LL)
+    {
+        res *= 2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta)) * SQR(z*(1.-z))/(z*(1.-z)) * Q * k0_eps1 * MV * BG->Psi_L(r,z) * amp;    
+    }
+    else if (comp == VM_TT) 
+    {
+        res *= - std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta)) * ( 
+                (SQR(z)+SQR(1.-z))/(z*(1.-z)) * epscale * k1_eps1 * BG->Psi_T_DR(r,z) * amp
+                - 1./(z*(1.-z)) * mf*mf*k0_eps1*BG->Psi_T(r,z) * amp );
+    }
+    else if (comp == VM_TTflip)
+    {
+        res *= 2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - 2.0*theta_r)) * epscale * k1_eps1 * BG->Psi_T_DR(r,z)*amp;
+    }
+    else if (comp == VM_LT)
+    {
+        res *= imag*std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * Q * k0_eps1 * BG->Psi_T_DR(r,z)*amp;
+   }
+    else if (comp == VM_TL)
+    {
+        res *= -imag/std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * epscale * k1_eps1 * MV * BG->Psi_L(r,z)*amp;
+    }
     else
         {
         cerr << "Unknown component!" << endl; exit(1);
