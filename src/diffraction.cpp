@@ -329,7 +329,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
    }
     else if (comp == VM_TL)
     {
-        res *= -imag/std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * epscale * k1_eps1 * MV * BG->Psi_L(r,z)*amp;
+        res *= -imag/std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta + theta_r)) * epscale * k1_eps1 * MV * BG->Psi_L(r,z)*amp;
     }
     else
         {
