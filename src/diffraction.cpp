@@ -281,9 +281,11 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         
     std::complex<double> imag(0,1);
     double mf = 0.14;
+    double vm_phi_l_wf=0; // [Mv + (mf^2 - Nabla^2)/(Mv*z(-1z))] * phi_L
     if (comp == VM_LL or comp==VM_TT or comp==VM_TTflip or comp==VM_LT or comp==VM_TL)
     {
         mf = BG->QuarkMass();
+        vm_phi_l_wf = (MV + mf*mf/(MV*z*(1.-z))) * BG->Psi_L(r,z) - 1.0/(MV*z*(1.-z)) * ( 1.0/r*BG->Psi_L_DR(r,z) + BG->Psi_L_D2R(r,z) );
     }
 
     double Q = std::sqrt(Qsqr);
@@ -292,44 +294,41 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
 
     double epscale = std::sqrt(z*(1.0-z)*Qsqr + mf*mf); 
     double epscale2 = mf; // Q'^2=0
-    double k1_eps1 = gsl_sf_bessel_K1(epscale*r); 
-    double k1_eps2 = gsl_sf_bessel_K1(epscale2*r); 
 
-    double k0_eps1 = gsl_sf_bessel_K0(epscale*r);
    if (comp == TT)
        res *= std::exp(-imag*( b*delta*std::cos(theta_b) + phasedelta)) * (
-             (z*z + SQR(1.0-z)) * epscale * k1_eps1 * epscale2*k1_eps2
-             + mf*mf*k0_eps1*gsl_sf_bessel_K0(epscale2*r) )
+             (z*z + SQR(1.0-z)) * epscale * gsl_sf_bessel_K1(epscale*r) * epscale2*gsl_sf_bessel_K1(epscale2*r)
+             + mf*mf*gsl_sf_bessel_K0(epscale*r)*gsl_sf_bessel_K0(epscale2*r) )
         * amp;
    else if (comp == LL)
         res = 0;
     else if (comp == TTflip)
-        res*= -2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - 2.0*theta_r)) * z*(1.0-z)* epscale * k1_eps1 * epscale2*k1_eps2 * amp;
+        res*= -2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - 2.0*theta_r)) * z*(1.0-z)* epscale * gsl_sf_bessel_K1(epscale*r) * epscale2*gsl_sf_bessel_K1(epscale2*r) * amp;
    else if (comp == LT)
-        res *= -std::sqrt(2) * imag * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * z*(1.0-z)*(2.0*z-1.)*std::sqrt(Qsqr) * k0_eps1* epscale2*k1_eps2 * amp;
+        res *= -std::sqrt(2) * imag * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * z*(1.0-z)*(2.0*z-1.)*std::sqrt(Qsqr) * gsl_sf_bessel_K0(epscale*r)* epscale2*gsl_sf_bessel_K1(epscale2*r) * amp;
     else if (comp == TL)
         res = 0;
     else if (comp == VM_LL)
     {
-        res *= 2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta)) * SQR(z*(1.-z))/(z*(1.-z)) * Q * k0_eps1 * MV * BG->Psi_L(r,z) * amp;    
+        res *= 2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta)) * SQR(z*(1.-z))/(z*(1.-z)) * Q * gsl_sf_bessel_K0(epscale*r) * vm_phi_l_wf * amp;    
     }
     else if (comp == VM_TT) 
     {
         res *= - std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta)) * ( 
-                (SQR(z)+SQR(1.-z))/(z*(1.-z)) * epscale * k1_eps1 * BG->Psi_T_DR(r,z) * amp
-                - 1./(z*(1.-z)) * mf*mf*k0_eps1*BG->Psi_T(r,z) * amp );
+                (SQR(z)+SQR(1.-z))/(z*(1.-z)) * epscale * gsl_sf_bessel_K1(epscale*r) * BG->Psi_T_DR(r,z) * amp
+                - 1./(z*(1.-z)) * mf*mf*gsl_sf_bessel_K0(epscale*r)*BG->Psi_T(r,z) * amp );
     }
     else if (comp == VM_TTflip)
     {
-        res *= 2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - 2.0*theta_r)) * epscale * k1_eps1 * BG->Psi_T_DR(r,z)*amp;
+        res *= 2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - 2.0*theta_r)) * epscale * gsl_sf_bessel_K1(epscale*r) * BG->Psi_T_DR(r,z)*amp;
     }
     else if (comp == VM_LT)
     {
-        res *= imag*std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * Q * k0_eps1 * BG->Psi_T_DR(r,z)*amp;
+        res *= imag*std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * Q * gsl_sf_bessel_K0(epscale*r) * BG->Psi_T_DR(r,z)*amp;
    }
     else if (comp == VM_TL)
     {
-        res *= -imag/std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta + theta_r)) * epscale * k1_eps1 * MV * BG->Psi_L(r,z)*amp;
+        res *= -imag/std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta + theta_r)) * epscale * gsl_sf_bessel_K1(epscale*r) * vm_phi_l_wf * amp;
     }
     else
         {
