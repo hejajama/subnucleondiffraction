@@ -471,6 +471,7 @@ int main(int argc, char* argv[])
 
         for (t=mint; t<=maxt; t+=tstep)
         {
+            double delta = std::sqrt(t);
             double xpom;
             if (xp < 0)
                 xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
@@ -486,22 +487,22 @@ int main(int argc, char* argv[])
                 MCINTPOINTS = MCpoints(t);
             
             cout.precision(5);
-            /*double ATT = diff.ScatteringAmplitude(xpom, Qsqr, t, TT);
-            double ATTflip = diff.ScatteringAmplitude(xpom, Qsqr, t, TTflip);
-            double ALT = diff.ScatteringAmplitude(xpom, Qsqr, t, LT);
+            /*double ATT = diff.ScatteringAmplitude(xpom, Qsqr, delta, TT);
+            double ATTflip = diff.ScatteringAmplitude(xpom, Qsqr, delta, TTflip);
+            double ALT = diff.ScatteringAmplitude(xpom, Qsqr, delta, LT);
 
-            cout << t << " ";
+            cout << delta << " ";
             cout.precision(10);
             cout << ATT*4.0*M_PI  << " " << ATTflip*4.0*M_PI << " " << ALT*4.0*M_PI << endl;
            */
 
-            double ALL = diff.ScatteringAmplitude(xpom,Qsqr,t,VM_LL);
-            double ATT = diff.ScatteringAmplitude(xpom,Qsqr,t,VM_TT);
-            double ATTflip = diff.ScatteringAmplitude(xpom,Qsqr,t,VM_TTflip);
-            double ALT = diff.ScatteringAmplitude(xpom,Qsqr,t,VM_LT);
-            double ATL = diff.ScatteringAmplitude(xpom,Qsqr,t,VM_TL);
+            double ALL = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LL);
+            double ATT = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TT);
+            double ATTflip = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TTflip);
+            double ALT = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LT);
+            double ATL = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TL);
 
-            cout << t << " ";
+            cout << delta << " ";
             cout.precision(10);
              cout << ATT*4.0*M_PI  << " " << ATTflip*4.0*M_PI << " " << ALT*4.0*M_PI << " " << ATL*4.0*M_PI << " " << ALL*4.0*M_PI << endl;
 
