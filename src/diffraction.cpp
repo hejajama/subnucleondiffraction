@@ -295,6 +295,8 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     double epscale = std::sqrt(z*(1.0-z)*Qsqr + mf*mf); 
     double epscale2 = mf; // Q'^2=0
 
+
+    // NOTE: Compared to our paper, an overall minus sign is missing. But this sign has no effect on cross sections
    if (comp == TT)
        res *= std::exp(-imag*( b*delta*std::cos(theta_b) + phasedelta)) * (
              (z*z + SQR(1.0-z)) * epscale * gsl_sf_bessel_K1(epscale*r) * epscale2*gsl_sf_bessel_K1(epscale2*r)
@@ -324,11 +326,12 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     }
     else if (comp == VM_LT)
     {
-        res *= imag*std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * Q * gsl_sf_bessel_K0(epscale*r) * BG->Psi_T_DR(r,z)*amp;
+        res *= imag*std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * (2.0*z-1.0) * Q * gsl_sf_bessel_K0(epscale*r) * BG->Psi_T_DR(r,z)*amp;
    }
     else if (comp == VM_TL)
     {
-        res *= -imag/std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta + theta_r)) * epscale * gsl_sf_bessel_K1(epscale*r) * vm_phi_l_wf * amp;
+        // Sign fixed 
+        res *= imag/std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta + theta_r)) * (2.0*z-1.) * epscale * gsl_sf_bessel_K1(epscale*r) * vm_phi_l_wf * amp;
     }
     else
         {
