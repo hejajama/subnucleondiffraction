@@ -17,8 +17,10 @@ enum DVCS_COMPONENT
 {
     LL,
     TT,
-    TTflip,
-    LT,
+    TTflip_plus,
+    TTflip_minus,
+    LT_plus,
+    LT_minus,
     TL,
     VM_LL,
     VM_TT,

@@ -485,17 +485,20 @@ int main(int argc, char* argv[])
             
             if(auto_mcintpoints)
                 MCINTPOINTS = MCpoints(t);
-            
+           
             cout.precision(5);
-            /*double ATT = diff.ScatteringAmplitude(xpom, Qsqr, delta, TT);
-            double ATTflip = diff.ScatteringAmplitude(xpom, Qsqr, delta, TTflip);
-            double ALT = diff.ScatteringAmplitude(xpom, Qsqr, delta, LT);
+            double ATT = diff.ScatteringAmplitude(xpom, Qsqr, delta, TT);
+            double ATTflip_plus = diff.ScatteringAmplitude(xpom, Qsqr, delta, TTflip_plus);
+            double ATTflip_minus = diff.ScatteringAmplitude(xpom, Qsqr, delta, TTflip_minus);
+            double ALT_plus = diff.ScatteringAmplitude(xpom, Qsqr, delta, LT_plus);
+            double ALT_minus = diff.ScatteringAmplitude(xpom, Qsqr, delta, LT_minus);
 
             cout << delta << " ";
             cout.precision(10);
-            cout << ATT*4.0*M_PI  << " " << ATTflip*4.0*M_PI << " " << ALT*4.0*M_PI << endl;
-           */
+            cout << ATT*4.0*M_PI  << " " << ATTflip_plus*4.0*M_PI << " " << ATTflip_minus*4.0*M_PI << " "  << ALT_plus*4.0*M_PI << " " << ALT_minus*4.0*M_PI << endl;
+           
 
+/*
             double ALL = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LL);
             double ATT = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TT);
             double ATTflip = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TTflip);
@@ -505,7 +508,7 @@ int main(int argc, char* argv[])
             cout << delta << " ";
             cout.precision(10);
              cout << ATT*4.0*M_PI  << " " << ATTflip*4.0*M_PI << " " << ALT*4.0*M_PI << " " << ATL*4.0*M_PI << " " << ALL*4.0*M_PI << endl;
-
+*/
             // Larger t step probably useful at large t
             /*
             if (t>0.08)

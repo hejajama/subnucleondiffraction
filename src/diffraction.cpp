@@ -304,10 +304,17 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         * amp;
    else if (comp == LL)
         res = 0;
-    else if (comp == TTflip)
-        res*= -2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - 2.0*theta_r)) * z*(1.0-z)* epscale * gsl_sf_bessel_K1(epscale*r) * epscale2*gsl_sf_bessel_K1(epscale2*r) * amp;
-   else if (comp == LT)
-        res *= -std::sqrt(2) * imag * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * z*(1.0-z)*(2.0*z-1.)*std::sqrt(Qsqr) * gsl_sf_bessel_K0(epscale*r)* epscale2*gsl_sf_bessel_K1(epscale2*r) * amp;
+    else if (comp == TTflip_plus or comp == TTflip_minus)
+    {
+        int sign = 1; if (comp == TTflip_minus) sign=-1;
+        res*= -2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - sign*2.0*theta_r)) * z*(1.0-z)* epscale * gsl_sf_bessel_K1(epscale*r) * epscale2*gsl_sf_bessel_K1(epscale2*r) * amp;
+    }
+   else if (comp == LT_plus or comp == LT_minus)
+    {
+        int sign = 1;
+        if (comp == LT_minus) sign=-1;
+        res *= -std::sqrt(2) * imag * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - sign*theta_r)) * z*(1.0-z)*(2.0*z-1.)*std::sqrt(Qsqr) * gsl_sf_bessel_K0(epscale*r)* epscale2*gsl_sf_bessel_K1(epscale2*r) * amp;
+    }
     else if (comp == TL)
         res = 0;
     else if (comp == VM_LL)
