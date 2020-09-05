@@ -282,7 +282,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     std::complex<double> imag(0,1);
     double mf = 0.14;
     double vm_phi_l_wf=0; // [Mv + (mf^2 - Nabla^2)/(Mv*z(-1z))] * phi_L
-    if (comp == VM_LL or comp==VM_TT or comp==VM_TTflip or comp==VM_LT or comp==VM_TL)
+    if (comp == VM_LL or comp==VM_TT or comp==VM_TTflipplus or comp == VM_TTflipminus or comp==VM_LTplus or comp==VM_LTminus or comp==VM_TLplus or comp==VM_TLminus)
     {
         mf = BG->QuarkMass();
         vm_phi_l_wf = (MV + mf*mf/(MV*z*(1.-z))) * BG->Psi_L(r,z) - 1.0/(MV*z*(1.-z)) * ( 1.0/r*BG->Psi_L_DR(r,z) + BG->Psi_L_D2R(r,z) );
@@ -327,18 +327,22 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
                 (SQR(z)+SQR(1.-z))/(z*(1.-z)) * epscale * gsl_sf_bessel_K1(epscale*r) * BG->Psi_T_DR(r,z) * amp
                 - 1./(z*(1.-z)) * mf*mf*gsl_sf_bessel_K0(epscale*r)*BG->Psi_T(r,z) * amp );
     }
-    else if (comp == VM_TTflip)
+    else if (comp == VM_TTflipplus or comp == VM_TTflipminus)
     {
-        res *= 2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - 2.0*theta_r)) * epscale * gsl_sf_bessel_K1(epscale*r) * BG->Psi_T_DR(r,z)*amp;
+        int sign=1;
+        if (comp == VM_TTflipminus) sign=-1;
+        res *= 2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - sign*2.0*theta_r)) * epscale * gsl_sf_bessel_K1(epscale*r) * BG->Psi_T_DR(r,z)*amp;
     }
-    else if (comp == VM_LT)
+    else if (comp == VM_LTplus or comp == VM_LTminus)
     {
-        res *= imag*std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - theta_r)) * (2.0*z-1.0) * Q * gsl_sf_bessel_K0(epscale*r) * BG->Psi_T_DR(r,z)*amp;
+        int sign=1; if (comp == VM_LTminus) sign=-1;
+        res *= imag*std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - sign*theta_r)) * (2.0*z-1.0) * Q * gsl_sf_bessel_K0(epscale*r) * BG->Psi_T_DR(r,z)*amp;
    }
-    else if (comp == VM_TL)
+    else if (comp == VM_TLplus or comp == VM_TLminus)
     {
+        int sign=1; if (comp == VM_TLminus) sign=-1;
         // Sign fixed 
-        res *= imag/std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta + theta_r)) * (2.0*z-1.) * epscale * gsl_sf_bessel_K1(epscale*r) * vm_phi_l_wf * amp;
+        res *= imag/std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta + sign*theta_r)) * (2.0*z-1.) * epscale * gsl_sf_bessel_K1(epscale*r) * vm_phi_l_wf * amp;
     }
     else
         {

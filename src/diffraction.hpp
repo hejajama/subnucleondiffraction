@@ -24,9 +24,12 @@ enum DVCS_COMPONENT
     TL,
     VM_LL,
     VM_TT,
-    VM_TTflip,
-    VM_LT,
-    VM_TL
+    VM_TTflipplus,
+    VM_TTflipminus,
+    VM_LTplus,
+    VM_LTminus,
+    VM_TLplus,
+    VM_TLminus
 };
 
 class Diffraction

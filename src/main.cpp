@@ -485,7 +485,7 @@ int main(int argc, char* argv[])
             
             if(auto_mcintpoints)
                 MCINTPOINTS = MCpoints(t);
-           
+          /* 
             cout.precision(5);
             double ATT = diff.ScatteringAmplitude(xpom, Qsqr, delta, TT);
             double ATTflip_plus = diff.ScatteringAmplitude(xpom, Qsqr, delta, TTflip_plus);
@@ -497,18 +497,20 @@ int main(int argc, char* argv[])
             cout.precision(10);
             cout << ATT*4.0*M_PI  << " " << ATTflip_plus*4.0*M_PI << " " << ATTflip_minus*4.0*M_PI << " "  << ALT_plus*4.0*M_PI << " " << ALT_minus*4.0*M_PI << endl;
            
+*/
 
-/*
             double ALL = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LL);
             double ATT = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TT);
-            double ATTflip = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TTflip);
-            double ALT = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LT);
-            double ATL = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TL);
-
+            double ATTflipplus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TTflipplus);
+            double ATTflipminus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TTflipminus);
+            double ATLplus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TLplus);
+            double ATLminus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TLminus);
+            double ALTplus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LTplus);
+            double ALTminus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LTminus);
             cout << delta << " ";
             cout.precision(10);
-             cout << ATT*4.0*M_PI  << " " << ATTflip*4.0*M_PI << " " << ALT*4.0*M_PI << " " << ATL*4.0*M_PI << " " << ALL*4.0*M_PI << endl;
-*/
+             cout << ATT*4.0*M_PI  << " " << ATTflipplus*4.0*M_PI << " " << ATTflipminus * 4.0*M_PI << " " << ALTplus*4.0*M_PI << " " << ALTminus*4.0*M_PI << " " << ATLplus*4.0*M_PI << " " << ATLminus * 4.0*M_PI << " " <<  ALL*4.0*M_PI << endl;
+
             // Larger t step probably useful at large t
             /*
             if (t>0.08)
