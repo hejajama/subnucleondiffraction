@@ -290,13 +290,13 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
 
     double Q = std::sqrt(Qsqr);
     // Eqs from Farids note (60)-(64)
-    // Without prefactor (4 Nc qf^2)^2/(2pi)^2
+    // Without prefactor (4 Nc e^2 qf^2)^2/(2pi)^2
+    // In VM production, without 4 Nc e q_f / (2pi)
 
     double epscale = std::sqrt(z*(1.0-z)*Qsqr + mf*mf); 
     double epscale2 = mf; // Q'^2=0
 
 
-    // NOTE: Compared to our paper, an overall minus sign is missing. But this sign has no effect on cross sections
    if (comp == TT)
        res *= std::exp(-imag*( b*delta*std::cos(theta_b) + phasedelta)) * (
              (z*z + SQR(1.0-z)) * epscale * gsl_sf_bessel_K1(epscale*r) * epscale2*gsl_sf_bessel_K1(epscale2*r)
@@ -311,6 +311,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     }
    else if (comp == LT_plus or comp == LT_minus)
     {
+        // Here sign in i theta_r is different than in the paper
         int sign = 1;
         if (comp == LT_minus) sign=-1;
         res *= -std::sqrt(2) * imag * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - sign*theta_r)) * z*(1.0-z)*(2.0*z-1.)*std::sqrt(Qsqr) * gsl_sf_bessel_K0(epscale*r)* epscale2*gsl_sf_bessel_K1(epscale2*r) * amp;
@@ -319,7 +320,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         res = 0;
     else if (comp == VM_LL)
     {
-        res *= 2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta)) * SQR(z*(1.-z))/(z*(1.-z)) * Q * gsl_sf_bessel_K0(epscale*r) * vm_phi_l_wf * amp;    
+        res *= 2.*std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta)) * z*(1.-z) * Q * gsl_sf_bessel_K0(epscale*r) * vm_phi_l_wf * amp;    
     }
     else if (comp == VM_TT) 
     {
@@ -335,11 +336,13 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     }
     else if (comp == VM_LTplus or comp == VM_LTminus)
     {
+        // Here sign of exp( i theta_r) is different than in paper!
         int sign=1; if (comp == VM_LTminus) sign=-1;
         res *= imag*std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta - sign*theta_r)) * (2.0*z-1.0) * Q * gsl_sf_bessel_K0(epscale*r) * BG->Psi_T_DR(r,z)*amp;
    }
     else if (comp == VM_TLplus or comp == VM_TLminus)
     {
+        // Signs in i theta_r are opposite compared to the paper
         int sign=1; if (comp == VM_TLminus) sign=-1;
         // Sign fixed 
         res *= imag/std::sqrt(2) * std::exp(-imag*(b*delta*std::cos(theta_b) + phasedelta + sign*theta_r)) * (2.0*z-1.) * epscale * gsl_sf_bessel_K1(epscale*r) * vm_phi_l_wf * amp;

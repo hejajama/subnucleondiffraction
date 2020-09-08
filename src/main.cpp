@@ -468,9 +468,11 @@ int main(int argc, char* argv[])
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
 
-
+        double origtstep=tstep;
+        tstep/=4.;
         for (t=mint; t<=maxt; t+=tstep)
         {
+            if (t >= mint + 4.0*tstep) tstep = origtstep; 
             double delta = std::sqrt(t);
             double xpom;
             if (xp < 0)
