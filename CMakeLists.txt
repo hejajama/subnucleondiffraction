@@ -24,6 +24,9 @@ add_subdirectory(libColorDipole/src/)
 add_subdirectory(src)
 add_subdirectory(tools)
 
+find_package(GSL REQUIRED)
+include_directories(${GSL_INCLUDE_DIRS})
+
 set_target_properties(subnucleondiffraction PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" )
 set_target_properties(ddis PROPERTIES
