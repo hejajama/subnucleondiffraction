@@ -5,10 +5,10 @@
  */
  
 #include "vector.hpp"
-#include <tools/config.hpp>
+#include <cmath>
 #include <cstdlib>
 
-using namespace Amplitude;
+inline double SQR(double x){ return x*x; }
 
 // **********
 // Vec Class
@@ -16,28 +16,32 @@ using namespace Amplitude;
 Vec::Vec() { x=0; y=0; z=0; }
 Vec::Vec(REAL x_, REAL y_) { x=x_; y=y_; z=0; }
 Vec::Vec(REAL x_, REAL y_, REAL z_) { x=x_; y=y_, z=z_;}
-//Vec::Vec(Vec& v) { x=v.GetX(); y=v.GetY(); z=v.GetZ(); }
+Vec::Vec(const Vec& v) { x=v.GetX(); y=v.GetY(); z=v.GetZ(); }
 
 void Vec::SetX(REAL x_) { x=x_; }
 void Vec::SetY(REAL y_) { y=y_; }
 void Vec::SetZ(REAL z_) { z=z_; }
 
-REAL Vec::GetX() { return x; }
-REAL Vec::GetY() { return y; }
-REAL Vec::GetZ() { return z; }
+REAL Vec::GetX() const { return x; }
+REAL Vec::GetY() const { return y; }
+REAL Vec::GetZ() const { return z; }
 
-void Vec::operator+=(Vec& v)
+Vec& Vec::operator+=(Vec& v)
 {
     x+=v.GetX();
     y+=v.GetY();
     z+=v.GetZ();
+    
+    return *this;
 }
 
-void Vec::operator-=(Vec& v)
+Vec& Vec::operator-=(Vec& v)
 {
     x-=v.GetX();
     y-=v.GetY();
     z-=v.GetZ();
+    
+    return *this;
 } 
 
 Vec& Vec::operator=(const Vec& v)
@@ -48,7 +52,7 @@ Vec& Vec::operator=(const Vec& v)
     return *this;
 } 
 
-Vec Vec::operator+(Vec& v)
+Vec  Vec::operator+(const Vec& v)
 {
     Vec sum;
     sum.SetX(x+v.GetX());
@@ -57,7 +61,7 @@ Vec Vec::operator+(Vec& v)
     return sum; 
 }
 
-Vec Vec::operator-(Vec& v)
+Vec Vec::operator-(const Vec& v)
 {
     Vec sum;
     sum.SetX(x-v.GetX());
@@ -66,9 +70,11 @@ Vec Vec::operator-(Vec& v)
     return sum; 
 }
 
-void Vec::operator*=(REAL c)
+Vec& Vec::operator*=(REAL c)
 {
     x*=c; y*=c; z*=c;
+    
+    return *this;
 }
 
 double Vec::operator*(Vec& v)
