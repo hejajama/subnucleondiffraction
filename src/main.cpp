@@ -487,7 +487,7 @@ int main(int argc, char* argv[])
             
             if(auto_mcintpoints)
                 MCINTPOINTS = MCpoints(t);
-          /* 
+/*           
             cout.precision(5);
             double ATT = diff.ScatteringAmplitude(xpom, Qsqr, delta, TT);
             double ATTflip_plus = diff.ScatteringAmplitude(xpom, Qsqr, delta, TTflip_plus);
@@ -514,6 +514,7 @@ int main(int argc, char* argv[])
              cout << ATT*4.0*M_PI  << " " << ATTflipplus*4.0*M_PI << " " << ATTflipminus * 4.0*M_PI << " " << ALTplus*4.0*M_PI << " " << ALTminus*4.0*M_PI << " " << ATLplus*4.0*M_PI << " " << ATLminus * 4.0*M_PI << " " <<  ALL*4.0*M_PI << endl;
 
             // Larger t step probably useful at large t
+
             /*
             if (t>0.08)
                 tstep = 0.015;

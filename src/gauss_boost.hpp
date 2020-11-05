@@ -47,6 +47,7 @@ class BoostedGauss : public WaveFunction {
 
         REAL MesonMass();
         REAL QuarkMass() { return m_f; }
+        int GetDelta() { return delta; }
     
         void ZLimit(double zlim) { MINZ = zlim; MAXZ = 1.0-zlim; }
     

@@ -42,6 +42,10 @@ class GausLC : public WaveFunction {
         REAL MesonMass();
         
         std::string GetParamString();
+
+
+        double QuarkMass() { return m_f; }
+        int GetDelta() { return delta; } 
         
         
     private:

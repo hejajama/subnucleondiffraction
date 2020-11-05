@@ -11,6 +11,7 @@
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_bessel.h>
+#include "gaus_lc.h"
 #include "subnucleon_config.hpp"
 #include "gauss_boost.hpp"
 
@@ -162,11 +163,13 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, DVCS
         gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
         gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result, &error);
         cout << "# vegas warmup " << result << " +/- " << error << endl;
+        int iter=0;
         do
         {
             gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result, &error);
             cout << "# Vegas interation " << result << " +/- " << error << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
-        } while (fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 and result != 0);
+            iter++;
+        } while (fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.2 and iter <= 5);
         gsl_monte_vegas_free(s);
     }
     
@@ -260,7 +263,8 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     // Compared to subnulceondiff code, no factor 2
    
     // For VM, need scalar part. Assume BG here
-    BoostedGauss *BG = (BoostedGauss*)wavef;
+    //GausLC *BG = (GausLC*)wavef;
+    BoostedGauss* BG = (BoostedGauss*)wavef;
     double MV = BG->MesonMass();
  
     //double delta = std::sqrt(t);
@@ -285,7 +289,8 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     if (comp == VM_LL or comp==VM_TT or comp==VM_TTflipplus or comp == VM_TTflipminus or comp==VM_LTplus or comp==VM_LTminus or comp==VM_TLplus or comp==VM_TLminus)
     {
         mf = BG->QuarkMass();
-        vm_phi_l_wf = (MV + mf*mf/(MV*z*(1.-z))) * BG->Psi_L(r,z) - 1.0/(MV*z*(1.-z)) * ( 1.0/r*BG->Psi_L_DR(r,z) + BG->Psi_L_D2R(r,z) );
+        int d = BG->GetDelta();
+        vm_phi_l_wf = (MV + d*mf*mf/(MV*z*(1.-z))) * BG->Psi_L(r,z) -d*1.0/(MV*z*(1.-z)) * ( 1.0/r*BG->Psi_L_DR(r,z) + BG->Psi_L_D2R(r,z) );
     }
 
     double Q = std::sqrt(Qsqr);
