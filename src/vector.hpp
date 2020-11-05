@@ -19,18 +19,19 @@ class Vec
         Vec();
         Vec(REAL x_, REAL y_);
         Vec(REAL x_, REAL y_, REAL z_);
-        REAL GetX();
-        REAL GetY();
-        REAL GetZ();
+        Vec (const Vec &v);
+        REAL GetX() const;
+        REAL GetY() const ;
+        REAL GetZ() const;
         void SetX(REAL x_);
         void SetY(REAL y_);
         void SetZ(REAL z_);
-        void operator+=(Vec& v);
-        void operator-=(Vec& v);
+        Vec& operator+=(Vec& v);
+        Vec& operator-=(Vec& v);
         Vec& operator=(const Vec& v);
-        Vec operator+(Vec& v);
-        Vec operator-(Vec& v);
-        void operator*=(REAL c);
+        Vec operator+(const Vec& v);
+        Vec operator-(const Vec& v);
+        Vec& operator*=(REAL c);
         Vec operator*(REAL c);
     
         void Rotate2D(double angle);  // rotate x,y coords counterclockwise
