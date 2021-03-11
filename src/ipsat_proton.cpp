@@ -100,6 +100,11 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         const double Nc=3;
         ipsat_exponent = M_PI * M_PI / (2.0*Nc) * mzipsat->Alphas_xg(xpom, mzipsat->MuSqr(r.Len()));
     }
+    else if (ipsat == LCPT)
+    {
+        double n = lcpt_dipole->Evaluate(r.Len(), b.Len());
+        return n; // Note: does not support geometry params
+    }
     else
     {
         std::cerr << "UNKNOWN IPSAT VERSION!" << std::endl;
@@ -619,6 +624,13 @@ Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
         saturation = true;
         
     }
+    else if (version == LCPT)
+    {
+        lcpt_dipole = new LCPT_Dipole("/Users/hejajama/Nextcloud/projects/rhorho/dipole_2d_data/x_0.01/nlo_mc_3e7_puhti_as_0.2.dat");
+        lcpt_dipole->Set_out_of_range_warnings(false);
+        ipsat = LCPT;
+        saturation=true;
+    }
     Init();
     
 }
@@ -640,6 +652,9 @@ Ipsat_Proton::~Ipsat_Proton()
     if (ipsat == MZSAT or ipsat==MZNONSAT)
         delete mzipsat;
     gsl_integration_workspace_free(intworkspace_zint);
+    
+    if (ipsat == LCPT)
+        delete lcpt_dipole;
 }
 
 
@@ -1060,6 +1075,8 @@ std::string Ipsat_Proton::InfoStr()
         ss << "IPsat version: 2012 (arXiv:1212.2974)";
     else if (ipsat == MZSAT or ipsat==MZNONSAT)
         ss << "MZipsat fit (arXiv:1804.05311)";
+    else if (ipsat == LCPT)
+        ss << "LCPT by Heikki,Risto,Adrian";
     ss << ". Skewedness in dipole amplitude: ";
     if (skewedness)
         ss << " Enabled";
