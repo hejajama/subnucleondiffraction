@@ -334,6 +334,7 @@ void WilsonLine::InitializeAsIdentity()
  */
 WilsonLine WilsonLine::Exp()
 {
+	std::cerr << "Test GSL matrix exponential before using this! WilsonLine WilsonLine::Exp() "  << std::endl;
     gsl_matrix_complex* m = GetGslMatrixl();
     gsl_matrix_complex* exp = gsl_matrix_complex_alloc(3,3);
     my_gsl_complex_matrix_exponential(exp,m,3);

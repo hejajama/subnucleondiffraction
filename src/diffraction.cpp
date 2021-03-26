@@ -46,7 +46,7 @@ double AmplitudeDerHelperf(double y, void* p)
 {
     AmplitudeDerHeler* par = (AmplitudeDerHeler*)p;
     double x = exp(-y);
-    double res = std::log(par->diff->ScatteringAmplitudeRotationalSymmetry(x, par->Qsqr, par->t, par->pol));
+    double res = std::log(std::abs(par->diff->ScatteringAmplitudeRotationalSymmetry(x, par->Qsqr, par->t, par->pol)));
     return res;
 }
 double Diffraction::LogDerivative(double xpom, double Qsqr, double t, Polarization pol)
@@ -288,7 +288,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
             res *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
         // As this integrand is now not integrated over z
         std::complex<double> imag(0,1);
-        std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r)  )  );
+        std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (0.5 - z)*r*delta*std::cos(theta_r)  )  );
         //std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b)  )  );
         std::complex<double> prod = amp * exponent;
         if (REAL_PART)

@@ -7,6 +7,9 @@
 #include "vector.hpp"
 #include <cmath>
 #include <cstdlib>
+using std::cerr;
+using std::cout;
+using std::endl;
 
 inline double SQR(double x){ return x*x; }
 
