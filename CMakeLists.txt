@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 # project name and enable C++ support
-project(amplitudelib CXX C Fortran)
+project(amplitudelib CXX C)
 
 set(CMAKE_BUILD_TYPE Release)
 
@@ -13,6 +13,10 @@ get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(GIT_DESCRIBE)
 git_local_changes(GIT_LOCAL_CHANGES)
 
+find_package(GSL REQUIRED)
+include_directories(${GSL_INCLUDE_DIRS})
+
+
 # Directory where you have build AmplitudeLib libraries 
 link_directories("../amplitudelib_v2/build/lib/")
 
@@ -20,7 +24,7 @@ link_directories("../amplitudelib_v2/build/lib/")
 include_directories("../amplitudelib_v2/")
 include_directories("./src/")
 
-add_subdirectory(libColorDipole/src/)
+#add_subdirectory(libColorDipole/src/)
 add_subdirectory(src)
 add_subdirectory(tools)
 

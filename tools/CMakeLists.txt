@@ -71,7 +71,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	ColorDipole
+	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
 )
@@ -80,7 +80,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	ColorDipole
+	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
 )
@@ -89,7 +89,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	ColorDipole
+	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
 )
@@ -98,7 +98,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	ColorDipole
+	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
 )
@@ -108,7 +108,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	ColorDipole
+	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
 )

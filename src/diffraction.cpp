@@ -46,7 +46,7 @@ double AmplitudeDerHelperf(double y, void* p)
 {
     AmplitudeDerHeler* par = (AmplitudeDerHeler*)p;
     double x = exp(-y);
-    double res = std::log(par->diff->ScatteringAmplitudeRotationalSymmetry(x, par->Qsqr, par->t, par->pol));
+    double res = std::log(std::abs(par->diff->ScatteringAmplitudeRotationalSymmetry(x, par->Qsqr, par->t, par->pol)));
     return res;
 }
 double Diffraction::LogDerivative(double xpom, double Qsqr, double t, Polarization pol)

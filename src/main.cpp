@@ -1,6 +1,6 @@
 /*
  * Diffraction at sub-nucleon scale
- * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015-2018
+ * Heikki Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2021
  */
 
 #include <iostream>
@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
     double t_in_xpom=1.0;  // This multiplies t in the expression for xpom, if 0, then xpom is independent of t
     
     
-    cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2018" << endl;
+    cout << "# SubNucleon Diffraction by H. Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2021" << endl;
     cout << "# Git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__ << endl; 
     cout << "# Command: ";
     for (int i=1; i<argc; i++)
@@ -466,7 +466,7 @@ int main(int argc, char* argv[])
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         else
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
-        cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal  " << endl;
+        cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal" << endl;
 
 
         for (t=mint; t<=maxt; t+=tstep)
@@ -476,7 +476,7 @@ int main(int argc, char* argv[])
                 xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
             else
                 xpom = xp;
-            if (xpom > 0.02)
+            if (xpom > 0.04)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
                 //continue;
@@ -511,10 +511,10 @@ int main(int argc, char* argv[])
         cout << "# Real part correction" << endl;
         cout << "# t  transverse  longitudinal" << endl;
         double tstep=0.02;
-        for (t=0; t<=2.5; t+=tstep)
+        for (t=mint; t<=maxt; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
-            if (xpom > 0.01)
+            if (xpom > 0.04)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
                 continue;
