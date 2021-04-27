@@ -288,7 +288,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
             res *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
         // As this integrand is now not integrated over z
         std::complex<double> imag(0,1);
-        std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r)  )  );
+        std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (0.5 - z)*r*delta*std::cos(theta_r)  )  );
         //std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b)  )  );
         std::complex<double> prod = amp * exponent;
         if (REAL_PART)

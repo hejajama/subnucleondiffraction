@@ -8,6 +8,10 @@
 #include <cmath>
 #include <cstdlib>
 
+using std::cout;
+using std::cerr;
+using std::endl;
+
 inline double SQR(double x){ return x*x; }
 
 // **********
