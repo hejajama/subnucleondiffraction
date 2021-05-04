@@ -102,7 +102,8 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
     }
     else if (ipsat == LCPT)
     {
-        double n = lcpt_dipole->Evaluate(r.Len(), b.Len());
+		double phirb = std::acos(r*b/r.Len()*b.Len());
+        double n = lcpt_dipole->Evaluate(r.Len(), b.Len(),phirb);
         return n; // Note: does not support geometry params
     }
     else
@@ -626,7 +627,7 @@ Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
     }
     else if (version == LCPT)
     {
-        lcpt_dipole = new LCPT_Dipole("/Users/hejajama/Nextcloud/projects/rhorho/dipole_2d_data/x_0.01/nlo_mc_3e7_puhti_as_0.2.dat");
+        lcpt_dipole = new LCPT_Dipole("/Users/hejajama/Nextcloud/projects/rhorho/dipole_2d_data/x_0.01/fixed_ir_nlo_mc_6e8_as_0.2.dat");
         lcpt_dipole->Set_out_of_range_warnings(false);
         ipsat = LCPT;
         saturation=true;
