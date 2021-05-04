@@ -1071,14 +1071,14 @@ std::string Ipsat_Proton::InfoStr()
     else ss << "disabled";
     ss << endl <<"# ";
     if (ipsat == IPSAT06)
-        ss << "IPsat version: 2006 (arXiv:hep-ph/0304189)";
+        ss << "IPsat version: 2006 (arXiv:hep-ph/0304189)" << endl;
     else if (ipsat == IPSAT12)
-        ss << "IPsat version: 2012 (arXiv:1212.2974)";
+        ss << "IPsat version: 2012 (arXiv:1212.2974)" << endl;
     else if (ipsat == MZSAT or ipsat==MZNONSAT)
-        ss << "MZipsat fit (arXiv:1804.05311)";
+        ss << "MZipsat fit (arXiv:1804.05311)" << endl;
     else if (ipsat == LCPT)
-        ss << "LCPT by Heikki,Risto,Adrian";
-    ss << ". Skewedness in dipole amplitude: ";
+        ss << "LCPT by Dumitru, Mäntysaari, Paatelainen arXiv:2103.11682 [hep-ph]" << endl;;
+    ss << "# Skewedness in dipole amplitude: ";
     if (skewedness)
         ss << " Enabled";
     else
