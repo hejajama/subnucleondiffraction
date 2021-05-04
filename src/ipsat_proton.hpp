@@ -17,6 +17,7 @@
 #include "gdist_dglap.hpp"
 #include "vector.hpp"
 #include "mz_ipsat/dipoleamplitude.hpp"
+#include <dipole_interpolation/dipoleamplitude.hpp>
 
 
 // If Fortran compiler is not available, uncommet this
@@ -150,6 +151,8 @@ private:
     Ipsat_version ipsat;
     
     MZ_ipsat::DipoleAmplitude *mzipsat;
+    
+    LCPT_Dipole *lcpt_dipole;
     
     bool skewedness;    // Enable skewedness in dipole amplitude, multiplies xg
     

@@ -42,7 +42,8 @@ target_link_libraries(
 	PRIVATE
 	ddis
 	amplitude
-	#ColorDipole
+	dipolelib
+	#ColorDipole  #IPSAT12 fit
 	mzipsat
 	GSL::gsl
 	GSL::gslcblas
