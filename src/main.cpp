@@ -18,6 +18,7 @@
 #include "diffraction.hpp"
 #include "gauss_boost.hpp"
 #include "gaus_lc.h"
+#include "nrqcd_wf.hpp"
 #include "smooth_ws_nuke.hpp"
 #include "ipsat_proton.hpp"
 #include "vector.hpp"
@@ -48,7 +49,8 @@ enum MODE
 enum WAVEF
 {
     GAUSLC,
-    BOOSTEDGAUSSIAN
+    BOOSTEDGAUSSIAN,
+    NRQCD
 };
 
 WAVEF wavef_model = BOOSTEDGAUSSIAN;
@@ -105,7 +107,7 @@ int main(int argc, char* argv[])
         cout << "-satscale: print saturation scale" << endl;
         cout << "-F2 Qsqr x: calculate structure function" << endl;
         cout << "-wavef_file filename" << endl;
-        cout << "-wavef gauslc/boostedgaussian" << endl;
+        cout << "-wavef gauslc/boostedgaussian/NRQCD" << endl;
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
         cout << "-schwinger r_c" << endl;
         cout << "-mint, -maxt, -tstep" << endl;
@@ -144,6 +146,8 @@ int main(int argc, char* argv[])
                 wavef_model = GAUSLC;
             else if (string(argv[i+1])=="boostedgaussian")
                 wavef_model = BOOSTEDGAUSSIAN;
+            else if (string(argv[i+1])=="NRQCD")
+                wavef_model = NRQCD;
             else
             {
                 cerr << "Unknown wave function " << argv[i+1] << endl;
@@ -343,6 +347,12 @@ int main(int argc, char* argv[])
         if (wavef_file == "") wavef_file = "gauss-boosted.dat";
         wavef = new BoostedGauss(wavef_file);
         cout << "# " << *(BoostedGauss*)wavef << endl;
+    }
+    else if (wavef_model == NRQCD)
+    {
+        wavef = new NRQCD_WF();
+        FACTORIZE_ZINT=true;
+        cout << "# " << *(NRQCD_WF*)wavef << endl;
     }
 
     
