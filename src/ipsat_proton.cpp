@@ -627,7 +627,7 @@ Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
     }
     else if (version == LCPT)
     {
-        lcpt_dipole = new LCPT_Dipole("/Users/hejajama/Nextcloud/projects/rhorho/dipole_2d_data/x_0.01/fixed_ir_nlo_mc_6e8_as_0.2.dat");
+        lcpt_dipole = new LCPT_Dipole("/Users/hejajama/Nextcloud/projects/rhorho/dipole_2d_data/x_0.01/fixed_ir_nlo_mc_5e7_mq_0.2_as_0.2_large.dat");
         lcpt_dipole->Set_out_of_range_warnings(false);
         ipsat = LCPT;
         saturation=true;
