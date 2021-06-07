@@ -470,7 +470,21 @@ std::string IPGlasma::InfoStr()
 {
     std::stringstream ss;
     ss << "# IPGlasma loaded from file " << datafile << " lattice " << xcoords.size() << "^2 range [" << xcoords[0]/5.068 << ", " << xcoords[xcoords.size()-1]/5.068 << "] fm" ;
+
     if (schwinger) ss << ", schwinger mechanism included, rc=" << schwinger_rc << " GeV^-1";
+
+//(double xpom, double q1[2], double q2[2] )
+//
+    double v1[2]={0,0.1}; double v2[2]={0,-0.1};
+    double amp = Amplitude(0.01, v1,v2);
+
+    if (std::abs(amp-1)<1e-10)
+{
+    cerr << "CHECK FILE! SEEMS that N=1 at all r???" << endl;
+exit(1);
+}
+
+
     return ss.str();
 }
 

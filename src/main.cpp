@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
     double xbj=0; // x for F2
     double t=0.1;
     int A=1;
-    DGLAPDist *gd=0;  // Initialized and used if we have nucleus consisting of ipsatnucleons
+//    DGLAPDist *gd=0;  // Initialized and used if we have nucleus consisting of ipsatnucleons
     int he3_id=-1;   // Used to set He3 configuration
     double mint=0;
     double maxt=1.5;
@@ -204,18 +204,22 @@ int main(int argc, char* argv[])
                 {
                     // Construct nucleus
                     std::vector<DipoleAmplitude* > nucleons;
+                 DipoleAmplitude* nucleon;
+                        nucleon = new Ipsat_Proton(MZSAT);
+                        nucleon->SetSkewedness(skewedness);
+
                     for (int j=0; j<A; j++)
                     {
-                        DipoleAmplitude* nucleon;
-                        if (string(argv[i+2])=="ipsatproton")
+                       
+                                                if (string(argv[i+2])=="ipsatproton")
                         {
-                            if (j==0)
-                                gd = new DGLAPDist;
+                            //if (j==0)
+                            //    gd = new DGLAPDist;
                             //Ipsat_Proton *nucleon = new Ipsat_Proton(gd);
-                            nucleon = new Ipsat_Proton();
-                            ((Ipsat_Proton*)nucleon)->SetProtonWidth(StrToReal(argv[i+3]));
+                                                        ((Ipsat_Proton*)nucleon)->SetProtonWidth(StrToReal(argv[i+3]));
                             ((Ipsat_Proton*)nucleon)->SetQuarkWidth(StrToReal(argv[i+4]));
 
+   
                             if (string(argv[i+5]) == "ALBACETE")
                                 ((Ipsat_Proton*)nucleon)->SetShape(ALBACETE);
                             else
@@ -387,7 +391,7 @@ int main(int argc, char* argv[])
     
     if (mode == PRINT_NUCLEUS)
     {
-        /*
+        
         // Assume IPglasma, so crashes for ipsatproton...
         double origin[2]={0,0};
         double max = ((IPGlasma*)amp)->MaxX();
@@ -409,7 +413,7 @@ int main(int argc, char* argv[])
          cout << endl;
         }
        
-       */ 
+       /* 
         
         double origin[2]={0,0};
         double max = 25;
@@ -439,7 +443,7 @@ int main(int argc, char* argv[])
             cout << endl;
         }
         
-        
+       */ 
         
          
         return 0;
@@ -600,8 +604,8 @@ int main(int argc, char* argv[])
     delete amp;
     delete wavef;
     
-    if (gd != 0)
-        delete gd;
+//    if (gd != 0)
+//        delete gd;
     
 }
 
