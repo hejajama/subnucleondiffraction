@@ -18,6 +18,7 @@
 #include "diffraction.hpp"
 #include "gauss_boost.hpp"
 #include "gaus_lc.h"
+#include "nrqcd_wf.hpp"
 #include "smooth_ws_nuke.hpp"
 #include "ipsat_proton.hpp"
 #include "vector.hpp"
@@ -48,8 +49,11 @@ enum MODE
 enum WAVEF
 {
     GAUSLC,
-    BOOSTEDGAUSSIAN
+    BOOSTEDGAUSSIAN,
+    NRQCD
 };
+
+vector<double> NRQCD_parameters_from_file(int id);
 
 WAVEF wavef_model = BOOSTEDGAUSSIAN;
 
@@ -84,6 +88,11 @@ int main(int argc, char* argv[])
     int rng_offset=0;
     double t_in_xpom=1.0;  // This multiplies t in the expression for xpom, if 0, then xpom is independent of t
     
+    // nrqcd parameters
+    double NRQCD_A=0.213;
+    double NRQCD_B=-0.0157;
+    int NRQCD_param_id = -1; // if >0, use specific parameters from datafile
+    
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2021" << endl;
     cout << "# Git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__ << endl; 
@@ -105,10 +114,12 @@ int main(int argc, char* argv[])
         cout << "-satscale: print saturation scale" << endl;
         cout << "-F2 Qsqr x: calculate structure function" << endl;
         cout << "-wavef_file filename" << endl;
-        cout << "-wavef gauslc/boostedgaussian" << endl;
+        cout << "-wavef gauslc/boostedgaussian/NRQCD" << endl;
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
         cout << "-schwinger r_c" << endl;
         cout << "-mint, -maxt, -tstep" << endl;
+        cout << "-nrqcd_parameters A B" << endl;
+        cout << "-nrqcd_parameters_from_file" << endl;
 	cout << "-no_t_in_xpom: do not include t dependence in xpom" << endl;
         return 0;
     }
@@ -144,6 +155,8 @@ int main(int argc, char* argv[])
                 wavef_model = GAUSLC;
             else if (string(argv[i+1])=="boostedgaussian")
                 wavef_model = BOOSTEDGAUSSIAN;
+            else if (string(argv[i+1])=="NRQCD")
+                wavef_model = NRQCD;
             else
             {
                 cerr << "Unknown wave function " << argv[i+1] << endl;
@@ -157,9 +170,12 @@ int main(int argc, char* argv[])
             
             if (A==1)
             {
-                if (string(argv[i+2])=="ipsatproton")
+                if (string(argv[i+2])=="ipsatproton" or string(argv[i+2])=="lcpt")
                 {
-                    amp = new Ipsat_Proton(MZSAT);
+					if (string(argv[i+2])=="ipsatproton")
+	                    amp = new Ipsat_Proton(MZSAT);
+					else
+						amp = new Ipsat_Proton(LCPT);
                     ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+3]));
                     ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+4]));
                     if (string(argv[i+5]) == "ALBACETE")
@@ -291,8 +307,6 @@ int main(int argc, char* argv[])
             Qsqr = StrToReal(argv[i+1]);
             xbj=StrToReal(argv[i+2]);
         }
-	else if (string(argv[i])=="-maxr")
-	     maxr = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-He3")
             he3_id = StrToInt(argv[i+1]);
         else if (string(argv[i])=="-schwinger")
@@ -310,6 +324,17 @@ int main(int argc, char* argv[])
             tstep=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-no_t_in_xpom")
             t_in_xpom = 0.0;
+        else if (string(argv[i])=="-nrqcd_parameters")
+        {
+            NRQCD_A=StrToReal(argv[i+1]);
+            NRQCD_B=StrToReal(argv[i+1]);
+        }
+        else if (string(argv[i])=="-nrqcd_parameters_from_file")
+        {
+            std::vector<double> params=NRQCD_parameters_from_file(StrToInt(argv[i+1]));
+            NRQCD_A = params[0];
+            NRQCD_B = params[1];
+        }
      else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -344,6 +369,12 @@ int main(int argc, char* argv[])
         if (wavef_file == "") wavef_file = "gauss-boosted.dat";
         wavef = new BoostedGauss(wavef_file);
         cout << "# " << *(BoostedGauss*)wavef << endl;
+    }
+    else if (wavef_model == NRQCD)
+    {
+        wavef = new NRQCD_WF(NRQCD_A, NRQCD_B);
+        FACTORIZE_ZINT=true;
+        cout << "# " << *(NRQCD_WF*)wavef << endl;
     }
 
     
@@ -646,4 +677,32 @@ int MCpoints(double t)
         return 1e7;
     else
         return 1e8;
+}
+
+
+std::vector<double> NRQCD_parameters_from_file(int id)
+{
+    std::ifstream file("nrqcd_jpsi_parameters.dat");
+    int i=0;
+    std::vector<double> P;
+    while(!file.eof())
+    {
+        string line;
+        getline(file,line);
+        if (line.substr(0,1)=="#")
+            continue;
+        if (i==id)
+        {
+            stringstream ss(line);
+            double tmp; ss >>tmp;
+            P.push_back(tmp);
+            ss >> tmp;
+            P.push_back(tmp);
+            return P;
+        }
+        i=i+1;
+    }
+    std::cerr << "Unknown id " << id << " for NRQCD_parameters_from_file" << endl;
+    exit(1);
+    return P;
 }

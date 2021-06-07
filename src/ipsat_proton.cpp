@@ -100,6 +100,12 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         const double Nc=3;
         ipsat_exponent = M_PI * M_PI / (2.0*Nc) * mzipsat->Alphas_xg(xpom, mzipsat->MuSqr(r.Len()));
     }
+    else if (ipsat == LCPT)
+    {
+		double phirb = std::acos(r*b/r.Len()*b.Len());
+        double n = lcpt_dipole->Evaluate(r.Len(), b.Len(),phirb);
+        return n; // Note: does not support geometry params
+    }
     else
     {
         std::cerr << "UNKNOWN IPSAT VERSION!" << std::endl;
@@ -619,6 +625,13 @@ Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
         saturation = true;
         
     }
+    else if (version == LCPT)
+    {
+        lcpt_dipole = new LCPT_Dipole("/Users/hejajama/Nextcloud/projects/rhorho/dipole_2d_data/x_0.01/fixed_ir_nlo_mc_5e7_mq_0.2_as_0.2_large.dat");
+        lcpt_dipole->Set_out_of_range_warnings(false);
+        ipsat = LCPT;
+        saturation=true;
+    }
     Init();
     
 }
@@ -640,6 +653,9 @@ Ipsat_Proton::~Ipsat_Proton()
     if (ipsat == MZSAT or ipsat==MZNONSAT)
         delete mzipsat;
     gsl_integration_workspace_free(intworkspace_zint);
+    
+    if (ipsat == LCPT)
+        delete lcpt_dipole;
 }
 
 
@@ -1055,12 +1071,14 @@ std::string Ipsat_Proton::InfoStr()
     else ss << "disabled";
     ss << endl <<"# ";
     if (ipsat == IPSAT06)
-        ss << "IPsat version: 2006 (arXiv:hep-ph/0304189)";
+        ss << "IPsat version: 2006 (arXiv:hep-ph/0304189)" << endl;
     else if (ipsat == IPSAT12)
-        ss << "IPsat version: 2012 (arXiv:1212.2974)";
+        ss << "IPsat version: 2012 (arXiv:1212.2974)" << endl;
     else if (ipsat == MZSAT or ipsat==MZNONSAT)
-        ss << "MZipsat fit (arXiv:1804.05311)";
-    ss << ". Skewedness in dipole amplitude: ";
+        ss << "MZipsat fit (arXiv:1804.05311)" << endl;
+    else if (ipsat == LCPT)
+        ss << "LCPT by Dumitru, Mäntysaari, Paatelainen arXiv:2103.11682 [hep-ph]" << endl;;
+    ss << "# Skewedness in dipole amplitude: ";
     if (skewedness)
         ss << " Enabled";
     else

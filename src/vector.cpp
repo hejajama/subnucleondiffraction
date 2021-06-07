@@ -15,6 +15,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+using namespace std;
 inline double SQR(double x){ return x*x; }
 
 // **********

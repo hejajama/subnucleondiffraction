@@ -12,6 +12,7 @@
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_bessel.h>
 #include "subnucleon_config.hpp"
+#include "nrqcd_wf.hpp"
 
 using namespace std;
 
@@ -242,19 +243,12 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     // q and antiq positions
     double tmpz = z;
     z=0.5; // Do not use z when calcualting antiquark/quark positions, just b is geometric mean
-    if (FACTORIZE_ZINT)
-    //    std::cerr << "Check FACTORIZE_ZINT code!" << std::endl;
-        z=0.5;      // Use b as geometric average, decouple zintegral
     
     
     double qx = bx + z*rx; double qy = by + z*ry;
     double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
     
     z = tmpz;
-
-    double res = 0;
-    
-    res = 2.0 * r * b;  // r and b from Jacobians, 2 as we have written sigma_qq = 2 N
     
     double delta = std::sqrt(t);
     
@@ -265,39 +259,45 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     std::complex<double> amp(amp_real, amp_imag);
     //amp = amp.real();   // Disable possible imag part for now
     
+    std::complex<double> result = 2.0*r*b; // r and b from Jacobians, 2 as we have written sigma_qq = 2 N
+    std::complex<double> imag(0,1);
     
     if (FACTORIZE_ZINT)
     {
+        if (wavef->WaveFunctionType() != "NRQCD")
+        {
+            //PsiSqr_L_intz(double Qsqr, double r, double Delta, double phi_r_Delta)
+            cerr << "FACTORIZE_ZINT currently only works with NRQCD wf" << endl;
+            return 0;
+        }
+        // Note 1/(4pi) is included in the z integral measure in PsiSqr_T_intz
         if (pol == T)
-            res *= wavef->PsiSqr_T_intz(Qsqr, r);   // Note: 4pi factor is in PsiSqr_T_intz function!
-        else 
-            res *= wavef->PsiSqr_L_intz(Qsqr, r);	// BUt not in VirtualPhoton, which is used here        
-
-	res *= amp_real; 	/// include only real part
-	
-        if (REAL_PART)
-            res *= std::cos( b*delta*std::cos(theta_b));    // Neglect z now
+            result *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
         else
-            res *= -std::sin( b*delta*std::cos(theta_b));
+            result *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta,theta_r);
+            
+        result *= std::exp(-imag*(b*delta*std::cos(theta_b)))*amp;
+        
     }
     else
     {
         if (pol == T)
-            res *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
+            result *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
         else
-            res *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
-        // As this integrand is now not integrated over z
-        std::complex<double> imag(0,1);
+            result *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
+        
+        // This integrand is now not integrated over z
         std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (0.5 - z)*r*delta*std::cos(theta_r)  )  );
-        //std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b)  )  );
-        std::complex<double> prod = amp * exponent;
-        if (REAL_PART)
-            res *= prod.real();
-            //res *=std::cos( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
-        else
-            res *= prod.imag();
-            //res *=-std::sin( b*delta*std::cos(theta_b) - (1.0 - z)*r*delta*std::cos(theta_r));
+        
+        result *= amp * exponent;
+        
     }
+    
+    double res=0;
+    if (REAL_PART)
+        res = result.real();
+    else
+        result = result.imag();
     
     if (std::isnan(res) or std::isinf(res))
     {

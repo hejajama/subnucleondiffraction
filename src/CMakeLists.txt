@@ -30,6 +30,7 @@ add_executable(
 	subnucleon_config.cpp
 	gauss_boost.cpp
 	gaus_lc.cpp
+	nrqcd_wf.cpp
 	dis.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp
 	)
@@ -42,7 +43,8 @@ target_link_libraries(
 	PRIVATE
 	ddis
 	amplitude
-	#ColorDipole
+	dipolelib
+	#ColorDipole  #IPSAT12 fit
 	mzipsat
 	GSL::gsl
 	GSL::gslcblas

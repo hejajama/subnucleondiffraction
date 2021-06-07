@@ -47,21 +47,21 @@ add_executable(
 	../src/subnucleon_config.cpp
 	)
 
-add_executable(
-	f2fit
-	f2fit.cpp
-	../src/dipole.cpp
-	../src/diffraction.cpp
-	../src/wilsonline.cpp
-	../src/ipsat_proton.cpp
-	../src/vector.cpp
-	#../src/virtual_photon.cpp
-	../src/ipglasma.cpp
-#	../src/wave_function.cpp
-	../src/gdist_dglap.cpp
-	../src/subnucleon_config.cpp
-	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp
-)
+#add_executable(
+#	f2fit
+#	f2fit.cpp
+#	../src/dipole.cpp
+#	../src/diffraction.cpp
+#	../src/wilsonline.cpp
+#	../src/ipsat_proton.cpp
+#	../src/vector.cpp
+#	#../src/virtual_photon.cpp
+#	../src/ipglasma.cpp
+##	../src/wave_function.cpp
+##	../src/gdist_dglap.cpp
+#	../src/subnucleon_config.cpp
+#	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp
+#)
 
 include_directories(.)
 
@@ -71,6 +71,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
+	dipolelib
 	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
@@ -80,6 +81,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
+	dipolelib
 	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
@@ -89,6 +91,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
+	dipolelib
 	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
@@ -97,18 +100,20 @@ target_link_libraries(
 	b_r_grid 
 	PRIVATE
 	mzipsat
+	dipolelib
 	amplitude
 	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
 )
 
-target_link_libraries(
-	f2fit      
-	PRIVATE
-	mzipsat
-	amplitude
-	#ColorDipole
-	GSL::gsl
-	GSL::gslcblas
-)
+#target_link_libraries(
+#	f2fit      
+#	PRIVATE
+#	mzipsat
+#	amplitude
+#	dipolelib
+#	#ColorDipole
+#	GSL::gsl
+#	GSL::gslcblas
+#)

@@ -1,7 +1,5 @@
 /*
- * Dipole cross section with explicit impact parameter and r dependence
- * Abstract class
- * All nuclear (target) dependence is described by this class]
+ * Dipole cross section with explicit impact parameter and r dependence * Abstract class * All nuclear (target) dependence is described by this class]
  *
  * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015
  */
@@ -54,7 +52,8 @@ enum Ipsat_version
     IPSAT06,    // KMW hep-ph/0606272
     IPSAT12,     // Rezaeian et al, 1212.2974
     MZSAT,
-    MZNONSAT
+    MZNONSAT,
+	LCPT
 };
 
 #endif

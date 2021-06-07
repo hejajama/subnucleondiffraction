@@ -19,10 +19,15 @@ include_directories(${GSL_INCLUDE_DIRS})
 
 # Directory where you have build AmplitudeLib libraries 
 link_directories("../amplitudelib_v2/build/lib/")
+link_directories("/Users/hejajama/code/rhorho/build/dipole_interpolation")
+
+find_package(GSL REQUIRED)
+include_directories(${GSL_INCLUDE_DIRS})
 
 # AmplitudeLib headers
 include_directories("../amplitudelib_v2/")
 include_directories("./src/")
+include_directories("/Users/hejajama/code/rhorho")
 
 #add_subdirectory(libColorDipole/src/)
 add_subdirectory(src)
