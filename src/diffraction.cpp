@@ -293,11 +293,11 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         
     }
     
-    double res=0;
+	double res=0;
     if (REAL_PART)
         res = result.real();
     else
-        result = result.imag();
+        res = result.imag();
     
     if (std::isnan(res) or std::isinf(res))
     {
