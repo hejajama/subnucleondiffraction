@@ -1,17 +1,34 @@
 Subnucleondiffraction code
 H. Mäntysaari and B. Schenke
-<mantysaari@bnl.gov>, 2015-2018
+<heikki.mantysaari@jyu.fi>, 2015-2021
 
 References:
 H. Mäntysaari, B. Schenke
 Phys.Rev. D94 (2016) no.3, 034042 
 Phys.Rev.Lett. 117 (2016) no.5, 052301
 
-This code requires my "amplitudelib" helper library
-Check that you have downloaded it from git and succesfully
-compiled (using CMake). The produced libraries should be
-found in the directory
+
+== How to compile: ==
+
+First one has to download and compile my "amplitudelib" package.
+Get it from Github and compile using CMake
+git clone https://github.com/hejajama/amplitudelib.git amplitudelib_v2
+cd amplitudelib_v2
+mkdir build
+cd build
+cmake ..
+make
+ 
+Then, download this main program ("subnucleondiffraction"):
+cd ../..   (go back to the parent folder)
+git clone https://github.com/hejajama/subnucleondiffraction.git
+
+Note that we you compile this, it is assumed that the
+libraries generated above can be found from 
 ../amplitudelib_v2/build/lib/
+So amplitudelib_v2 and subnucleondiffraction dirs should be located
+in the same directory.
+
 
 How to compile:
 
@@ -20,13 +37,10 @@ cd build
 cmake ..
 make
 
-Code requires GSL, and C++ and Fortran compilers. CMake takes care of
+Code requires GSL version 2. CMake takes care of
 finding the correct compiler flags etc.
 
-Part of this code package is
-libColorDipole (IPsat parametrization from Phys.Rev. D87 (2013) no.3, 034002)
-CMake compiles that, too.
-
+== Usage ==
 
 How to run:
 See ./build/bin/subnucleondiffraction -help
@@ -46,25 +60,24 @@ Q_s fluctautoins for constituent quarks are set as:
 -qsfluct 0.5 -qsfluctshape quarks 
 
 IP-Glasma input (file containing N^2 wilson lines) is used as follows:
--dipole 1 ipglasma FILENAME
-The step size in fm is set in file src/ipglasma.cpp (double step=0.005; corresponds to step size 0.005fm)
+-dipole 1 ipglasma FILENAME step
+The step size in fm, and should be L/N (L is the lattice length, N number of lattice points)
+Or, it is more efficient use Wilson lines in binary format
+-dipole 1 ipglasma_binary FILENAME
+In this case there is no need to specify the step size.
+ 
+The code outputs
+t   amplitude(T)  amplitude(L)
 
+So amplitudes for different polarizations separately. All dimensionful units in this code are in GeV
+unless stated otherwise.
 
-In order to calculate coherent and incoherent cross sections, calculate real and imaginary parts to files
-somedirectory/real/spectra_0, somedirectory/real/spectra_1, somedirectory/real/spectra_2
-and 
-somedirectory/imag/spectra_0, somedirectory/imag/spectra_2, somedirecotyr/imag_spectra_3
-and so on (last number corresponds to a given configuration)
+The coherent cross section is then 
+dsigma/dt = 1/(16 pi ) <A>^2   [in 1/GeV^4]
+Where <A> is the average of the amplitudes.
 
-Then coherent cross section is calculated as
-python tools/spectra.py -dir somedirectory/ -coherent
-and incohernet cross section as
-python tools/spectra.py -dir somedirectory/ -incoherent
-
-The output of coherent cross section is
-t dsigma/dt [GeV^-4]  maximum_dsigma/dt   minimum_dsigma_dt  statistical_uncertainty
-and for the incoherent xs
-t dsigma/dt [GeV^-4]  statistical_uncertainty
+Similalry the incoherent corss section is computed by replacing <A>^2 by
+<A^2> - <A>^2
 
 
 
@@ -72,3 +85,21 @@ In order to calculate total gamma-p (or gamma-A) cross section, one can calulate
 GSL_RNG_SEED=1 ./diffraction -dipole 1 ipsatproton 0 4 -F2 Qsqr xbj
 The output is
 x   Q^2   F_2,light  F_2,charm   F_2,total   F_L,light  F_L,charm   F_L,tot 
+
+
+== Refernces ==
+
+The default IPsat fit used is
+H. Mäntysaari, P. Zurita,  Phys.Rev.D 98 (2018) 036002, arXiv:1804.05311 [hep-ph]
+
+This program also contains codes to evaluate the dipole amplitude from the
+IPsat fit 
+A. Rezaeian, M. Siddikov, M. Van de Klundert, R. Venugopalan Phys.Rev. D87 (2013) no.3, 034002 
+The code is directly from their work, but compiled here to the library 
+referred to as libColorDipole
+
+This is not compiled by default, so one has to manually edit CMake files to compile it.
+
+The NRQCD wave function reference is
+T. Lappi, H. Mäntysaari, J. Penttala,  Phys.Rev.D 102 (2020) 5, 054020, arXiv:2006.02830 [hep-ph]
+
