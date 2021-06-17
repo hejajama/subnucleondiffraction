@@ -100,12 +100,14 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
         const double Nc=3;
         ipsat_exponent = M_PI * M_PI / (2.0*Nc) * mzipsat->Alphas_xg(xpom, mzipsat->MuSqr(r.Len()));
     }
+#ifdef USE_LCPT_DIPOLE
     else if (ipsat == LCPT)
     {
 		double phirb = std::acos(r*b/r.Len()*b.Len());
         double n = lcpt_dipole->Evaluate(r.Len(), b.Len(),phirb);
         return n; // Note: does not support geometry params
     }
+#endif
     else
     {
         std::cerr << "UNKNOWN IPSAT VERSION!" << std::endl;
@@ -625,13 +627,15 @@ Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
         saturation = true;
         
     }
+#ifdef USE_LCPT_DIPOLE
     else if (version == LCPT)
     {
-        lcpt_dipole = new LCPT_Dipole("/Users/hejajama/Nextcloud/projects/rhorho/dipole_2d_data/x_0.01/fixed_ir_nlo_mc_5e7_mq_0.2_as_0.2_large.dat");
+        lcpt_dipole = new LCPT_Dipole("/Users/hejajama/Nextcloud/projects/rhorho/dipole_2d_data/x_0.01/fixed_ir_nlo_mc_5e7_mq_0.2_as_0.25_large.dat");
         lcpt_dipole->Set_out_of_range_warnings(false);
         ipsat = LCPT;
         saturation=true;
     }
+#endif
     Init();
     
 }
@@ -654,8 +658,10 @@ Ipsat_Proton::~Ipsat_Proton()
         delete mzipsat;
     gsl_integration_workspace_free(intworkspace_zint);
     
+#ifdef USE_LCPT_DIPOLE
     if (ipsat == LCPT)
         delete lcpt_dipole;
+#endif
 }
 
 

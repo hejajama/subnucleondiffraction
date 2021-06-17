@@ -71,7 +71,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	dipolelib
+	#dipolelib
 	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
@@ -81,7 +81,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	dipolelib
+	#dipolelib
 	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
@@ -91,7 +91,7 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	amplitude
-	dipolelib
+	#dipolelib
 	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas
@@ -100,7 +100,7 @@ target_link_libraries(
 	b_r_grid 
 	PRIVATE
 	mzipsat
-	dipolelib
+	#dipolelib
 	amplitude
 	#ColorDipole
 	GSL::gsl

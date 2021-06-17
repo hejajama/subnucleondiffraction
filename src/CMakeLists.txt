@@ -43,7 +43,7 @@ target_link_libraries(
 	PRIVATE
 	ddis
 	amplitude
-	dipolelib
+	#dipolelib # LCPT dipole
 	#ColorDipole  #IPSAT12 fit
 	mzipsat
 	GSL::gsl

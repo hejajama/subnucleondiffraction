@@ -17,13 +17,19 @@
 #include "gdist_dglap.hpp"
 #include "vector.hpp"
 #include "mz_ipsat/dipoleamplitude.hpp"
-#include <dipole_interpolation/dipoleamplitude.hpp>
 
 
 // If Fortran compiler is not available, uncommet this
 // In that case, IPSAT12 does not work!
 //#define USE_FORTRAN_IPSAT12
 
+// In orde to use LCPT dipole (Dumitru, Mäntysaari, Paatelainen, 2021),
+// One has to link uncomment this, and modify CMakeLists.txt files accordingly
+//#define USE_LCPT_DIPOLE
+
+#ifdef USE_LCPT_DIPOLE
+#include <dipole_interpolation/dipoleamplitude.hpp>
+#endif
 
 // How are the hotspots distributed
 enum Proton_shape
@@ -152,7 +158,9 @@ private:
     
     MZ_ipsat::DipoleAmplitude *mzipsat;
     
+#ifdef USE_LCPT_DIPOLE
     LCPT_Dipole *lcpt_dipole;
+#endif
     
     bool skewedness;    // Enable skewedness in dipole amplitude, multiplies xg
     
