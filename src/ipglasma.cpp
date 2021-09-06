@@ -29,6 +29,8 @@ const int NC=3;
  */
 double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
 {
+    ApplyPeriodicBoundaryConditions(q1);
+    ApplyPeriodicBoundaryConditions(q2);
     
     // Out of grid? Return 0 (probably very large dipole)
 
@@ -168,6 +170,10 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
 // Stupid copypaste
 double IPGlasma::AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] )
 {
+
+    ApplyPeriodicBoundaryConditions(q1);
+    ApplyPeriodicBoundaryConditions(q2);
+
     // Out of grid? Return 1 (probably very large dipole)
     if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
         or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
@@ -233,6 +239,8 @@ IPGlasma::IPGlasma(std::string file)
 
     if (load<0)
         exit(1);
+
+    periodic_boundary_conditions=false;
 }
 
 IPGlasma::IPGlasma(std::string file, double step, WilsonLineDataFileType type)
@@ -241,6 +249,8 @@ IPGlasma::IPGlasma(std::string file, double step, WilsonLineDataFileType type)
     
     if (load<0)
         exit(1);
+
+    periodic_boundary_conditions=false;
 }
 
 
@@ -466,10 +476,33 @@ double IPGlasma::XStep()
 }
 
 
+void IPGlasma::ApplyPeriodicBoundaryConditions(double q[2])
+{
+    
+    if (periodic_boundary_conditions == false) return;
+
+    double Lx = xcoords[xcoords.size()-1]-xcoords[0];
+    double Ly = ycoords[ycoords.size()-1]-ycoords[0];
+    while (q[0] < xcoords[0]) 
+        q[0] = q[0] + Lx;
+
+    while (q[0] > xcoords[xcoords.size()-1])
+        q[0] = q[0] - Lx;
+
+     while (q[1] < ycoords[0]) 
+        q[1] = q[1] + Ly;
+
+    while (q[0] > ycoords[ycoords.size()-1])
+        q[1] = q[1] - Ly;
+
+
+}
+
 std::string IPGlasma::InfoStr()
 {
     std::stringstream ss;
     ss << "# IPGlasma loaded from file " << datafile << " lattice " << xcoords.size() << "^2 range [" << xcoords[0]/5.068 << ", " << xcoords[xcoords.size()-1]/5.068 << "] fm" ;
+    if (periodic_boundary_conditions) ss << ", periodic boundary conditions";
     if (schwinger) ss << ", schwinger mechanism included, rc=" << schwinger_rc << " GeV^-1";
     return ss.str();
 }
