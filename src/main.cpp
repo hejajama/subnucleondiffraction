@@ -83,6 +83,8 @@ int main(int argc, char* argv[])
     double schwinger_rc = 0;
     int rng_offset=0;
     double t_in_xpom=1.0;  // This multiplies t in the expression for xpom, if 0, then xpom is independent of t
+    bool periodic_boundary_conditions=false;
+    bool ipglasma=false;    // True if we have ipglasma of ipglasma_binary
     
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <mantysaari@bnl.gov>, 2015-2018" << endl;
@@ -185,9 +187,15 @@ int main(int argc, char* argv[])
                     }
                 }
                 else if (string(argv[i+2])=="ipglasma")
+                {
                     amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), TEXT);
+                    ipglasma=true;
+                }
                 else if (string(argv[i+2])=="ipglasma_binary")
+                {
                     amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), BINARY);
+                    ipglasma=true;
+                }
                 else
                 {
                     cerr << "Unknown dipole " << argv[i+1] << endl;
@@ -306,6 +314,8 @@ int main(int argc, char* argv[])
             tstep=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-no_t_in_xpom")
             t_in_xpom = 0.0;
+        else if (string(argv[i])=="-periodic_boundary_conditions")
+            periodic_boundary_conditions=true;
      else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -327,7 +337,15 @@ int main(int argc, char* argv[])
     global_rng = gsl_rng_alloc(rngtype);
     gsl_rng_set(global_rng, seed);
 
-    
+
+    if (ipglasma and periodic_boundary_conditions)
+        ((IPGlasma*)amp)->SetPeriodicBoundaryConditions(periodic_boundary_conditions);
+    if (!ipglasma and periodic_boundary_conditions)
+    {
+        cerr << "Only IPGlasma dipoles support periodic boundary conditions! " << endl;
+        exit(1);
+    }   
+ 
     WaveFunction *wavef;
     if (wavef_model == GAUSLC)
     {

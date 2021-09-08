@@ -214,6 +214,10 @@ double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
 
 WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
 {
+    double q[2]={x,y};
+    ApplyPeriodicBoundaryConditions(q);
+    x=q[0];
+    y=q[1];
     int xind = FindIndex(x, xcoords);
     int yind = FindIndex(y, ycoords);
     
@@ -492,7 +496,7 @@ void IPGlasma::ApplyPeriodicBoundaryConditions(double q[2])
      while (q[1] < ycoords[0]) 
         q[1] = q[1] + Ly;
 
-    while (q[0] > ycoords[ycoords.size()-1])
+    while (q[1] > ycoords[ycoords.size()-1])
         q[1] = q[1] - Ly;
 
 
@@ -501,9 +505,9 @@ void IPGlasma::ApplyPeriodicBoundaryConditions(double q[2])
 std::string IPGlasma::InfoStr()
 {
     std::stringstream ss;
-    ss << "# IPGlasma loaded from file " << datafile << " lattice " << xcoords.size() << "^2 range [" << xcoords[0]/5.068 << ", " << xcoords[xcoords.size()-1]/5.068 << "] fm" ;
-    if (periodic_boundary_conditions) ss << ", periodic boundary conditions";
-    if (schwinger) ss << ", schwinger mechanism included, rc=" << schwinger_rc << " GeV^-1";
+    ss << "# IPGlasma loaded from file " << datafile << " lattice " << xcoords.size() << "^2 range [" << xcoords[0]/5.068 << ", " << xcoords[xcoords.size()-1]/5.068 << "] fm" << endl ;
+    if (periodic_boundary_conditions) ss << "# Periodic boundary conditions" << endl;
+    if (schwinger) ss << "# schwinger mechanism included, rc=" << schwinger_rc << " GeV^-1" << endl;
     return ss.str();
 }
 
