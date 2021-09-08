@@ -41,11 +41,13 @@ public:
     double MaxX();
     
     double XStep(); // Grid spacing in x
+
+    void SetPeriodicBoundaryConditions(bool s) { periodic_boundary_conditions = s; }
     
     std::vector<double> &GetXCoordinates();
 
     void SetSchwinger(bool s, double rc=0);
-    
+    void ApplyPeriodicBoundaryConditions(double q[2]); 
 
 private:
     
@@ -56,6 +58,8 @@ private:
 
     bool schwinger; // true if we use schwinger mechanism
     double schwinger_rc; // Use Schwinger for dipoles larger than schwinger_rc
+
+    bool periodic_boundary_conditions;
     
     std::string datafile;
     

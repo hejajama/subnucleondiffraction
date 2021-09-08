@@ -29,6 +29,8 @@ const int NC=3;
  */
 double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
 {
+    ApplyPeriodicBoundaryConditions(q1);
+    ApplyPeriodicBoundaryConditions(q2);
     
     // Out of grid? Return 0 (probably very large dipole)
 
@@ -168,6 +170,10 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
 // Stupid copypaste
 double IPGlasma::AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] )
 {
+
+    ApplyPeriodicBoundaryConditions(q1);
+    ApplyPeriodicBoundaryConditions(q2);
+
     // Out of grid? Return 1 (probably very large dipole)
     if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
         or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
@@ -208,6 +214,10 @@ double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
 
 WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
 {
+    double q[2]={x,y};
+    ApplyPeriodicBoundaryConditions(q);
+    x=q[0];
+    y=q[1];
     int xind = FindIndex(x, xcoords);
     int yind = FindIndex(y, ycoords);
     
@@ -233,6 +243,8 @@ IPGlasma::IPGlasma(std::string file)
 
     if (load<0)
         exit(1);
+
+    periodic_boundary_conditions=false;
 }
 
 IPGlasma::IPGlasma(std::string file, double step, WilsonLineDataFileType type)
@@ -241,6 +253,8 @@ IPGlasma::IPGlasma(std::string file, double step, WilsonLineDataFileType type)
     
     if (load<0)
         exit(1);
+
+    periodic_boundary_conditions=false;
 }
 
 
@@ -425,7 +439,7 @@ int IPGlasma::LoadBinaryData(std::string fname, double step)
     }
     else
     {
-        std::cerr << "ERROR COULD NOT OPEN FILE";
+        std::cerr << "ERROR COULD NOT OPEN FILE " << fname << std::endl;
     }
     
     InStream.close();
@@ -466,25 +480,34 @@ double IPGlasma::XStep()
 }
 
 
+void IPGlasma::ApplyPeriodicBoundaryConditions(double q[2])
+{
+    
+    if (periodic_boundary_conditions == false) return;
+
+    double Lx = xcoords[xcoords.size()-1]-xcoords[0];
+    double Ly = ycoords[ycoords.size()-1]-ycoords[0];
+    while (q[0] < xcoords[0]) 
+        q[0] = q[0] + Lx;
+
+    while (q[0] > xcoords[xcoords.size()-1])
+        q[0] = q[0] - Lx;
+
+     while (q[1] < ycoords[0]) 
+        q[1] = q[1] + Ly;
+
+    while (q[1] > ycoords[ycoords.size()-1])
+        q[1] = q[1] - Ly;
+
+
+}
+
 std::string IPGlasma::InfoStr()
 {
     std::stringstream ss;
-    ss << "# IPGlasma loaded from file " << datafile << " lattice " << xcoords.size() << "^2 range [" << xcoords[0]/5.068 << ", " << xcoords[xcoords.size()-1]/5.068 << "] fm" ;
-
-    if (schwinger) ss << ", schwinger mechanism included, rc=" << schwinger_rc << " GeV^-1";
-
-//(double xpom, double q1[2], double q2[2] )
-//
-    double v1[2]={0,0.1}; double v2[2]={0,-0.1};
-    double amp = Amplitude(0.01, v1,v2);
-
-    if (std::abs(amp-1)<1e-10)
-{
-    cerr << "CHECK FILE! SEEMS that N=1 at all r???" << endl;
-exit(1);
-}
-
-
+    ss << "# IPGlasma loaded from file " << datafile << " lattice " << xcoords.size() << "^2 range [" << xcoords[0]/5.068 << ", " << xcoords[xcoords.size()-1]/5.068 << "] fm" << endl ;
+    if (periodic_boundary_conditions) ss << "# Periodic boundary conditions" << endl;
+    if (schwinger) ss << "# schwinger mechanism included, rc=" << schwinger_rc << " GeV^-1" << endl;
     return ss.str();
 }
 
