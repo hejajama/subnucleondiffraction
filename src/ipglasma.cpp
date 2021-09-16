@@ -38,8 +38,13 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
         or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
         or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
         or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
-            return 0;
-  
+    {
+        if (periodic_boundary_conditions)
+            cerr << "WTF, I'm here..." << endl;
+            
+        return 0;
+        
+    } 
 
     double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
 

@@ -135,7 +135,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     }
     
     lower[0]=lower[1]=lower[2]=lower[3]=0;
-    upper[0] = 15*5.068 ; // Max b
+    upper[0] = 10*5.068 ; // Max b
     upper[1] = 2.0*M_PI;
     upper[2] = MAXR; //MAXR;//20; //0.5*5.068;  // Max r
     upper[3] = 2.0*M_PI;

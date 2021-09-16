@@ -123,6 +123,8 @@ int main(int argc, char* argv[])
         cout << "-mint, -maxt, -tstep" << endl;
         cout << "-nrqcd_parameters A B" << endl;
         cout << "-nrqcd_parameters_from_file" << endl;
+        cout << "-periodic_boundary_conditions: use periodic boundary conditions" << endl;
+        cout << "-mcint [miser,vegas]: slect MC integral algorithm" << endl;
 	cout << "-no_t_in_xpom: do not include t dependence in xpom" << endl;
         return 0;
     }
@@ -346,6 +348,19 @@ int main(int argc, char* argv[])
         }
         else if (string(argv[i])=="-periodic_boundary_conditions")
             periodic_boundary_conditions=true;
+        else if (string(argv[i])=="-mcint")
+        {
+            if (string(argv[i+1])=="miser")
+                MCINT = MISER;
+            else if (string(argv[i+1])=="vegas")
+                MCINT = VEGAS;
+            else
+            {
+                cerr << "Unknown MC algorithm " << argv[i+1] << endl;
+                exit(1);
+            }
+
+        }
      else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
