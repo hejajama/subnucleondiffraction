@@ -47,7 +47,7 @@ double Nucleons::Amplitude(double xpom, double q1[2], double q2[2] )
         // Calculate the quark and antiquark coordinates in the frame where the nucleon i is at the origin
         Vec new_q1  = qv1 - nucleon_positions[i];
         Vec new_q2 = qv2 - nucleon_positions[i];
-        smat = smat * (1.0 - nucleons[0]->Amplitude(xpom, new_q1, new_q2));
+        smat = smat * (1.0 - nucleons[i]->Amplitude(xpom, new_q1, new_q2));
         
     }
     return 1.0-smat;

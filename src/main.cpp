@@ -231,19 +231,21 @@ int main(int argc, char* argv[])
                 {
                     // Construct nucleus
                     std::vector<DipoleAmplitude* > nucleons;
-                 DipoleAmplitude* nucleon;
-                        nucleon = new Ipsat_Proton(MZSAT);
-                        nucleon->SetSkewedness(skewedness);
+//                  NOTE: we need to initialize these separately (which is slow) if we want independent e-b-e fluct
+//                 DipoleAmplitude* nucleon;
+//                        nucleon = new Ipsat_Proton(MZSAT);
+//                       nucleon->SetSkewedness(skewedness);
 
                     for (int j=0; j<A; j++)
                     {
-                       
-                                                if (string(argv[i+2])=="ipsatproton")
+                      DipoleAmplitude *nucleon; 
+                        if (string(argv[i+2])=="ipsatproton")
                         {
                             //if (j==0)
                             //    gd = new DGLAPDist;
                             //Ipsat_Proton *nucleon = new Ipsat_Proton(gd);
-                                                        ((Ipsat_Proton*)nucleon)->SetProtonWidth(StrToReal(argv[i+3]));
+                            nucleon = new Ipsat_Proton(MZSAT);
+                            ((Ipsat_Proton*)nucleon)->SetProtonWidth(StrToReal(argv[i+3]));
                             ((Ipsat_Proton*)nucleon)->SetQuarkWidth(StrToReal(argv[i+4]));
 
    
