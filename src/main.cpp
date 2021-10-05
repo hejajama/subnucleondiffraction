@@ -316,6 +316,20 @@ int main(int argc, char* argv[])
             t_in_xpom = 0.0;
         else if (string(argv[i])=="-periodic_boundary_conditions")
             periodic_boundary_conditions=true;
+        else if (string(argv[i])=="-mcint")
+        {   
+            if (string(argv[i+1])=="miser")
+                MCINT = MISER;
+            else if (string(argv[i+1])=="vegas")
+                MCINT = VEGAS;
+            else
+            {   
+                cerr << "Unknown MC algorithm " << argv[i+1] << endl;
+                exit(1);
+            }   
+
+        }   
+
      else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -519,14 +533,17 @@ int main(int argc, char* argv[])
            
 */
 
-            double ALL = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LL);
+            double ALL=0;
+            if (Qsqr>0) ALL=diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LL);
             double ATT = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TT);
             double ATTflipplus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TTflipplus);
             double ATTflipminus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TTflipminus);
             double ATLplus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TLplus);
             double ATLminus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_TLminus);
-            double ALTplus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LTplus);
-            double ALTminus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LTminus);
+            double ALTplus = 0;
+            if (Qsqr >0) ALTplus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LTplus);
+            double ALTminus = 0;
+            if (Qsqr > 0) ALTminus = diff.ScatteringAmplitude(xpom,Qsqr,delta,VM_LTminus);
             cout << delta << " ";
             cout.precision(10);
              cout << ATT*4.0*M_PI  << " " << ATTflipplus*4.0*M_PI << " " << ATTflipminus * 4.0*M_PI << " " << ALTplus*4.0*M_PI << " " << ALTminus*4.0*M_PI << " " << ATLplus*4.0*M_PI << " " << ATLminus * 4.0*M_PI << " " <<  ALL*4.0*M_PI << endl;

@@ -26,7 +26,7 @@ enum MCINTEGRAL
     MISER
 };
 
-const MCINTEGRAL MCINT = MISER;
+extern MCINTEGRAL MCINT;
 
 enum PROCESS
 {
