@@ -22,6 +22,17 @@ extern gsl_rng *global_rng;
 
 const int NC=3;
 
+double IPGlasma::Amplitude(double xpom, Vec q1, Vec q2)
+{
+    double q1x = q1.GetX();
+    double q1y = q1.GetY();
+    double q2x = q2.GetX();
+    double q2y = q2.GetY();
+    double q1v[2] = {q1x,q1y};
+    double q2v[2] = {q2x,q2y};
+    return Amplitude(xpom, q1v,q2v);
+}
+
 /*
  * Calculate dipole amplitude form Wilson lines
  * Search the closest grid point that corresponds to the given quark/antiquark coordinate

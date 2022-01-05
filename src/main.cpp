@@ -440,9 +440,9 @@ int main(int argc, char* argv[])
     
 
     if (schwinger) ((IPGlasma*)amp)->SetSchwinger(true, schwinger_rc);
+    
 
     amp->InitializeTarget();
-    
     
 
     Diffraction diff(*amp, *wavef);
@@ -539,44 +539,44 @@ int main(int argc, char* argv[])
         if (xp < 0)
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         else
-            cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
-        cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal" << endl;
+            cout << "# Amplitude, t=" << mint <<", Q^2=" << Qsqr << ", xp=" << xp << endl;
+        cout << "# B theta_B Re M^x  Re M^y  Im M^x  Im M^y" << endl;
+        double t = mint;
 
-
-        for (t=mint; t<=maxt; t+=tstep)
+        for (double B = 2.0*6.62*5.068; B < 400; B+=20)
         {
-            double xpom;
-            if (xp < 0)
-                xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
-            else
-                xpom = xp;
-            if (xpom > 0.04)
+            for (double theta_B = 0; theta_B <= 2.0*M_PI; theta_B += 2.0*M_PI/4.)
+        
             {
-                cerr << "xpom = " << xpom << ", can't do this!" << endl;
-                //continue;
+                double xpom;
+                if (xp < 0)
+                    xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+                else
+                    xpom = xp;
+                if (xpom > 0.04)
+                {
+                    cerr << "xpom = " << xpom << ", can't do this!" << endl;
+                    //continue;
+                }
+                
+                if(auto_mcintpoints)
+                    MCINTPOINTS = MCpoints(t);
+                
+                cout.precision(5);
+                REAL_PART=true;
+                double *trans= diff.ScatteringAmplitude(xpom, Qsqr, t, B, 2.0*M_PI-theta_B, T);
+                
+                REAL_PART=false;
+                double *trans_im= diff.ScatteringAmplitude(xpom, Qsqr, t, B, 2.0*M_PI-theta_B, T);
+               
+                cout << B << " " << theta_B  << " ";
+                cout.precision(10);
+                cout << trans[0]  << " " << trans[1] <<
+                " " << trans_im[0] << " " << trans_im[1] << endl;
+                
+                delete[] trans;
+                delete[] trans_im;
             }
-            
-            if(auto_mcintpoints)
-                MCINTPOINTS = MCpoints(t);
-            
-            cout.precision(5);
-            double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
-            double lng = 0;
-            if (Qsqr > 0)
-                lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
-
-            cout << t << " ";
-            cout.precision(10);
-            cout << trans  << " " << lng << endl;
-            
-
-            // Larger t step probably useful at large t
-            /*
-            if (t>0.08)
-                tstep = 0.015;
-            */
-	    ///if (t>=0.15 )
-            ///    tstep = 0.02;
                 
         }
     }
@@ -607,64 +607,6 @@ int main(int argc, char* argv[])
         }
     }
     
-    else if (mode == F2)
-    {
-        cerr << "NOTE: CHECK THAT THIS WORKS WITH THE WAVE FUNCTIONS FROM AMPLITUDELIB" << endl;
-	FACTORIZE_ZINT=true;
-        cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm tot F_L(light) F_L(charm) F_L(tot)" << endl;
-        double orig_x = xbj;
-        WaveFunction * photon = new VirtualPhoton();;
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT, 0.03);
-        cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
-        
-        amp->SetSkewedness(false);
-        Diffraction f2(*amp, *photon);
-       	f2.SetMaxR(maxr*5.068);
-        cout << "#Maxr = " << f2.MaxR() << endl;
-        // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
-        // Note* 4pi, as convention in BoostedGaussian and VirtualPhoton classes are different!!!
-        double xs_t = f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
-        double xs_l = f2.ScatteringAmplitude(xbj, Qsqr, 0, L);
-        double structurefun = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l+xs_t);
-        double fl_light =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*xs_l;
-        
-        double mc=1.4;
-        // heavy quark contribution
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, mc);
-        double xbj_c = xbj * (1.0 + 4.0*mc*mc / Qsqr);
-        double xs_t_c = 0;
-        double xs_l_c = 0;
-        double fl_c = 0;
-        double structurefun_c = 0;
-        if (xbj_c < 0.01 or true)
-        {
-            cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
-            xs_t_c = f2.ScatteringAmplitude(xbj_c, Qsqr, 0, T);
-            xs_l_c = f2.ScatteringAmplitude(xbj_c, Qsqr, 0, L);
-            structurefun_c = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c+xs_t_c);
-            fl_c =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c);
-        }
-        
-        // b quark contribution
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::B, 4.75);
-        double xbj_b = xbj * (1.0 + 4.0*4.75*4.75 / Qsqr);
-        double xs_t_b = 0;
-        double xs_l_b = 0;
-        double structurefun_b = 0;
-        double fl_b = 0;
-        if (xbj_b < 0.01 and false)
-        {
-            cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
-            xs_t_b = f2.ScatteringAmplitude(xbj_b, Qsqr, 0, T);
-            xs_l_b = f2.ScatteringAmplitude(xbj_b, Qsqr, 0, L);
-            structurefun_b = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_b+xs_t_b);
-            fl_b =Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c);
-        }
-	
-        cout << orig_x << " " << Qsqr << " " << structurefun << " " << structurefun_c << " " << structurefun + structurefun_c + structurefun_b << " " << fl_light << " " << fl_c << " " << fl_c + fl_light + fl_b<< endl;
-        
-        delete photon;
-    }
     
     
     gsl_rng_free(global_rng);

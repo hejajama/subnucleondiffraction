@@ -32,6 +32,7 @@ public:
     // Array points are x and y coordinates
     double Amplitude(double xpom, double q1[2], double q2[2]);
     double AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] );
+    double Amplitude(double xpom, Vec q1, Vec q2);
 
     WilsonLine& GetWilsonLine( double x, double y); // Find Wilson line that corresponds to the coordinate
     

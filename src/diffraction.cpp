@@ -11,6 +11,8 @@
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_bessel.h>
+#include <fstream>
+#include <sstream>
 #include "subnucleon_config.hpp"
 #include "nrqcd_wf.hpp"
 
@@ -26,8 +28,18 @@ Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
     num_of_averages = 1;
     zlimit=0.00000001;
 	MAXR=10*5.068;
+    
+    InitializeIsInterpolator("./photon_kT_Isfun_LHC");
+    
+
+    
 }
 
+
+Diffraction::~Diffraction()
+{
+    delete Is_interpolator;
+}
 
 
 
@@ -98,12 +110,15 @@ struct Inthelper_amplitude
     double b;
     double theta_b;
     double z;
+    bool xcomp; // If true, compute Mx ,otherwise My
+    double B;
+    double theta_B;
     Polarization polarization;
 };
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par);
 
-double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Polarization pol)
+double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, double B, double theta_B, Polarization pol)
 {
     Inthelper_amplitude helper;
     helper.diffraction = this;
@@ -111,64 +126,89 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     helper.Qsqr = Qsqr;
     helper.t = t;
     helper.polarization=pol;
+    helper.xcomp = true;
 
     
     
-    // Do MC integral over impact parameters and dipole sizes
-    
-    // Currently hardcoded parameters for jpsi and gold:
-    // Impact parameter up to 100 GeV^-1
-    // Dipole size up to 10 GeV^-1
-    // MC integration parameters: b, theta_b, r, theta_r, Z
+    // b, theta_b, r, theta_r, z
     double *lower, *upper;
-    if (FACTORIZE_ZINT)
-    {
-        lower = new double[4];
-        upper = new double[4];
-    }
-    else
-    {
-        lower = new double[5];
-        upper = new double[5];
-        lower[4]=zlimit; // Min z
-        upper[4]=1.0 - lower[4];    // Max z
-    }
+    lower = new double[5];
+    upper = new double[5];
+    lower[4]=zlimit; // Min z
+    upper[4]=1.0 - lower[4];    // Max z
+    
     
     lower[0]=lower[1]=lower[2]=lower[3]=0;
-    upper[0] = 10*5.068 ; // Max b
+    upper[0] = 25*5.068; //MAXR;//20; //0.5*5.068;  // Max r
     upper[1] = 2.0*M_PI;
-    upper[2] = MAXR; //MAXR;//20; //0.5*5.068;  // Max r
+    upper[2]=MAXR;
     upper[3] = 2.0*M_PI;
     
     gsl_monte_function F;
     F.f = &Inthelperf_amplitude_mc;
-    F.dim = 4;
-    if (!FACTORIZE_ZINT)
-        F.dim = 5;
+    F.dim = 5;
+
     F.params = &helper;
     
-    double result,error;
+    helper.B=B;
+    helper.theta_B=theta_B;
+
+
+
+    // X comp
+    helper.xcomp=true;
+    
+    double result_x,error_x;
 
     
     if (MCINT == MISER)
     {
         gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
-        gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result, &error);
+        gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result_x, &error_x);
         //cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
         gsl_monte_miser_free(s);
     }
     else if (MCINT == VEGAS)
     {
         gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
-        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result, &error);
-        cout << "# vegas warmup " << result << " +/- " << error << endl;
+        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result_x, &error_x);
+        cout << "# vegas warmup " << result_x << " +/- " << error_x << endl;
         do
         {
-            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result, &error);
-            cout << "# Vegas interation " << result << " +/- " << error << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
-        } while (fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 and result != 0);
+            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result_x, &error_x);
+            cout << "# Vegas interation " << result_x << " +/- " << error_x << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+        } while (fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 and result_x != 0);
         gsl_monte_vegas_free(s);
     }
+    
+    // Y comp
+    helper.xcomp=false;
+    
+    double result_y,error_y;
+
+    
+    if (MCINT == MISER)
+    {
+        gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
+        gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result_y, &error_y);
+        //cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
+        gsl_monte_miser_free(s);
+    }
+    else if (MCINT == VEGAS)
+    {
+        gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
+        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result_y, &error_y);
+        cout << "# vegas warmup " << result_y << " +/- " << error_y << endl;
+        do
+        {
+            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result_y, &error_y);
+            cout << "# Vegas interation " << result_y << " +/- " << error_y << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+        } while (fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 and result_y != 0);
+        gsl_monte_vegas_free(s);
+    }
+    
+   
+    
     
     //if (std::abs(error/result) > MCINTACCURACY)
     //    cerr << "#MC integral failed, result " << result << " error " << error << endl;
@@ -176,7 +216,8 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     delete lower;
     delete upper;
     
-    return result;
+    double *res = new double[2]; res[0]=result_x; res[1] = result_y;
+    return res;
     
 }
 
@@ -184,6 +225,75 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
 
 double Inthelperf_amplitude_z(double z, void* p);
 
+double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
+{
+    // Integration variables: (choose momentum transfer || x axis)
+    // B, theta_B, b, theta_b, r, theta_r, z
+    Inthelper_amplitude *par = (Inthelper_amplitude*)p;
+    
+    if (par->polarization != T)
+    {
+        cerr << "Only T supported atm..." << endl;
+        exit(1);
+    }
+    
+    Vec b (vec[0]*std::cos(vec[1]), vec[0]*std::sin(vec[1]));
+    Vec r (vec[2]*std::cos(vec[3]), vec[2]*std::sin(vec[3]));
+    double qt = std::sqrt(par->t);
+    Vec q(qt, 0); // Choose along x axis
+    double z = vec[4];
+    
+    
+    
+    
+    double amp_real = par->diffraction->GetDipole()->Amplitude(par->xpom, b + r*0.5,  b - r*0.5);
+    //double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
+    double amp_imag=0; //todo...
+    std::complex<double> amp(amp_real, amp_imag);
+    //amp = amp.real();   // Disable possible imag part for now
+    
+    // vec[2] = |r| jacobian
+    complex<double> subamp = vec[2]*par->diffraction->GetWaveFunction()->PsiSqr_T(par->Qsqr, vec[2], z)/(4.0*M_PI) * amp;
+    
+    complex<double> result;
+    complex<double> imag(0,1);
+    
+    // vec[0]=|b| is Jacobian
+    double blen = vec[0]; double B = par->B; double th_B = par->theta_B;
+    
+    double cos_th_b = std::cos(vec[1]);
+    double cos_th_B = std::cos(th_B);
+    double sin_th_b = std::sin(vec[1]);
+    double sin_th_B = std::sin(th_B);
+    
+    Vec Bv(B * cos_th_B, B*sin_th_B );
+    
+    result = vec[0] * std::exp(-imag*(q*b)) * subamp;
+    
+
+    if (par->xcomp == true)
+    {
+        result *= (blen*cos_th_b - B*cos_th_B)/( (b-Bv).Len() ) * par->diffraction->GetIsInterpolator()->Evaluate((b-Bv).Len())
+        + (blen*cos_th_b + B*cos_th_B)/( (b+Bv).Len() ) * par->diffraction->GetIsInterpolator()->Evaluate((b+Bv).Len()) * std::exp(-imag*(q*Bv));
+    }
+    else
+    {
+        result *= (blen*sin_th_b - B*sin_th_B)/( (b-Bv).Len() ) * par->diffraction->GetIsInterpolator()->Evaluate((b-Bv).Len())
+        + (blen*sin_th_b + B*sin_th_B)/( (b+Bv).Len() ) * par->diffraction->GetIsInterpolator()->Evaluate((b+Bv).Len()) * std::exp(-imag*(q*Bv));
+    }
+    
+    double res;
+    if (REAL_PART)
+        res = result.real();
+    else
+        res = result.imag();
+    
+    return res;
+}
+
+
+
+/*
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
 {
     Inthelper_amplitude *helper = (Inthelper_amplitude*)par;
@@ -216,7 +326,8 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
     
     return result;
      */
-}
+
+
 
 double Inthelperf_amplitude_z(double z, void* p)
 {
@@ -309,6 +420,35 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
 
 }
+
+
+/// Interpolated is
+void Diffraction::InitializeIsInterpolator(std::string datafile)
+{
+    vector<double> x;
+    vector<double> y;
+    
+    cout << "# Reading file " << datafile << endl;
+    
+    std::ifstream infile(datafile);
+    
+    for (std::string line; getline(infile, line); )
+    {
+        std::stringstream ss(line);
+        double a,b;
+        ss >> a;
+        ss >> b;
+        x.push_back(a);
+        y.push_back(b);
+    }
+    
+    Is_interpolator = new Interpolator(x,y);
+    Is_interpolator->SetFreeze(true);
+    Is_interpolator->SetUnderflow(0);
+    Is_interpolator->SetOverflow(0);
+    
+}
+
 
 /*
  * Calculate scattering amplitude assuming that dipole amplitude does not depend on any angles
