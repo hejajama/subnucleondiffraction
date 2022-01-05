@@ -542,12 +542,22 @@ int main(int argc, char* argv[])
             cout << "# Amplitude, t=" << mint <<", Q^2=" << Qsqr << ", xp=" << xp << endl;
         cout << "# B theta_B Re M^x  Re M^y  Im M^x  Im M^y" << endl;
         double t = mint;
-
-        for (double B = 2.0*6.62*5.068; B < 400; B+=20)
-        {
-            for (double theta_B = 0; theta_B <= 2.0*M_PI; theta_B += 2.0*M_PI/4.)
         
+        const int THPOINTS=12;
+
+        for (double B = 2.0*6.62*5.068; B < 500; B+=10)
+        {
+            double thvals_mx_re[THPOINTS+2]; // note that last index = 2pi is the same as first
+            double thvals_my_re[THPOINTS+2];
+            double thvals_mx_im[THPOINTS+2];
+            double thvals_my_im[THPOINTS+2];
+#pragma omp parallel for
+            for (int i=0; i<THPOINTS; i++)
             {
+            //for (double theta_B = 0; theta_B <= 2.0*M_PI; theta_B += 2.0*M_PI/8.)
+        
+                double theta_B = 2.0*M_PI/THPOINTS * i;
+                //double theta_B = 2.0*M_PI * i;
                 double xpom;
                 if (xp < 0)
                     xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
@@ -563,19 +573,36 @@ int main(int argc, char* argv[])
                     MCINTPOINTS = MCpoints(t);
                 
                 cout.precision(5);
-                REAL_PART=true;
-                double *trans= diff.ScatteringAmplitude(xpom, Qsqr, t, B, 2.0*M_PI-theta_B, T);
+                
+                double *trans= diff.ScatteringAmplitude(xpom, Qsqr, t, B, theta_B, true, T);
                 
                 REAL_PART=false;
-                double *trans_im= diff.ScatteringAmplitude(xpom, Qsqr, t, B, 2.0*M_PI-theta_B, T);
-               
-                cout << B << " " << theta_B  << " ";
-                cout.precision(10);
-                cout << trans[0]  << " " << trans[1] <<
-                " " << trans_im[0] << " " << trans_im[1] << endl;
+                double *trans_im= diff.ScatteringAmplitude(xpom, Qsqr, t, B, theta_B, false, T);
+                
+                thvals_mx_re[i] = trans[0];
+                thvals_my_re[i] = trans[1];
+                thvals_mx_im[i] = trans_im[0];
+                thvals_my_im[i] = trans_im[1];
                 
                 delete[] trans;
                 delete[] trans_im;
+                
+            }
+            
+            thvals_mx_re[THPOINTS] = thvals_mx_re[0];
+            thvals_my_re[THPOINTS] = thvals_my_re[0];
+            thvals_mx_im[THPOINTS] = thvals_mx_im[0];
+            thvals_my_im[THPOINTS] = thvals_my_im[0];
+            
+            
+            for (int i=0; i<THPOINTS+1; i++)
+            {
+                double theta_B = 2.0*M_PI/THPOINTS * i;
+                cout << B << " " << theta_B  << " ";
+                cout.precision(10);
+                cout << thvals_mx_re[i]  << " " << thvals_my_re[i] <<
+                " " << thvals_mx_im[i] << " " << thvals_my_im[i] << endl;
+                
             }
                 
         }

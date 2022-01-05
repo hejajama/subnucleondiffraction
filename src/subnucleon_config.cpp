@@ -12,7 +12,7 @@ bool REAL_PART = true;
 
 bool CORRECTIONS = false;
 
-MCINTEGRAL MCINT = MISER;
+MCINTEGRAL MCINT = VEGAS;
 
 bool FACTORIZE_ZINT = false;
 // Note: There are probably factors of 4pi wrong from the

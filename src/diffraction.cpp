@@ -113,12 +113,13 @@ struct Inthelper_amplitude
     bool xcomp; // If true, compute Mx ,otherwise My
     double B;
     double theta_B;
+    bool real_part;
     Polarization polarization;
 };
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par);
 
-double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, double B, double theta_B, Polarization pol)
+double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, double B, double theta_B, bool real_part, Polarization pol)
 {
     Inthelper_amplitude helper;
     helper.diffraction = this;
@@ -152,6 +153,7 @@ double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, dou
     
     helper.B=B;
     helper.theta_B=theta_B;
+    helper.real_part =real_part;
 
 
 
@@ -171,13 +173,16 @@ double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, dou
     else if (MCINT == VEGAS)
     {
         gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
-        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result_x, &error_x);
-        cout << "# vegas warmup " << result_x << " +/- " << error_x << endl;
+        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result_x, &error_x);
+        //cout << "# vegas warmup " << result_x << " +/- " << error_x << endl;
+        int iter = 0;
         do
         {
-            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result_x, &error_x);
-            cout << "# Vegas interation " << result_x << " +/- " << error_x << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
-        } while (fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 and result_x != 0);
+            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result_x, &error_x);
+            //cout << "# Vegas interation " << result_x << " +/- " << error_x << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+            iter++;
+            
+        } while ((fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.3 or std::abs(error_x/result_x) > 0.2) and iter < 5);
         gsl_monte_vegas_free(s);
     }
     
@@ -198,12 +203,12 @@ double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, dou
     {
         gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
         gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result_y, &error_y);
-        cout << "# vegas warmup " << result_y << " +/- " << error_y << endl;
+        //cout << "# vegas warmup " << result_y << " +/- " << error_y << endl;
         do
         {
             gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result_y, &error_y);
-            cout << "# Vegas interation " << result_y << " +/- " << error_y << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
-        } while (fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 and result_y != 0);
+            //cout << "# Vegas interation " << result_y << " +/- " << error_y << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+        } while (fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.3  and result_y != 0);
         gsl_monte_vegas_free(s);
     }
     
@@ -216,7 +221,7 @@ double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, dou
     delete lower;
     delete upper;
     
-    double *res = new double[2]; res[0]=result_x; res[1] = result_y;
+    double *res = new double[2]; res[0]=result_x; res[1] = result_y;
     return res;
     
 }
@@ -283,7 +288,7 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
     }
     
     double res;
-    if (REAL_PART)
+    if (par->real_part)
         res = result.real();
     else
         res = result.imag();
