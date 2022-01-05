@@ -27,6 +27,12 @@ include_directories(${GSL_INCLUDE_DIRS})
 include_directories("../amplitudelib_v2/")
 include_directories("./src/")
 
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
 
 # Paths to LCPT dipole amplitude code 
 # Uncomment and add correct dirs if use, also modify src/ipsat_proton.hpp
