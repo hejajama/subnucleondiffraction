@@ -545,7 +545,7 @@ int main(int argc, char* argv[])
         
         const int THPOINTS=12;
 
-        for (double B = 2.0*6.62*5.068; B < 500; B+=10)
+        for (double B = 2.0*6.62*5.068; B < 1500; B+=10)
         {
             double thvals_mx_re[THPOINTS+2]; // note that last index = 2pi is the same as first
             double thvals_my_re[THPOINTS+2];
