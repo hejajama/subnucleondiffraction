@@ -545,7 +545,7 @@ int main(int argc, char* argv[])
         
         const int THPOINTS=12;
 
-        for (double B = 2.0*6.62*5.068; B < 500; B+=10)
+        for (double B = 2.0*6.62*5.068; B < 1700; B+=20)
         {
             double thvals_mx_re[THPOINTS+2]; // note that last index = 2pi is the same as first
             double thvals_my_re[THPOINTS+2];
@@ -594,16 +594,18 @@ int main(int argc, char* argv[])
             thvals_mx_im[THPOINTS] = thvals_mx_im[0];
             thvals_my_im[THPOINTS] = thvals_my_im[0];
             
-            
+            std::cout << std::fixed;
+            std::cout << std::setprecision(8);
             for (int i=0; i<THPOINTS+1; i++)
             {
                 double theta_B = 2.0*M_PI/THPOINTS * i;
-                cout << B << " " << theta_B  << " ";
-                cout.precision(10);
+                cout << B << " ";
+                cout << theta_B  << " ";
                 cout << thvals_mx_re[i]  << " " << thvals_my_re[i] <<
                 " " << thvals_mx_im[i] << " " << thvals_my_im[i] << endl;
                 
             }
+		return 0;
                 
         }
     }
@@ -671,6 +673,8 @@ string InfoStr()
     if (FACTORIZE_ZINT)
         info <<". z integral factorized";
     else info << ". z integral not factorized";
+    
+    info << endl << "# Tabulated IS form factor: " << INTERPOLATED_IS ;
     
     
     return info.str();

@@ -35,6 +35,8 @@ enum PROCESS
     INCOHERENT
 };
 
+extern bool INTERPOLATED_IS;
+
 
 // Globar random number generator - avoid initializing it mulitple times
 #include <gsl/gsl_rng.h>

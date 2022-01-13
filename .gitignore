@@ -1,3 +1,5 @@
+mpi/
+build/
 input*
 *.o
 SubNucleon diffraction.xcodeproj/

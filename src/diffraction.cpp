@@ -129,6 +129,7 @@ double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, dou
     helper.polarization=pol;
     helper.xcomp = true;
 
+
     
     
     // b, theta_b, r, theta_r, z
@@ -160,6 +161,9 @@ double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, dou
     // X comp
     helper.xcomp=true;
     
+    const double VEGAS_RESULT_ACCURACY_TARGET=0.2;
+    const int MAXITER_VEGAS=7;
+    
     double result_x,error_x;
 
     
@@ -179,11 +183,19 @@ double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, dou
         do
         {
             gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result_x, &error_x);
-            //cout << "# Vegas interation " << result_x << " +/- " << error_x << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+            //cout << "# Vegas interation (Mx) " << result_x << " +/- " << error_x << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
             iter++;
             
-        } while ((fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.3 or std::abs(error_x/result_x) > 0.2) and iter < 5);
+        } while ((fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.3 or std::abs(error_x/result_x) > VEGAS_RESULT_ACCURACY_TARGET) and iter < MAXITER_VEGAS);
         gsl_monte_vegas_free(s);
+        
+        if (std::abs(error_x/result_x) > VEGAS_RESULT_ACCURACY_TARGET and std::abs(result_x)>0)
+        {
+            cerr << "WARNING: Relative uncertainty (Mx) " << std::abs(error_x/result_x) << " at B=" << theta_B <<", theta_B=" << theta_B << endl;
+        }/*
+        else {
+            cerr << "OK: Relative uncertainty " << std::abs(error_x/result_x) << " at theta_B=" << theta_B << endl;
+        }*/
     }
     
     // Y comp
@@ -202,13 +214,23 @@ double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, dou
     else if (MCINT == VEGAS)
     {
         gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
-        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result_y, &error_y);
+        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result_y, &error_y);
+        int iter=0;
         //cout << "# vegas warmup " << result_y << " +/- " << error_y << endl;
         do
         {
-            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result_y, &error_y);
-            //cout << "# Vegas interation " << result_y << " +/- " << error_y << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
-        } while (fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.3  and result_y != 0);
+            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result_y, &error_y);
+            //cout << "# Vegas interation (My) " << result_y << " +/- " << error_y << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+            iter++;
+        } while ((fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.3 or std::abs(error_y/result_y) > VEGAS_RESULT_ACCURACY_TARGET) and iter < MAXITER_VEGAS);
+        
+        if (std::abs(error_y/result_y) > VEGAS_RESULT_ACCURACY_TARGET and std::abs(result_y)>0)
+        {
+            cerr << "WARNING: Relative uncertainty (My) " << std::abs(error_y/result_y) << " at B=" << B <<", theta_B=" << theta_B << endl;
+        }
+        /*else {
+            cerr << "OK: Relative uncertainty " << std::abs(error_y/result_y) << " at theta_B=" << theta_B << endl;
+        }*/
         gsl_monte_vegas_free(s);
     }
     
@@ -229,6 +251,13 @@ double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, dou
 
 
 double Inthelperf_amplitude_z(double z, void* p);
+
+double Is(double len)
+{
+    // Hardcoded values for LHC TeV, not perfect at B \gtrsim 1000 GeV^-1
+    if (len < 30) return 0; // TODO this may have an effect...
+    return 4.39970499 / (std::pow(len, 1.12657764) + 16.93254834);
+}
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
 {
@@ -275,16 +304,30 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
     
     result = vec[0] * std::exp(-imag*(q*b)) * subamp;
     
-
+    double b_minus_Bv_len = (b-Bv).Len();
+    double b_plus_Bv_len = (b+Bv).Len();
+    
+    double Is_b_minus_Bv;
+    double Is_b_plus_Bv;
+    
+    if (INTERPOLATED_IS)
+    {
+        Is_b_minus_Bv =par->diffraction->GetIsInterpolator()->Evaluate(b_minus_Bv_len);
+        Is_b_plus_Bv = par->diffraction->GetIsInterpolator()->Evaluate(b_plus_Bv_len);
+    }
+    else {
+        Is_b_minus_Bv = Is(b_minus_Bv_len);
+        Is_b_plus_Bv = Is(b_plus_Bv_len);
+    }
     if (par->xcomp == true)
     {
-        result *= (blen*cos_th_b - B*cos_th_B)/( (b-Bv).Len() ) * par->diffraction->GetIsInterpolator()->Evaluate((b-Bv).Len())
-        + (blen*cos_th_b + B*cos_th_B)/( (b+Bv).Len() ) * par->diffraction->GetIsInterpolator()->Evaluate((b+Bv).Len()) * std::exp(-imag*(q*Bv));
+        result *= (blen*cos_th_b - B*cos_th_B)/( (b-Bv).Len() ) * Is_b_minus_Bv
+        + (blen*cos_th_b + B*cos_th_B)/( (b+Bv).Len() ) *  Is_b_plus_Bv * std::exp(-imag*(q*Bv));
     }
     else
     {
-        result *= (blen*sin_th_b - B*sin_th_B)/( (b-Bv).Len() ) * par->diffraction->GetIsInterpolator()->Evaluate((b-Bv).Len())
-        + (blen*sin_th_b + B*sin_th_B)/( (b+Bv).Len() ) * par->diffraction->GetIsInterpolator()->Evaluate((b+Bv).Len()) * std::exp(-imag*(q*Bv));
+        result *= (blen*sin_th_b - B*sin_th_B)/( (b-Bv).Len() ) * Is_b_minus_Bv
+        + (blen*sin_th_b + B*sin_th_B)/( (b+Bv).Len() ) * Is_b_plus_Bv * std::exp(-imag*(q*Bv));
     }
     
     double res;

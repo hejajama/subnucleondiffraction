@@ -12,6 +12,8 @@ bool REAL_PART = true;
 
 bool CORRECTIONS = false;
 
+bool INTERPOLATED_IS = false;
+
 MCINTEGRAL MCINT = VEGAS;
 
 bool FACTORIZE_ZINT = false;
