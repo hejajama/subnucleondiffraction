@@ -605,7 +605,6 @@ int main(int argc, char* argv[])
                 " " << thvals_mx_im[i] << " " << thvals_my_im[i] << endl;
                 
             }
-		return 0;
                 
         }
     }

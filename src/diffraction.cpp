@@ -307,6 +307,9 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
     double b_minus_Bv_len = (b-Bv).Len();
     double b_plus_Bv_len = (b+Bv).Len();
     
+    if (b_plus_Bv_len < 1e-15 or b_plus_Bv_len < 1e-15)
+        return 0;
+    
     double Is_b_minus_Bv;
     double Is_b_plus_Bv;
     
@@ -321,13 +324,13 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
     }
     if (par->xcomp == true)
     {
-        result *= (blen*cos_th_b - B*cos_th_B)/( (b-Bv).Len() ) * Is_b_minus_Bv
-        + (blen*cos_th_b + B*cos_th_B)/( (b+Bv).Len() ) *  Is_b_plus_Bv * std::exp(-imag*(q*Bv));
+        result *= (blen*cos_th_b - B*cos_th_B)/( b_minus_Bv_len ) * Is_b_minus_Bv
+        + (blen*cos_th_b + B*cos_th_B)/( b_plus_Bv_len ) *  Is_b_plus_Bv * std::exp(-imag*(q*Bv));
     }
     else
     {
-        result *= (blen*sin_th_b - B*sin_th_B)/( (b-Bv).Len() ) * Is_b_minus_Bv
-        + (blen*sin_th_b + B*sin_th_B)/( (b+Bv).Len() ) * Is_b_plus_Bv * std::exp(-imag*(q*Bv));
+        result *= (blen*sin_th_b - B*sin_th_B)/( b_minus_Bv_len ) * Is_b_minus_Bv
+        + (blen*sin_th_b + B*sin_th_B)/( b_plus_Bv_len ) * Is_b_plus_Bv * std::exp(-imag*(q*Bv));
     }
     
     double res;
@@ -335,6 +338,9 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
         res = result.real();
     else
         res = result.imag();
+    
+    if (isnan(res))
+        cerr << "What, result is NaN, b=" << b <<", r=" << r <<", z=" << z << endl;
     
     return res;
 }
