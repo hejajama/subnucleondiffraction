@@ -3,14 +3,13 @@
 
 #include "../src/ipglasma.hpp"
 #include "../src/ipsat_proton.hpp"
-#include <tools/tools.hpp>
+#include "../src/subnucleon_config.hpp"
 #include <string>
 #include <sstream>
 #include <gsl/gsl_integration.h>
 #include "../src/vector.hpp"
 #include <gsl/gsl_rng.h>
 #include <cmath>
-#include <tools/tools.hpp>
 #include <gsl/gsl_rng.h>
 
 gsl_rng* global_rng;
@@ -52,9 +51,9 @@ int main(int argc, char* argv[])
     //f.function = &rhelperf;
 	f.params = &helper;
    
-    double r = 0.2 * Amplitude::FMGEV;  
-    double MAXB = 4.5 * Amplitude::FMGEV;;
-    cout <<"# Dipole size r=" << r/Amplitude::FMGEV << " fm" << endl;
+    double r = 0.2 * FMGEV;  
+    double MAXB = 4.5 * FMGEV;;
+    cout <<"# Dipole size r=" << r/FMGEV << " fm" << endl;
     cout <<"# Datafile: " << fname << endl;
     for (double b = -MAXB; b < MAXB; b+= 0.05) 
     {

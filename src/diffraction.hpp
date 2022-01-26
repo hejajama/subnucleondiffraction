@@ -1,17 +1,16 @@
 /*
  * Diffraction at sub-nucleon scale
  * Calculate diffractive cross sections
- * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015
+ * Heikki Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2022
  */
 
 #ifndef diffraction_hpp
 #define diffraction_hpp
 
 #include "dipole.hpp"
-#include <amplitudelib/wave_function.hpp>
-#include <tools/config.hpp>
+#include "qcd.hpp"
+#include "wave_function.hpp"
 
-using namespace Amplitude;
 
 class Diffraction
 {

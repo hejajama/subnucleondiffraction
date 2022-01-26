@@ -12,7 +12,7 @@
 #include "ipsat_proton.hpp"
 #include "vector.hpp"
 #include "gdist_dglap.hpp"
-#include <tools/interpolation.hpp>
+#include "interpolation.hpp"
 
 enum DeuteronStructure
 {

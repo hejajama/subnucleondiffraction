@@ -8,8 +8,8 @@
 #include "mz_ipsat/dipoleamplitude.hpp"
 #include "dipole.hpp"
 #include "vector.hpp"
-#include <tools/tools.hpp>
-#include <tools/interpolation.hpp>
+#include "qcd.hpp"
+#include "interpolation.hpp"
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_errno.h>
 #include <cmath>
@@ -24,7 +24,7 @@ extern "C" {
 
 int IPSAT12_NUKE_PAR = 2;    // m_c=1.4 GeV
 
-using Amplitude::SQR;
+inline double SQR(double x) { return x*x; }
 
 const double NC=3.0;
 const double MINB = 0;

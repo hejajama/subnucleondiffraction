@@ -11,7 +11,6 @@
 
 #include <gsl/gsl_rng.h>
 
-#include <tools/tools.hpp>
 #include <gsl/gsl_errno.h>
 
 #include "dipole.hpp"
@@ -26,12 +25,13 @@
 #include "ipglasma.hpp"
 #include "nucleons.hpp"
 #include "dis.hpp"
-#include <amplitudelib/virtual_photon.hpp>
+#include "virtual_photon.hpp"
 #include "gitsha1.h"
 
 using namespace std;
 
 string InfoStr();
+
 
 DipoleAmplitude *amp;
 
@@ -614,7 +614,7 @@ int main(int argc, char* argv[])
         cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm tot F_L(light) F_L(charm) F_L(tot)" << endl;
         double orig_x = xbj;
         WaveFunction * photon = new VirtualPhoton();;
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::LIGHT, 0.03);
+        ((VirtualPhoton*)photon)->SetQuark(LIGHT, 0.03);
         cout << "# Quarks: " << ((VirtualPhoton*)photon)->GetParamString() << endl;
         
         amp->SetSkewedness(false);
@@ -630,7 +630,7 @@ int main(int argc, char* argv[])
         
         double mc=1.4;
         // heavy quark contribution
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::C, mc);
+        ((VirtualPhoton*)photon)->SetQuark(C, mc);
         double xbj_c = xbj * (1.0 + 4.0*mc*mc / Qsqr);
         double xs_t_c = 0;
         double xs_l_c = 0;
@@ -646,7 +646,7 @@ int main(int argc, char* argv[])
         }
         
         // b quark contribution
-        ((VirtualPhoton*)photon)->SetQuark(Amplitude::B, 4.75);
+        ((VirtualPhoton*)photon)->SetQuark(B, 4.75);
         double xbj_b = xbj * (1.0 + 4.0*4.75*4.75 / Qsqr);
         double xs_t_b = 0;
         double xs_l_b = 0;
@@ -745,3 +745,4 @@ std::vector<double> NRQCD_parameters_from_file(int id)
     exit(1);
     return P;
 }
+

@@ -8,7 +8,6 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_sf_gamma.h>
-#include <tools/tools.hpp>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_randist.h>
 #include <cmath>
@@ -17,6 +16,8 @@
 #include <algorithm>
 #include "subnucleon_config.hpp"
 #include "mz_ipsat/dipoleamplitude.hpp"
+
+#define LINEINFO __FILE__ << ":" << __LINE__
 
 // IPsat 2012
 #ifdef USE_FORTRAN_IPSAT12
@@ -29,7 +30,6 @@ int IPSAT12_PAR = 2;    // m_c=1.4 GeV
 
 using std::cout; using std::endl;
 
-const double FMGEV = 5.06778;
 double MAXR_SKEW = 20;  // Dont calculate skew at larger r, as it didnt work
 
 const int INTPOINTS_ZINT = 7;   // Depth of z integral subintervals when projecting exponential
@@ -534,24 +534,12 @@ double Ipsat_Proton::GetQuarkQsFluctuation(unsigned int i)
  */
 double Ipsat_Proton::GetQsFluctuation(double x, double y)
 {
-    if (fluctuation_shape != LOCAL_FLUCTUATIONS or std::abs(Qs_fluctuation_sigma)<1e-5 or qs_fluctuation_coordinates.size()<1)
-        return 1.0;
-    
-    int xind;
-    if (x < qs_fluctuation_coordinates[0] or x > qs_fluctuation_coordinates[qs_fluctuation_coordinates.size()-1])
-        return 1.0;
-    else
-        xind = FindIndex(x, qs_fluctuation_coordinates);
-    int yind;
-    if (y < qs_fluctuation_coordinates[0] or y > qs_fluctuation_coordinates[qs_fluctuation_coordinates.size()-1])
-        return 1.0;
-    else
-        yind = FindIndex(y, qs_fluctuation_coordinates);
-    
-    //cout << x << " " << y << " " <<std::exp(qs_fluctuation[yind][xind]) << endl;
-    
-    return qs_fluctuation[yind][xind];
-    
+    if (fluctuation_shape == LOCAL_FLUCTUATIONS)
+    {
+        cerr << "Ipsat_Proton::GetQsFluctuation is not supported anymore" << endl;
+        exit(1); 
+    }
+    return 1;
 }
 
 void Ipsat_Proton::SetQsFluctuation(double s)

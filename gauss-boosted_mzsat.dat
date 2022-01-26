@@ -1,0 +1,28 @@
+# Parameters for J/Psi and \gamma^* wave function overlap
+# 
+# Model: Boosted gaussian 
+# Parameters are taken from
+# H. Mäntysaari, P. Zurita, Phys.Rev.D 98 (2018) 036002 • e-Print: 1804.05311 [hep-ph] 
+#
+# Syntax of this file is the following:
+# Lines starting with # are comments
+# Parameters are given as a pair key:value
+# Values are in units of GeV^n and possible keys are:
+# e_f, m_f, M_V, N_T, N_L, R, S alpha and del
+#
+#
+#e_f: Effective charge: 2/3
+e_f:0.66666666
+#N_T, N_L, R_T, R_L: Normalization for transversial/lognitudial components
+N_T:0.589
+N_L:0.586
+#sqrt(2.3)
+R:1.507
+m_f:1.3528
+M_V:3.097
+# delta: 0 or 1: one part of the wave functio is multiplied by delta
+del:1
+# State S=n, J/Psi is S=1
+S:1
+# alpha needed for higher S states, no effect for S=1
+alpha:0

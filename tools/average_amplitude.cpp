@@ -2,15 +2,14 @@
 */
 
 #include "../src/ipglasma.hpp"
+#include "../src/subnucleon_config.hpp"
 #include "../src/ipsat_proton.hpp"
-#include <tools/tools.hpp>
 #include <string>
 #include <sstream>
 #include <gsl/gsl_integration.h>
 #include "../src/vector.hpp"
 #include <gsl/gsl_rng.h>
 #include <cmath>
-#include <tools/tools.hpp>
 #include <gsl/gsl_rng.h>
 
 gsl_rng* global_rng;

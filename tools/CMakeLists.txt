@@ -70,7 +70,6 @@ target_link_libraries(
 	average_amplitude
 	PRIVATE
 	mzipsat
-	amplitude
 	#dipolelib
 	#ColorDipole
 	GSL::gsl
@@ -80,7 +79,6 @@ target_link_libraries(
 	amplitude_bline
 	PRIVATE
 	mzipsat
-	amplitude
 	#dipolelib
 	#ColorDipole
 	GSL::gsl
@@ -90,7 +88,6 @@ target_link_libraries(
 	b_r_angle
 	PRIVATE
 	mzipsat
-	amplitude
 	#dipolelib
 	#ColorDipole
 	GSL::gsl
@@ -101,7 +98,6 @@ target_link_libraries(
 	PRIVATE
 	mzipsat
 	#dipolelib
-	amplitude
 	#ColorDipole
 	GSL::gsl
 	GSL::gslcblas

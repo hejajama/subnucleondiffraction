@@ -17,17 +17,19 @@ add_library(
 	ipglasma.cpp
 	gdist_dglap.cpp
 	wilsonline.cpp
-	#virtual_photon.cpp
-	#wave_function.cpp
+	virtual_photon.cpp
+	wave_function.cpp
+	qcd.cpp
+	subnucleon_config.cpp
 	vector.cpp
 	smooth_ws_nuke.cpp
+	interpolation.cpp
 )
 
 add_executable(
 	subnucleondiffraction	
 	main.cpp
 	diffraction.cpp
-	subnucleon_config.cpp
 	gauss_boost.cpp
 	gaus_lc.cpp
 	nrqcd_wf.cpp
@@ -42,7 +44,6 @@ target_link_libraries(
 	subnucleondiffraction
 	PRIVATE
 	ddis
-	amplitude
 	#dipolelib # LCPT dipole
 	#ColorDipole  #IPSAT12 fit
 	mzipsat

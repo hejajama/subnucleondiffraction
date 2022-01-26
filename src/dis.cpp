@@ -7,9 +7,9 @@
 #include "dis.hpp"
 #include <gsl/gsl_integration.h>
 #include "vector.hpp"
-#include <amplitudelib/wave_function.hpp>
+#include "wave_function.hpp"
+#include "subnucleon_config.hpp"
 
-using Amplitude::SQR;
 
 const int MAXITER_INT = 10;
 

@@ -8,10 +8,9 @@
 #define dis_hpp
 
 #include "dipole.hpp"
-#include <amplitudelib/wave_function.hpp>
-#include <amplitudelib/virtual_photon.hpp>
+#include "wave_function.hpp"
+#include "qcd.hpp"
 
-using namespace Amplitude;
 
 class DIS
 {

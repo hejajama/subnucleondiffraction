@@ -12,12 +12,10 @@
 #include <cmath>
 #include <sstream>
 #include <string>
-#include <tools/interpolation.hpp>
-#include <tools/tools.hpp>
+#include "interpolation.hpp"
 #include <fstream>
 
-
-const double FMGEV = 5.067731;
+#define LINEINFO __FILE__ << ":" << __LINE__
 
 using namespace std;
 

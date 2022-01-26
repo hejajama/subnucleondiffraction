@@ -10,7 +10,7 @@
 #include "dipole.hpp"
 #include "gdist_dglap.hpp"
 #include "mz_ipsat/dipoleamplitude.hpp"
-#include <tools/interpolation.hpp>
+#include "interpolation.hpp"
 #include <string>
 #include <sstream>
 #include "dipole.hpp"

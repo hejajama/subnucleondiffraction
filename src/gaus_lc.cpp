@@ -5,6 +5,8 @@
  */
  
 #include "gaus_lc.h"
+#include "subnucleon_config.hpp"
+#include "qcd.hpp"
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_integration.h>
@@ -19,10 +21,8 @@ const int MAXITER_ZINT=1000;
 const REAL MINZ=0.00001;  // Integration limits
 const REAL MAXZ=0.9999;
 
-using Amplitude::SQR;
 const int NC=3;
 
-using Amplitude::ALPHA_e;
 
 //const double ALPHA_e = 1.0/137.035999679;
 const double e = sqrt(4.0*M_PI*ALPHA_e);

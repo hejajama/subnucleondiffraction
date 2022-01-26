@@ -9,8 +9,7 @@
  * Heikki Mäntysaari <heikki.mantysaari@jyu.fi>, 2010
  */
 
-#include <tools/tools.hpp>
-#include <amplitudelib/wave_function.hpp>
+#include "wave_function.hpp"
 #include <iostream>
 #include <string>
 

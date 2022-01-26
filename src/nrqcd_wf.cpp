@@ -7,7 +7,8 @@
  */
  
 #include "nrqcd_wf.hpp"
-#include <tools/tools.hpp>
+#include "subnucleon_config.hpp"
+#include "qcd.hpp"
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_integration.h>
@@ -19,7 +20,6 @@
 
 #include "subnucleon_config.hpp"
 
-//using namespace Amplitude;
 
 inline double ABS(double x) { if (x<0) return -x; else return x; }
 const int NC=3;
@@ -27,10 +27,6 @@ const int NC=3;
 const double ZINTACCURACY=ZINT_RELACCURACY;
 const int MAXITER_ZINT=ZINT_INTERVALS;
 
-using Amplitude::SQR;
-using Amplitude::ALPHA_e;
-
-//const double ALPHA_e = 1.0/137.035999679;
 const double e = sqrt(4.0*M_PI*ALPHA_e);
 
 
