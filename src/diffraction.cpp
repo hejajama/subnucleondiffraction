@@ -393,84 +393,8 @@ double Inthelperf_amplitude_z(double z, void* p)
 double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol)
 { 
     
-        
-    // Recall quark and gluon positions:
-    // Quark: b + zr
-    // Antiquark: b - (1-z) r
-    
-    // If do like Lappi, Mantysaari: set z=1/2 here
-    
-    double bx = b*cos(theta_b);
-    double by = b*sin(theta_b);
-    double rx = r*cos(theta_r);
-    double ry = r*sin(theta_r);
-    
-    // q and antiq positions
-    double tmpz = z;
-    z=0.5; // Do not use z when calcualting antiquark/quark positions, just b is geometric mean
-    
-    
-    double qx = bx + z*rx; double qy = by + z*ry;
-    double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
-    
-    z = tmpz;
-    
-    double delta = std::sqrt(t);
-    
-    double x1[2] = {qx,qy};
-    double x2[2] = {qbarx, qbary};
-    double amp_real = dipole->Amplitude(xpom, x1, x2 );
-    double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
-    std::complex<double> amp(amp_real, amp_imag);
-    //amp = amp.real();   // Disable possible imag part for now
-    
-    std::complex<double> result = 2.0*r*b; // r and b from Jacobians, 2 as we have written sigma_qq = 2 N
-    std::complex<double> imag(0,1);
-    
-    if (FACTORIZE_ZINT)
-    {
-        if (wavef->WaveFunctionType() != "NRQCD")
-        {
-            //PsiSqr_L_intz(double Qsqr, double r, double Delta, double phi_r_Delta)
-            cerr << "FACTORIZE_ZINT currently only works with NRQCD wf" << endl;
-            return 0;
-        }
-        // Note 1/(4pi) is included in the z integral measure in PsiSqr_T_intz
-        if (pol == T)
-            result *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
-        else
-            result *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta,theta_r);
-            
-        result *= std::exp(-imag*(b*delta*std::cos(theta_b)))*amp;
-        
-    }
-    else
-    {
-        if (pol == T)
-            result *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
-        else
-            result *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
-        
-        // This integrand is now not integrated over z
-        std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (0.5 - z)*r*delta*std::cos(theta_r)  )  );
-        
-        result *= amp * exponent;
-        
-    }
-    
-	double res=0;
-    if (REAL_PART)
-        res = result.real();
-    else
-        res = result.imag();
-    
-    if (std::isnan(res) or std::isinf(res))
-    {
-        cerr << "Amplitude integral is " << res << " dipole " << amp << " xp=" << xpom << " Q^2=" << Qsqr << " t="<< t << " r=" << r << " theta_r="<<theta_r << " b="<< b << "theta_b="<< theta_b << " z=" << z << endl;
-        exit(1);
-    }
-    
-    return res;
+    cerr << "Not used!" << endl; exit(1); 
+    return 0;
     
 
 }

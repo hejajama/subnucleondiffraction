@@ -12,7 +12,7 @@ bool REAL_PART = true;
 
 bool CORRECTIONS = false;
 
-bool INTERPOLATED_IS = false;
+bool INTERPOLATED_IS = true;
 
 MCINTEGRAL MCINT = VEGAS;
 

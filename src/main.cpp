@@ -150,10 +150,6 @@ int main(int argc, char* argv[])
             w=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-xp")
             xp=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-real")
-            REAL_PART = true;
-        else if (string(argv[i])=="-imag")
-            REAL_PART = false;
         else if (string(argv[i])=="-wavef")
         {
             if (string(argv[i+1])=="gauslc")
@@ -543,10 +539,17 @@ int main(int argc, char* argv[])
         cout << "# B theta_B Re M^x  Re M^y  Im M^x  Im M^y" << endl;
         double t = mint;
         
-        const int THPOINTS=12;
+        const int THPOINTS=8;
+        const double MAXTH = M_PI;
+        double bstep = 5./3.;
 
-        for (double B = 2.0*6.62*5.068; B < 1700; B+=20)
+//        for (double B = 2.0*6.62*5.068; B < 1700; B+=20)
+        for (double B = 2.0*6.62*5.068; B < 6000; B+=bstep)
         {
+                if (B > 120) bstep = 10./3.;
+                if (B > 300) bstep = 50/3.;
+                if (B > 3000) bstep = 100;
+ 
             double thvals_mx_re[THPOINTS+2]; // note that last index = 2pi is the same as first
             double thvals_my_re[THPOINTS+2];
             double thvals_mx_im[THPOINTS+2];
@@ -555,8 +558,8 @@ int main(int argc, char* argv[])
             for (int i=0; i<THPOINTS; i++)
             {
             //for (double theta_B = 0; theta_B <= 2.0*M_PI; theta_B += 2.0*M_PI/8.)
-        
-                double theta_B = 2.0*M_PI/THPOINTS * i;
+
+                double theta_B = MAXTH/THPOINTS * i;
                 //double theta_B = 2.0*M_PI * i;
                 double xpom;
                 if (xp < 0)
@@ -574,9 +577,9 @@ int main(int argc, char* argv[])
                 
                 cout.precision(5);
                 
+                
                 double *trans= diff.ScatteringAmplitude(xpom, Qsqr, t, B, theta_B, true, T);
                 
-                REAL_PART=false;
                 double *trans_im= diff.ScatteringAmplitude(xpom, Qsqr, t, B, theta_B, false, T);
                 
                 thvals_mx_re[i] = trans[0];
@@ -666,8 +669,6 @@ string InfoStr()
     info << endl << amp->InfoStr();
 
     
-    if (REAL_PART) info << "# Real part";
-    else info << "# Imaginary part";
     
     if (FACTORIZE_ZINT)
         info <<". z integral factorized";
