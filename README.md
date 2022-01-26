@@ -14,30 +14,11 @@ where V is a vector meson (Upsilon, JPsi, rho, phi)
 
 
 ## Compiling
-
-First one has to download and compile my "amplitudelib" package.
-Get it from Github and compile using CMake:
-    
-    git clone https://github.com/hejajama/amplitudelib.git amplitudelib_v2
-    cd amplitudelib_v2
-    mkdir build
-    cd build
-    cmake ..
-    make
  
-Then, download this main program ("subnucleondiffraction"):
+First clone this repository
 
-    cd ../..   (go back to the parent folder)
     git clone https://github.com/hejajama/subnucleondiffraction.git
-
-Note that when you compile this, it is assumed that the
-libraries generated above can be found from 
-`../amplitudelib_v2/build/lib/`
-
-So amplitudelib_v2 and subnucleondiffraction folders should be located
-in the same directory.
-
-
+    
 How to compile:
 
     mkdir build
@@ -63,14 +44,16 @@ Examples
     GSL_RNG_SEED=1 ./build/bin/subnucleondiffraction -dipole 1 ipsatproton 3.3 0.7 -real -Q2 0 -W 75 -mcintpoints 1e5
     
 Calculates diffractive scattering amplitude (real part, imaginary part: use `-imag` instead of `-real`)
-Q2  is the photon virtuality in GeV<sup>2</sup> and W is the center-of-mass energy. This woud use 10<sup>5</sup> MC integration points points are used in (adaptive) Monte Carlo integration. The MonteCarlo method (Vegas or MISER) can be selected using the `-mcint` flag (see `src/main.cpp`)
+Q2  is the photon virtuality in GeV<sup>2</sup> and W is the center-of-mass energy (again in GeV). This woud use 10<sup>5</sup> MC integration points points are used in (adaptive) Monte Carlo integration. The MonteCarlo method (Vegas or MISER) can be selected using the `-mcint` flag (see `src/main.cpp`)
 
 Using a heavy nucleus instead of proton, replace `1 -> 197` (Au) or any other A. For A>3 Woods-Saxon is used. Deuteron and 3He are handled separately.
 
-Random seed is set by GSL_RNG_SEED enviromental variable. One **must** use the same RNG_SEED when calculating real and 
+Random seed is set by `GSL_RNG_SEED` enviromental variable. One **must** use the same RNG_SEED when calculating real and 
 imaginary parts!
 
-Round proton is "ipsatproton 0 4" (first number controls the Width of the Gaussian from which the hot spot locations are sampled, and the second number is the width of the hot spots.
+Round proton is "ipsatproton 0 4" (first number controls the width of the Gaussian from which the hot spot locations are sampled, and the second number is the width of the hot spots. This code always uses three hotspots, edit `src/ipsat_proton.cpp` if necessary. If teh center-of-mass should be moved to the origin, add `com` at the end:
+
+    -dipole 1 ipsatproton 4.5 1.0 com
 
 Q_s fluctuations for constituent quarks are set as:
 
@@ -78,7 +61,7 @@ Q_s fluctuations for constituent quarks are set as:
     
 where the first number is the width of the log-normal distribution sigma.
 
-Wilson lines generated using the IPGlasma cdoe can be used instead of the IPsat dipole as follows: 
+Wilson lines generated using the IPGlasma code can be used instead of the IPsat dipole as follows: 
     
     -dipole 1 ipglasma FILENAME step
 
@@ -94,7 +77,7 @@ The code outputs
 
     t   amplitude(T)  amplitude(L)
 
-So amplitudes for different polarizations separately. All dimensionful units in this code are in GeV unless stated otherwise. Note that the user has to calculate real and imaginary part separately (but the imaginary part does not affect the coherent cross section).
+So amplitudes for different polarizations separately. All dimensionful units in this code are in GeV unless stated otherwise. Note that the user has to calculate real and imaginary parts separately (but the imaginary part does not affect the coherent cross section).
 
 The coherent cross section is then 
 
