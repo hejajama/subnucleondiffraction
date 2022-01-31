@@ -35,7 +35,20 @@ enum PROCESS
     INCOHERENT
 };
 
-extern bool INTERPOLATED_IS;
+enum FORM_FACTOR
+{
+    POINT_CHARGE,
+    APPROXIMATIVE
+};
+
+enum EXPERIMENT
+{
+    RHIC,
+    LHC
+};
+
+extern FORM_FACTOR NUCLEAR_FF;
+extern EXPERIMENT KINEMATICS;
 
 
 // Globar random number generator - avoid initializing it mulitple times

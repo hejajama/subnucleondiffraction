@@ -359,6 +359,23 @@ int main(int argc, char* argv[])
             }
 
         }
+        else if (string(argv[i])=="-lhc")
+            KINEMATICS = LHC;
+        else if (string(argv[i])=="-rhic")
+            KINEMATICS = RHIC;
+        
+        else if (string(argv[i])=="-ff")
+        {
+            if (string(argv[i+1])=="approximative")
+                NUCLEAR_FF = APPROXIMATIVE;
+            else if (string(argv[i+1])=="pointcharge")
+                NUCLEAR_FF = POINT_CHARGE;
+            else
+            {
+                cerr << "Unknown form factor " << argv[i+1] << endl;
+                exit(1);
+            }
+        }
      else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -542,23 +559,20 @@ int main(int argc, char* argv[])
         const int THPOINTS=8;
         const double MAXTH = M_PI;
         double bstep = 5./3.;
-       
+        
+        double MAXB ;
+        if (KINEMATICS == LHC)
+            MAXB = 7000;
+       else
+            MAXB = 1000;
+        
         // LHC
-        for (double B = 2.0*6.62*5.068; B < 7000; B+=bstep)
+        for (double B = 2.0*6.62*5.068; B < MAXB; B+=bstep)
         {
                 if (B > 120) bstep = 10./3.;
                 if (B > 300) bstep = 50/3.;
                 if (B > 3000) bstep = 100;
-            
-        /* RHIC
-         for (double B = 2.0*6.62*5.068*0.8; B < 1000; B+=bstep)
-         {
-                 if (B > 120) bstep = 10./3.;
-         */
-         
-         
-         
-         */
+
  
             double thvals_mx_re[THPOINTS+2]; // note that last index = 2pi is the same as first
             double thvals_my_re[THPOINTS+2];
@@ -676,15 +690,21 @@ string InfoStr()
     else
         info << "unknown!";
     
-    info << endl << amp->InfoStr();
+    info << endl << amp->InfoStr() << endl;;
 
     
     
-    if (FACTORIZE_ZINT)
-        info <<"# z integral factorized";
-    else info << "# z integral not factorized";
     
-    info << endl << "# Tabulated IS form factor: " << INTERPOLATED_IS ;
+    if (KINEMATICS == RHIC)
+        info << "# RHIC kinematics";
+    else if (KINEMATICS == LHC)
+        info << "# LHC kinematics";
+    info << endl;
+    if (NUCLEAR_FF == APPROXIMATIVE)
+        info << "# Approximative form factor";
+    else if (NUCLEAR_FF == POINT_CHARGE)
+        info << "# Point charge form factor";
+    
     
     
     return info.str();

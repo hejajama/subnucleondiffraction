@@ -29,7 +29,10 @@ Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
     zlimit=0.00000001;
 	MAXR=10*5.068;
     
-    InitializeIsInterpolator("./photon_kT_Isfun_LHC");
+    if (KINEMATICS == LHC)
+        InitializeIsInterpolator("./photon_kT_Isfun_LHC");
+    else if (KINEMATICS == RHIC)
+        InitializeIsInterpolator("./photon_kT_Isfun_RHIC");
     
 
     
@@ -191,7 +194,7 @@ double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, dou
         
         if (std::abs(error_x/result_x) > VEGAS_RESULT_ACCURACY_TARGET and std::abs(result_x)>0)
         {
-            cerr << "WARNING: Relative uncertainty (Mx) " << std::abs(error_x/result_x) << " at B=" << theta_B <<", theta_B=" << theta_B << endl;
+            cerr << "WARNING: Relative uncertainty (Mx) " << std::abs(error_x/result_x) << " at B=" << B <<", theta_B=" << theta_B << endl;
         }/*
         else {
             cerr << "OK: Relative uncertainty " << std::abs(error_x/result_x) << " at theta_B=" << theta_B << endl;
@@ -252,11 +255,32 @@ double* Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, dou
 
 double Inthelperf_amplitude_z(double z, void* p);
 
-double Is(double len)
+double Is_point_charge(double B)
 {
-    // Hardcoded values for LHC TeV, not perfect at B \gtrsim 1000 GeV^-1
-    if (len < 30) return 0; // TODO this may have an effect...
-    return 4.39970499 / (std::pow(len, 1.12657764) + 16.93254834);
+    double Z, A,  sqrts, mA;
+    const double sqrt_aem = std::sqrt(1.0/137.0);
+    const double MV  = 3.097; // JPsi
+    if (KINEMATICS == LHC)
+    {
+        Z=82;
+        sqrts=5020;
+        A = 208;
+        mA = 207.9766;
+    }
+    else if (KINEMATICS == RHIC)
+    {
+        Z = 79;
+        A = 197;
+        sqrts = 200;
+        mA = 196.96656;
+    }
+    
+    const double omega = MV/2.;
+    const double gamma = sqrts / (2.0*mA/A);
+    
+    return Z * sqrt_aem / M_PI * (omega/gamma) * gsl_sf_bessel_K1(B * omega/gamma);
+    
+    
 }
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
@@ -313,15 +337,22 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
     double Is_b_minus_Bv;
     double Is_b_plus_Bv;
     
-    if (INTERPOLATED_IS)
+    if (NUCLEAR_FF == APPROXIMATIVE)
     {
         Is_b_minus_Bv =par->diffraction->GetIsInterpolator()->Evaluate(b_minus_Bv_len);
         Is_b_plus_Bv = par->diffraction->GetIsInterpolator()->Evaluate(b_plus_Bv_len);
     }
-    else {
-        Is_b_minus_Bv = Is(b_minus_Bv_len);
-        Is_b_plus_Bv = Is(b_plus_Bv_len);
+    else if (NUCLEAR_FF == POINT_CHARGE)
+    {
+        Is_b_minus_Bv = Is_point_charge(b_minus_Bv_len);
+        Is_b_plus_Bv = Is_point_charge(b_plus_Bv_len);
     }
+    else
+    {
+        cerr << "Unknown nuclear FF!" << endl;
+        exit(1);
+    }
+    
     if (par->xcomp == true)
     {
         result *= (blen*cos_th_b - B*cos_th_B)/( b_minus_Bv_len ) * Is_b_minus_Bv
