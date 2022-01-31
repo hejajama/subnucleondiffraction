@@ -542,13 +542,23 @@ int main(int argc, char* argv[])
         const int THPOINTS=8;
         const double MAXTH = M_PI;
         double bstep = 5./3.;
-
-//        for (double B = 2.0*6.62*5.068; B < 1700; B+=20)
-        for (double B = 2.0*6.62*5.068; B < 6000; B+=bstep)
+       
+        // LHC
+        for (double B = 2.0*6.62*5.068; B < 7000; B+=bstep)
         {
                 if (B > 120) bstep = 10./3.;
                 if (B > 300) bstep = 50/3.;
                 if (B > 3000) bstep = 100;
+            
+        /* RHIC
+         for (double B = 2.0*6.62*5.068*0.8; B < 1000; B+=bstep)
+         {
+                 if (B > 120) bstep = 10./3.;
+         */
+         
+         
+         
+         */
  
             double thvals_mx_re[THPOINTS+2]; // note that last index = 2pi is the same as first
             double thvals_my_re[THPOINTS+2];
@@ -671,8 +681,8 @@ string InfoStr()
     
     
     if (FACTORIZE_ZINT)
-        info <<". z integral factorized";
-    else info << ". z integral not factorized";
+        info <<"# z integral factorized";
+    else info << "# z integral not factorized";
     
     info << endl << "# Tabulated IS form factor: " << INTERPOLATED_IS ;
     
