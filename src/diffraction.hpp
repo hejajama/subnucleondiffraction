@@ -12,6 +12,16 @@
 #include <tools/interpolation.hpp>
 #include <tools/config.hpp>
 #include <string>
+#include <vector>
+
+enum COMPONENT
+{
+    X,
+    Y,
+    M0,
+    M1x,
+    M1y
+};
 
 using namespace Amplitude;
 
@@ -22,7 +32,7 @@ public:
     ~Diffraction();
     
     // Calculate amplitude A, this will later be averaged and squared
-    double* ScatteringAmplitude(double xpom, double Qsqr, double t, double B, double theta_B, bool real_part, Polarization pol=T );
+    std::vector<double> ScatteringAmplitude(double xpom, double Qsqr, double t, double B, double theta_B, bool real_part, std::vector<COMPONENT> complist, Polarization pol=T);
     double ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol=T);
     
     // Calculate scattering amplitude in case of cylinderical cymmetry (e.g. ipsat with no constituent quarks)
