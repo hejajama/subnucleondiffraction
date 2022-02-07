@@ -571,6 +571,8 @@ int main(int argc, char* argv[])
            MINB = 2.0*6.37*5.068*0.9;
        }
         
+        const double IGNORE_THB_AFTER_B = 200;
+        
         std::cout << std::scientific;
         std::cout << std::setprecision(10);
         
@@ -616,14 +618,33 @@ int main(int argc, char* argv[])
                 std::vector<double> results = diff.ScatteringAmplitude(xpom, Qsqr, t, B, theta_B, true, complist, T);
                 std::vector<double> results_im = diff.ScatteringAmplitude(xpom, Qsqr, t, B, theta_B, false, complist, T);
 
-            cout << B << " " << theta_B << " ";
-            
-            
-            for (int i=0; i < results.size(); i++)
-            {
-                cout << results[i] << " " << results_im[i] << " ";
-            }
-            cout << endl;
+                cout << B << " " << theta_B << " ";
+                
+                
+                for (int i=0; i < results.size(); i++)
+                {
+                    cout << results[i] << " " << results_im[i] << " ";
+                }
+                cout << endl;
+                
+                // At large enough B we do not have th_B dependence anymore
+                if (B > IGNORE_THB_AFTER_B)
+                {
+                    
+                    for (theta_B = theta_B+MAXTH/THPOINTS; theta_B <= MAXTH; theta_B += MAXTH/THPOINTS)
+                    {
+                        cout << B << " " << theta_B << " ";
+                        
+                        
+                        for (int i=0; i < results.size(); i++)
+                        {
+                            cout << results[i] << " " << results_im[i] << " ";
+                        }
+                        cout << endl;
+                        
+                    }
+                        
+                }
         }
             /*
 
