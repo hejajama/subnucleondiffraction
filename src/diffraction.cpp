@@ -148,7 +148,7 @@ std::vector<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, d
     
     
     lower[0]=lower[1]=lower[2]=lower[3]=0;
-    upper[0] = 45*5.068; // max b
+    upper[0] = 30*5.068; // max b
     upper[1] = 2.0*M_PI;
     upper[2]=MAXR;
     upper[3] = 2.0*M_PI;

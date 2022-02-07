@@ -554,9 +554,9 @@ int main(int argc, char* argv[])
         cout << "# B M0 M1x M1y (note that M0 has different units!)" << endl;
         double t = mint;
         
-        const int THPOINTS=1;
+        const int THPOINTS=6;
         const double MAXTH = M_PI;
-        double bstep = 5./3.;
+        double bstep = 2.5; //5./3.;
         
         double MAXB;
         double MINB;
@@ -577,10 +577,10 @@ int main(int argc, char* argv[])
         // LHC
         for (double B = MINB;  B < MAXB; B+=bstep)
         {
-                if (B > 120) bstep = 10./3.;
-                if (B > 300) bstep = 50/3.;
+                if (B > 100) bstep = 10.;
+                if (B > 300) bstep = 50.;
                 if (KINEMATICS == RHIC and B > 500) bstep = 50;
-                if (B > 3000) bstep = 100;
+                if (B > 1000) bstep = 100;
 
  
                 
@@ -588,10 +588,10 @@ int main(int argc, char* argv[])
 //#pragma omp parallel for
  //           for (int i=0; i<THPOINTS; i++)
  //           {
-            //for (double theta_B = 0; theta_B <= 2.0*M_PI; theta_B += 2.0*M_PI/8.)
+            for (double theta_B = 0; theta_B <= MAXTH; theta_B += MAXTH/THPOINTS) {
 
                 //double theta_B = MAXTH/THPOINTS; * i;
-                double theta_B=0;
+                //double theta_B=1;
                 //double theta_B = 2.0*M_PI * i;
                 double xpom;
                 if (xp < 0)
@@ -624,6 +624,7 @@ int main(int argc, char* argv[])
                 cout << results[i] << " " << results_im[i] << " ";
             }
             cout << endl;
+        }
             /*
 
                 
