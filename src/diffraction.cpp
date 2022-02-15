@@ -223,8 +223,9 @@ std::vector<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, d
 
 double Inthelperf_amplitude_z(double z, void* p);
 
-double Is_point_charge(double B)
+double Is_point_charge(double B, void* p)
 {
+    Inthelper_amplitude *par = (Inthelper_amplitude*)p;
     double Z, A,  sqrts, mA;
     const double sqrt_aem = std::sqrt(1.0/137.0);
     const double MV  = 3.097; // JPsi
@@ -243,7 +244,9 @@ double Is_point_charge(double B)
         mA = 196.96656;
     }
     
-    const double omega = MV/2.;
+    double y = -std::log(sqrts * par->xpom / MV);
+    
+    const double omega = MV/2.*std::exp(y);
     const double gamma = sqrts / (2.0*mA/A);
     
     return Z * sqrt_aem / M_PI * (omega/gamma) * gsl_sf_bessel_K1(B * omega/gamma);
@@ -313,7 +316,7 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
     }
     else if (NUCLEAR_FF == POINT_CHARGE)
     {
-        Is_b_minus_Bv = Is_point_charge(b_minus_Bv_len);
+        Is_b_minus_Bv = Is_point_charge(b_minus_Bv_len, par);
        // Is_b_plus_Bv = Is_point_charge(b_plus_Bv_len);
     }
     else

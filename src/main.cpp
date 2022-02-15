@@ -550,8 +550,8 @@ int main(int argc, char* argv[])
     else if (mode == AMPLITUDE_DT)
     {
         
-        cout << "# Amplitude, t=" << mint <<", Q^2=" << Qsqr << ", xp=" << xp << endl;
-        cout << "# B M0 M1x M1y (note that M0 has different units!)" << endl;
+        cout << "# Amplitude, t=" << mint <<", Q^2=" << Qsqr << ", W=" << w << endl;
+        cout << "# B M0 M1x M1y (re and im parts, note that M0 has different units!)" << endl;
         double t = mint;
         
         const int THPOINTS=6;
