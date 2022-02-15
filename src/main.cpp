@@ -87,7 +87,8 @@ int main(int argc, char* argv[])
     double schwinger_rc = 0;
     int rng_offset=0;
     double t_in_xpom=0.0;  // This multiplies t in the expression for xpom, if 0, then xpom is independent of t
-
+    double jimwlk_steps=-1; // converted to W
+    
     bool ipglasma=false;
     bool periodic_boundary_conditions=false;
     
@@ -375,6 +376,14 @@ int main(int argc, char* argv[])
                 cerr << "Unknown form factor " << argv[i+1] << endl;
                 exit(1);
             }
+        }
+        else if (string(argv[i])=="-jimwlk_steps")
+        {
+            jimwlk_steps = StrToReal(argv[i+1]);
+            const double ds = 0.004;
+            double tmpy = jimwlk_steps*ds*M_PI*M_PI;
+            double tmp_xp = 0.01 * std::exp(-tmpy);
+            w = std::sqrt(3.097*3.097/tmp_xp);
         }
      else if (string(argv[i]).substr(0,1)=="-")
         {
