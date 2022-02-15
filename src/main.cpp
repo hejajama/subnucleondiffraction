@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
     bool schwinger = false;
     double schwinger_rc = 0;
     int rng_offset=0;
-    double t_in_xpom=1.0;  // This multiplies t in the expression for xpom, if 0, then xpom is independent of t
+    double t_in_xpom=0.0;  // This multiplies t in the expression for xpom, if 0, then xpom is independent of t
 
     bool ipglasma=false;
     bool periodic_boundary_conditions=false;
@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
         cout << "-nrqcd_parameters_from_file" << endl;
         cout << "-periodic_boundary_conditions: use periodic boundary conditions" << endl;
         cout << "-mcint [miser,vegas]: slect MC integral algorithm" << endl;
-	cout << "-no_t_in_xpom: do not include t dependence in xpom" << endl;
+        cout << "-t_in_xpom: do not include t dependence in xpom" << endl;
         return 0;
     }
     
@@ -331,8 +331,8 @@ int main(int argc, char* argv[])
             maxt=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-tstep")
             tstep=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-no_t_in_xpom")
-            t_in_xpom = 0.0;
+        else if (string(argv[i])=="-t_in_xpom")
+            t_in_xpom = 1.0;
         else if (string(argv[i])=="-nrqcd_parameters")
         {
             NRQCD_A=StrToReal(argv[i+1]);
@@ -579,10 +579,10 @@ int main(int argc, char* argv[])
         // LHC
         for (double B = MINB;  B < MAXB; B+=bstep)
         {
-                if (B > 100) bstep = 10.;
-                if (B > 300) bstep = 50.;
-                if (KINEMATICS == RHIC and B > 500) bstep = 50;
-                if (B > 1000) bstep = 100;
+                if (B > 100) bstep = 10./1.5;
+                if (B > 300) bstep = 50./1.5;
+            //    if (KINEMATICS == RHIC and B > 500) bstep = 50;
+                if (B > 1000) bstep = 100/1.5;
 
  
                 
@@ -757,7 +757,7 @@ string InfoStr()
     else if (NUCLEAR_FF == POINT_CHARGE)
         info << "# Point charge form factor";
     
-    
+    info << endl << "# Off forward phase: " << OFF_FORWARD_PHASE << endl;
     
     return info.str();
 

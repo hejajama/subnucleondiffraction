@@ -50,6 +50,8 @@ enum EXPERIMENT
 extern FORM_FACTOR NUCLEAR_FF;
 extern EXPERIMENT KINEMATICS;
 
+extern bool OFF_FORWARD_PHASE;
+
 
 // Globar random number generator - avoid initializing it mulitple times
 #include <gsl/gsl_rng.h>

@@ -20,3 +20,5 @@ MCINTEGRAL MCINT = VEGAS;
 bool FACTORIZE_ZINT = false;
 // Note: There are probably factors of 4pi wrong from the
 // wave functions if this is set to true
+
+bool OFF_FORWARD_PHASE = true;

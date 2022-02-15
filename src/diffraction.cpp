@@ -299,6 +299,11 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
     
     result = blen * std::exp(-imag*(q*b)) * subamp;
     
+    if (OFF_FORWARD_PHASE)
+    {
+        result *= std::exp(imag * (0.5-z)*(r*q) );
+    }
+    
     double b_minus_Bv_len = (b-Bv).Len();
     //double b_plus_Bv_len = 0; // not used, save one sqrt() (b+Bv).Len();
     
