@@ -1,0 +1,27 @@
+# Parameters for Psi(2S)  and \gamma^* wave function overlap
+# 
+# Model: Boosted gaussian 
+# Paramters from T. Lappi, H. Mäntysaari, arXiv:1406.2877
+# Parametrization developed in arXiv:0905.0102 
+#
+# Syntax of this file is the following:
+# Lines starting with # are comments
+# Parameters are given as a pair key:value
+# Values are in units of GeV^n and possible keys are:
+# e_f, m_f, M_V, N_T, N_L, R, S alpha and del
+#
+#
+#e_f: Effective charge: 2/3
+e_f:0.66666666
+#N_T, N_L, R_T, R_L: Normalization for transversial/lognitudial components
+N_T:0.739443
+N_L:0.72843 
+R:1.85117 
+m_f:1.4
+M_V:3.68609
+# delta: 0 or 1: one part of the wave functio is multiplied by delta
+del:1
+# State S=n, J/Psi is S=1
+S:2
+# alpha needed for higher S states, no effect for S=1
+alpha:-0.558156
