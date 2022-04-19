@@ -245,7 +245,13 @@ double Is_point_charge(double B, void* p)
     }
     
     double y = -std::log(sqrts * par->xpom / MV);
-    
+   
+    if (KINEMATICS==RHIC) y=0;
+
+    if (y < -2.7 and y > -2.8) y = -2.75;
+    if (y < 2.8 and y > 2.7) y = 2.75;
+
+
     const double omega = MV/2.*std::exp(y);
     const double gamma = sqrts / (2.0*mA/A);
     
@@ -266,18 +272,30 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
         exit(1);
     }
     
-    Vec b (vec[0]*std::cos(vec[1]), vec[0]*std::sin(vec[1]));
+    Vec b(vec[0]*std::cos(vec[1]), vec[0]*std::sin(vec[1]));
     Vec r (vec[2]*std::cos(vec[3]), vec[2]*std::sin(vec[3]));
     double qt = std::sqrt(par->t);
     Vec q(qt, 0); // Choose along x axis
     double z = vec[4];
     
     
-    
-    
-    double amp_real = par->diffraction->GetDipole()->Amplitude(par->xpom, b + r*0.5,  b - r*0.5);
+
+    Vec q1,q2;
+    if (OFF_FORWARD_PHASE)
+    {
+        q1 = b + r*(1.-z);
+        q2 = b - r*z;
+    }
+    else
+    {
+        q1 = b + r*0.5;
+        q2 = b - r*0.5;
+    }    
+   
+ 
+    double amp_real = par->diffraction->GetDipole()->Amplitude(par->xpom,q1, q2);
     //double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
-    double amp_imag=0; //todo...
+    double amp_imag=0; // neglect as average im part is zero and we only do coherent atm
     std::complex<double> amp(amp_real, amp_imag);
     //amp = amp.real();   // Disable possible imag part for now
     
@@ -299,11 +317,6 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
     
     result = blen * std::exp(-imag*(q*b)) * subamp;
     
-    if (OFF_FORWARD_PHASE)
-    {
-        result *= std::exp(imag * (0.5-z)*(r*q) );
-    }
-    
     double b_minus_Bv_len = (b-Bv).Len();
     //double b_plus_Bv_len = 0; // not used, save one sqrt() (b+Bv).Len();
     
@@ -312,7 +325,7 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
         return 0;
     
     double Is_b_minus_Bv;
-    double Is_b_plus_Bv=0; // not used...
+//    double Is_b_plus_Bv=0; // not used...
     
     if (NUCLEAR_FF == APPROXIMATIVE)
     {

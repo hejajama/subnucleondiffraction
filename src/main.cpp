@@ -384,6 +384,12 @@ int main(int argc, char* argv[])
             double tmpy = jimwlk_steps*ds*M_PI*M_PI;
             double tmp_xp = 0.01 * std::exp(-tmpy);
             w = std::sqrt(3.097*3.097/tmp_xp);
+
+            cout << "#JIMWLK_step sets w=" << w << endl;
+            if (w > 29 and w < 32) w = 31.52590399193987;
+            if (w > 490 and w < 500) w = 493.1481109621738; 
+            cout << "#Final W to be used: "<< w << endl;
+
         }
      else if (string(argv[i]).substr(0,1)=="-")
         {
@@ -573,6 +579,10 @@ int main(int argc, char* argv[])
         {
             MAXB = 7000;
             MINB=2.0*6.62*5.068*0.9;
+
+
+            //MINB = 7010;
+            MAXB = 11000;
         }
        else
        {
@@ -703,7 +713,7 @@ int main(int argc, char* argv[])
         double tstep=0.02;
         for (t=mint; t<=maxt; t+=tstep)
         {
-            double xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+            double xpom = (mjpsi*mjpsi)/(w*w); //+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.04)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
