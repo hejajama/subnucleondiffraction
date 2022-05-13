@@ -9,118 +9,132 @@
 #include <vector>
 #include <complex>
 #include <iostream>
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_complex.h>
+#include <gsl/gsl_complex_math.h>
 
 using std::cerr;
+using std::cout;
 using std::endl;
 
 
 WilsonLine::WilsonLine()   // Initialize everything to 0
 {
+    wline_gsl_matrix = gsl_matrix_complex_alloc(size,size);
+    
     // By default 3x3 zero matrix
-    for (int i=0; i<3; i++)
-    {
-        std::vector< std::complex<double> > tmpvec;
-        for (int j=0; j<3; j++)
-        {
-            tmpvec.push_back(0);
-        }
-        data.push_back(tmpvec);
-    }
+    gsl_matrix_complex_set_zero(wline_gsl_matrix);
+    
+
 }
 WilsonLine::WilsonLine(std::vector< std::vector< std::complex<double> > >  &d)
 {
-    data=d;
+    wline_gsl_matrix = gsl_matrix_complex_alloc(size,size);
+    
+    for (int i=0; i<size; i++)
+    {
+        for (int j=0; j<size; j++)
+        {
+            gsl_matrix_complex_set(wline_gsl_matrix,i,j,gsl_complex_rect(d[i][j].real(),d[i][j].imag()));
+        }
+    }
+}
+
+WilsonLine::WilsonLine(gsl_matrix_complex* m)
+{
+    cout << "Note: initializing as a gsl matrix, make sure that memory is not deallocated outside this class!" << endl;
+    wline_gsl_matrix = m;
+}
+
+WilsonLine::WilsonLine(const WilsonLine &m)
+{
+    // Copy constructor: allocate memory for this, and copy data from m
+    wline_gsl_matrix = gsl_matrix_complex_alloc(size,size);
+    for (int i=0; i<size; i++)
+    {
+        for (int j=0; j<size; j++)
+        {
+            std::complex<double> tmp = m.Element(i,j);
+            gsl_matrix_complex_set(wline_gsl_matrix, i,j,gsl_complex_rect(tmp.real(), tmp.imag()));
+        }
+    }
+}
+
+WilsonLine& WilsonLine::operator=(const WilsonLine &m)
+{
+    for (int i=0; i<size; i++)
+    {
+        for (int j=0; j<size; j++)
+        {
+            std::complex<double> tmp = m.Element(i,j);
+            gsl_matrix_complex_set(wline_gsl_matrix, i,j,gsl_complex_rect(tmp.real(), tmp.imag()));
+        }
+    }
+    return *this;
+}
+
+WilsonLine::~WilsonLine()
+{
+    gsl_matrix_complex_free(wline_gsl_matrix);
 }
 
 void WilsonLine::Set(int row, int column, std::complex<double> value)
 {
-    if (row >= data.size())
+    if (row >= size)
     {
-        cerr << "Invalid row index " << row << " num of rows in matrix " << data.size() << endl;
+        cerr << "Invalid row index " << row << " num of rows in matrix " << size << endl;
         return;
     }
-    if (column >= data[row].size())
+    if (column >= size )
     {
-        cerr << "Invalid column index " << column << " num of rows in matrix " << data[row].size() << endl;
+        cerr << "Invalid column index " << column << " num of rows in matrix " << size << endl;
         return;
     }
     
-    data[row][column]=value;
+    gsl_matrix_complex_set(wline_gsl_matrix,row,column,
+                           gsl_complex_rect(value.real(),value.imag()));
+    
 
 }
 
 WilsonLine WilsonLine::operator*(WilsonLine& w)
 {
-    std::vector< std::vector< std::complex< double> > > newdata;
+    gsl_matrix_complex *result = gsl_matrix_complex_alloc(size,size);
+    gsl_matrix_complex_set_zero(result);
     
     
-    if (Size() != w.Size())
-    {
-        throw "WrongMatrixSize";
-    }
+    gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), wline_gsl_matrix, w.GetGslMatrix(),  gsl_complex_rect(0,0), result);
+
+    return WilsonLine(result);
+}
+
+// Multiplies this by w^\dagger, returns the product
+// Fast in BLAS
+WilsonLine WilsonLine::MultiplyByHermitianConjugate(WilsonLine& w)
+{
+    gsl_matrix_complex *result = gsl_matrix_complex_alloc(size,size);
     
-    for (int row=0; row < Size(); row++)
-    {
-        std::vector< std::complex< double> > tmprow;
-        for (int col=0; col < Size(); col++)
-        {
-            // Calculate element (row,column)
-            // row:th line times col:th column
-            std::complex<double> tmp=0;
-            for (int i=0; i<Size(); i++)
-            {
-                tmp = tmp + Element(row, i) * w.Element(i, col);
-            }
-            tmprow.push_back(tmp);
-        }
-        newdata.push_back(tmprow);
-    }
-    WilsonLine res(newdata);
-    return res;
+    gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, gsl_complex_rect(1,0), wline_gsl_matrix, w.GetGslMatrix(), gsl_complex_rect(0,0), result);
+    
+    return result;
+    
 }
 
 WilsonLine WilsonLine::operator*(std::complex<double> t)
 {
-    std::vector< std::vector< std::complex< double> > > newdata;
-    
-    
-    for (int row=0; row < Size(); row++)
-    {
-        std::vector< std::complex< double> > tmprow;
-        for (int col=0; col < Size(); col++)
-        {
-            // Calculate element (row,column)
-            tmprow.push_back(t*Element(row, col));
-        }
-        newdata.push_back(tmprow);
-    }
-    WilsonLine res(newdata);
-    return res;
+    std::cerr << "Multiplication by a number not implemented" << endl;
+    exit(1);
 }
 
 
 WilsonLine WilsonLine::operator+(WilsonLine& w)
 {
-    std::vector< std::vector< std::complex< double> > > newdata;
+
+    std::cerr << "WilsonLine::operator+ not yet implemented for GSL matrix" << endl;
+    exit(1);
+
     
-    
-    if (Size() != w.Size())
-    {
-        throw "WrongMatrixSize";
-    }
-    
-    for (int row=0; row < Size(); row++)
-    {
-        std::vector< std::complex< double> > tmprow;
-        for (int col=0; col < Size(); col++)
-        {
-            // Calculate element (row,column)
-            tmprow.push_back(Element(row, col) + w.Element(row,col));
-        }
-        newdata.push_back(tmprow);
-    }
-    WilsonLine res(newdata);
-    return res;
+
 }
 
 
@@ -128,58 +142,46 @@ WilsonLine WilsonLine::operator+(WilsonLine& w)
 
 WilsonLine WilsonLine::ComplexConjugate()
 {
-    std::vector< std::vector< std::complex<double> > > tmpdata = data;
-    
-    for (int row = 0; row < tmpdata.size(); row++)
-    {
-        for (int col = 0; col < tmpdata[0].size(); col++)
-        {
-            tmpdata[row][col] = std::conj( data[row][col] );
-        }
-    }
-    
-    WilsonLine wl(tmpdata);
-    return wl;
+
+    std::cerr << "WilsonLine:ComplexConjugate not yet implemented for GSL matrix" << endl;
+    exit(1);
+
 }
 
 WilsonLine WilsonLine::Transpose()
 {
-    std::vector< std::vector< std::complex<double> > > tmpdata = data;
-    
-    for (int row = 0; row < tmpdata.size(); row++)
-    {
-        for (int col = 0; col < tmpdata[0].size(); col++)
-        {
-            tmpdata[row][col] = data[col][row];
-        }
-    }
-    
-    WilsonLine wl(tmpdata);
-    return wl;
+
+    std::cerr << "WilsonLine:Transpose not yet implemented for GSL matrix" << endl;
+    exit(1);
+
 }
 
 WilsonLine WilsonLine::HermitianConjugate()
 {
+    
     WilsonLine res = ComplexConjugate().Transpose();
     return res;
 }
 
 std::complex<double> WilsonLine::Trace()
 {
-    std::complex<double> res;
-    for (int i=0; i<Size(); i++)
-        res += Element(i,i);
-    return res;
+
+    std::cerr << "WilsonLine:Trace not yet implemented for GSL matrix" << endl;
+    exit(1);
+    
 }
 
 int WilsonLine::Size()
 {
-    return data.size();
+    return size;
 }
 
-std::complex<double> WilsonLine::Element(int row , int col)
+std::complex<double> WilsonLine::Element(int row , int col) const
 {
-    return data[row][col];
+    gsl_complex c = gsl_matrix_complex_get(wline_gsl_matrix, row, col);
+    std::complex<double> cc(GSL_REAL(c), GSL_IMAG(c));
+    return cc;
+
 }
 std::ostream& operator<<(std::ostream& os, WilsonLine& wl)
 {
@@ -202,8 +204,8 @@ void WilsonLine::InitializeAsGenerator(int a)
         std::cerr << "SU(3) generator id must be within 1...8, asked " << a << std::endl;
         return;
     }
-    data.clear();
     
+    /*
     std::complex<double> imag(0,1.0);
     std::vector< std::complex<double> > row;
     switch(a)
@@ -299,30 +301,27 @@ void WilsonLine::InitializeAsGenerator(int a)
         default:
             std::cerr << "Incorrect a!" << std::endl;
     };
-    
-    
+    */
+    cerr << "Generator to gsl_matrix not yet implemented! " << endl;
+    exit(1);
 }
 
 void WilsonLine::InitializeAsIdentity()
 {
-    if (data.size() != 3)
+    
+    for (int i=0; i<size; i++)
     {
-        std::cerr << "WilsonLine size is on 3x3!" << std::endl;
-        return;
-    }
-    for (int i=0; i<3; i++)
-    {
-        for (int j=0; j<3; j++)
+        for (int j=0; j<size; j++)
         {
             if (i==j)
-                data[i][j]=1.0;
+                gsl_matrix_complex_set(wline_gsl_matrix,i,j,gsl_complex_rect(1,0));
             else
-                data[i][j]=0;
+                gsl_matrix_complex_set(wline_gsl_matrix,i,j,gsl_complex_rect(0,0));
         }
     }
 }
 
-#ifdef WILSONLINE_GSL
+
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_complex_math.h>
@@ -335,7 +334,7 @@ void WilsonLine::InitializeAsIdentity()
 WilsonLine WilsonLine::Exp()
 {
 	std::cerr << "Test GSL matrix exponential before using this! WilsonLine WilsonLine::Exp() "  << std::endl;
-    gsl_matrix_complex* m = GetGslMatrixl();
+    gsl_matrix_complex* m = GetGslMatrix();
     gsl_matrix_complex* exp = gsl_matrix_complex_alloc(3,3);
     my_gsl_complex_matrix_exponential(exp,m,3);
     WilsonLine result;
@@ -348,18 +347,9 @@ WilsonLine WilsonLine::Exp()
 }
 
 
-gsl_matrix_complex* WilsonLine::GetGslMatrixl()
+gsl_matrix_complex* WilsonLine::GetGslMatrix()
 {
-    gsl_matrix_complex *m = gsl_matrix_complex_alloc(3,3);
-    for (int i=0; i<3; i++)
-    {
-        for (int j=0; j<3; j++)
-        {
-            gsl_complex c = gsl_complex_rect(Element(i,j).real(), Element(i,j).imag());
-            gsl_matrix_complex_set(m, i, j, c);
-        }
-    }
-    return m;
+    return wline_gsl_matrix;
 }
 
 
@@ -398,18 +388,11 @@ void my_gsl_complex_matrix_exponential(gsl_matrix_complex *eA, gsl_matrix_comple
 
 void WilsonLine::InitializeAsGslMatrix(gsl_matrix_complex* m)
 {
-    for (int i=0; i<3; i++)
-    {
-        for (int j=0; j<3; j++)
-        {
-            gsl_complex tmp;
-            tmp = gsl_matrix_complex_get(m, i, j);
-            std::complex<double> c(GSL_REAL(tmp),GSL_IMAG(tmp));
-            data[i][j] = c;
-        }
-    }
+    gsl_matrix_complex_free(wline_gsl_matrix);
+    wline_gsl_matrix = m;
+    
 }
 
 
-#endif  // gsl;
+
 
