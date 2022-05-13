@@ -143,11 +143,13 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
     // First find corresponding grid indeces
     WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
     WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
-    antiquark = antiquark.HermitianConjugate();
+    
+    //antiquark = antiquark.HermitianConjugate();
     
     WilsonLine prod;
     try {
-        prod =  quark*antiquark;
+        prod = quark.MultiplyByHermitianConjugate(antiquark);
+        //prod =  quark*antiquark;
     } catch (...) {
         cerr << "Matrix multiplication failed!" << endl;
         cout << "Quark: " << q1[0] << ", " << q1[1] << endl;
