@@ -42,7 +42,6 @@ WilsonLine::WilsonLine(std::vector< std::vector< std::complex<double> > >  &d)
 
 WilsonLine::WilsonLine(gsl_matrix_complex* m)
 {
-    cout << "Note: initializing as a gsl matrix, make sure that memory is not deallocated outside this class!" << endl;
     wline_gsl_matrix = m;
 }
 
@@ -165,10 +164,16 @@ WilsonLine WilsonLine::HermitianConjugate()
 
 std::complex<double> WilsonLine::Trace()
 {
-
-    std::cerr << "WilsonLine:Trace not yet implemented for GSL matrix" << endl;
-    exit(1);
+    gsl_complex sum;
+    GSL_SET_COMPLEX(&sum, 0,0);
     
+    for (unsigned int i=0; i< size; i++)
+    {
+        gsl_complex c = gsl_matrix_complex_get(wline_gsl_matrix, i, i);
+        sum = gsl_complex_add(sum,c);
+    }
+    
+    return std::complex<double>(GSL_REAL(sum), GSL_IMAG(sum));
 }
 
 int WilsonLine::Size()
