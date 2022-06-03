@@ -196,11 +196,13 @@ double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
     // First find corresponding grid indeces
     WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
     WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
-    antiquark = antiquark.HermitianConjugate();
+//    antiquark = antiquark.HermitianConjugate();
     
     WilsonLine prod;
     try {
-        prod =  quark*antiquark;
+        //prod =  quark*antiquark;
+        prod = quark.MultiplyByHermitianConjugate(antiquark);
+
     } catch (...) {
         cerr << "Matrix multiplication failed!" << endl;
         cout << "Quark: " << q1[0] << ", " << q1[1] << endl;
