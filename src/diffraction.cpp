@@ -250,7 +250,7 @@ double Is_point_charge(double B, void* p)
 
     if (y < -2.7 and y > -2.8) y = -2.75;
     if (y < 2.8 and y > 2.7) y = 2.75;
-    if (y < 0.05 and y > 0.05) y = 0;
+    if (y < 0.05 and y > -0.05) y = 0;
 
 
     const double omega = MV/2.*std::exp(y);
