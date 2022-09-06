@@ -367,8 +367,8 @@ int main(int argc, char* argv[])
         
         else if (string(argv[i])=="-ff")
         {
-            if (string(argv[i+1])=="approximative")
-                NUCLEAR_FF = APPROXIMATIVE;
+            if (string(argv[i+1])=="starlight")
+                NUCLEAR_FF = STARLIGHT;
             else if (string(argv[i+1])=="pointcharge")
                 NUCLEAR_FF = POINT_CHARGE;
             else
@@ -398,7 +398,6 @@ int main(int argc, char* argv[])
         }
         
     }
-    
     
     
     
@@ -771,10 +770,14 @@ string InfoStr()
     else if (KINEMATICS == LHC)
         info << "# LHC kinematics";
     info << endl;
-    if (NUCLEAR_FF == APPROXIMATIVE)
-        info << "# Approximative form factor";
+    if (NUCLEAR_FF == STARLIGHT)
+        info << "# STARLIGHT form factor";
     else if (NUCLEAR_FF == POINT_CHARGE)
         info << "# Point charge form factor";
+    else if (NUCLEAR_FF == WOODSAXON)
+        info << "# Woods Saxon form factor";
+    else
+        info << "# Unknown form factor ";
     
     info << endl << "# Off forward phase: " << OFF_FORWARD_PHASE << endl;
     

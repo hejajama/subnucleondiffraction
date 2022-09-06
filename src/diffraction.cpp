@@ -223,6 +223,33 @@ std::vector<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, d
 
 double Inthelperf_amplitude_z(double z, void* p);
 
+struct inthelper_starlight
+{
+    Diffraction *diffraction;
+    double omega;
+    double gamma;
+    double RA;
+    double A;
+    double a;
+    double B;
+};
+double inthelperf_starlight_ff(double kt, void* p)
+{
+    inthelper_starlight *par = (inthelper_starlight*)p;
+    double RA = par->RA;
+    double k = std::sqrt(kt*kt + std::pow(par->omega/par->gamma,2));
+        
+    double starlight = 3. / (std::pow(k*RA,3) ) * (std::sin(k*RA) - k*RA*std::cos(k*RA))
+        * 1.0/(std::pow(par->a*k,2) +1.0);
+
+    
+    double res= kt*kt*starlight / std::pow(k,2)  * gsl_sf_bessel_J1(par->B*kt);
+
+    
+    
+    return res;
+}
+
 double Is_point_charge(double B, void* p)
 {
     Inthelper_amplitude *par = (Inthelper_amplitude*)p;
@@ -256,8 +283,36 @@ double Is_point_charge(double B, void* p)
     const double omega = MV/2.*std::exp(y);
     const double gamma = sqrts / (2.0*mA/A);
     
-    return Z * sqrt_aem / M_PI * (omega/gamma) * gsl_sf_bessel_K1(B * omega/gamma);
-    
+    if (NUCLEAR_FF == POINT_CHARGE or B > 100) // At large B always use the point charge
+        return Z * sqrt_aem / M_PI * (omega/gamma) * gsl_sf_bessel_K1(B * omega/gamma);
+    else if (NUCLEAR_FF == STARLIGHT)
+    {
+        double RA=1.1*std::pow(A,1./3.)*FMGEV;
+        double a = 0.7*FMGEV;
+        
+        inthelper_starlight helper;
+        helper.diffraction=par->diffraction;
+        helper.RA=RA;
+        helper.a=a;
+        helper.omega = omega;
+        helper.gamma=gamma;
+        helper.B=B;
+        
+        gsl_integration_workspace * w
+            = gsl_integration_workspace_alloc (200);
+        gsl_function fun;
+        fun.params = &helper;
+        fun.function = inthelperf_starlight_ff;
+        double result,error;
+        gsl_integration_qag (&fun, 0, 999, 0, 1e-3, 20, GSL_INTEG_GAUSS51,
+                                w, &result, &error);
+        gsl_integration_workspace_free(w);
+        
+
+        
+        return result * Z * sqrt_aem / M_PI;
+
+    }
     
 }
 
@@ -328,15 +383,16 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* p)
     double Is_b_minus_Bv;
 //    double Is_b_plus_Bv=0; // not used...
     
-    if (NUCLEAR_FF == APPROXIMATIVE)
+    if (NUCLEAR_FF == WOODSAXON)
     {
+        std::cerr<< "TODO: Woods Saxon form factor not implemented! " << endl;
         Is_b_minus_Bv =par->diffraction->GetIsInterpolator()->Evaluate(b_minus_Bv_len);
         //Is_b_plus_Bv = par->diffraction->GetIsInterpolator()->Evaluate(b_plus_Bv_len);
     }
-    else if (NUCLEAR_FF == POINT_CHARGE)
+    else if (NUCLEAR_FF == POINT_CHARGE or NUCLEAR_FF == STARLIGHT)
     {
         Is_b_minus_Bv = Is_point_charge(b_minus_Bv_len, par);
-       // Is_b_plus_Bv = Is_point_charge(b_plus_Bv_len);
+
     }
     else
     {
