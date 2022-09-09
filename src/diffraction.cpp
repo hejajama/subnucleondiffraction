@@ -20,6 +20,9 @@ using namespace std;
 
 #include <complex>
 
+const double POINT_CHARGE_FORM_FACTOR_LIMIT = 300;
+// At larger B used a point charge form factor
+
 
 Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
 {
@@ -30,7 +33,7 @@ Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
 	MAXR=10*5.068;
     
     if (KINEMATICS == LHC)
-        InitializeIsInterpolator("./photon_kT_Isfun_LHC");
+        InitializeIsInterpolator("./photon_kT_Isfun_LHC"); 
     else if (KINEMATICS == RHIC)
         InitializeIsInterpolator("./photon_kT_Isfun_RHIC");
     
@@ -283,14 +286,21 @@ double Is_point_charge(double B, void* p)
     const double omega = MV/2.*std::exp(y);
     const double gamma = sqrts / (2.0*mA/A);
     
-    if (NUCLEAR_FF == POINT_CHARGE or B > 100) // At large B always use the point charge
+    if (NUCLEAR_FF == POINT_CHARGE or B > POINT_CHARGE_FORM_FACTOR_LIMIT) // At large B always use the point charge
         return Z * sqrt_aem / M_PI * (omega/gamma) * gsl_sf_bessel_K1(B * omega/gamma);
     else if (NUCLEAR_FF == STARLIGHT)
     {
         double RA=1.1*std::pow(A,1./3.)*FMGEV;
         double a = 0.7*FMGEV;
         
-        inthelper_starlight helper;
+        if (std::abs(y)>0.1) {
+            cerr << "Starlight form factor interpolator is gneerated for midrapidity LHC, right?" << endl;
+            exit(1);
+        }
+        
+        return par->diffraction->GetIsInterpolator()->Evaluate(B);
+        
+        /*inthelper_starlight helper;
         helper.diffraction=par->diffraction;
         helper.RA=RA;
         helper.a=a;
@@ -310,7 +320,7 @@ double Is_point_charge(double B, void* p)
         
 
         
-        return result * Z * sqrt_aem / M_PI;
+        return result * Z * sqrt_aem / M_PI; */
 
     }
     
@@ -502,7 +512,6 @@ void Diffraction::InitializeIsInterpolator(std::string datafile)
 {
     vector<double> x;
     vector<double> y;
-    
     cout << "# Reading file " << datafile << endl;
     
     std::ifstream infile(datafile);
