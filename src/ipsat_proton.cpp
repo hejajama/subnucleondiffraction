@@ -103,7 +103,7 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
 #ifdef USE_LCPT_DIPOLE
     else if (ipsat == LCPT)
     {
-		double phirb = std::acos(r*b/r.Len()*b.Len());
+		double phirb = std::acos(r*b/(r.Len()*b.Len()));
         double n = lcpt_dipole->Evaluate(r.Len(), b.Len(),phirb);
         return n; // Note: does not support geometry params
     }
