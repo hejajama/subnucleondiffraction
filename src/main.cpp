@@ -26,6 +26,7 @@
 #include "nucleons.hpp"
 #include "dis.hpp"
 #include "virtual_photon.hpp"
+#include "dvcs_photon.hpp"
 #include "gitsha1.h"
 
 using namespace std;
@@ -50,6 +51,7 @@ enum WAVEF
 {
     GAUSLC,
     BOOSTEDGAUSSIAN,
+    DVCS,
     NRQCD
 };
 
@@ -117,7 +119,7 @@ int main(int argc, char* argv[])
         cout << "-satscale: print saturation scale" << endl;
         cout << "-F2 Qsqr x: calculate structure function" << endl;
         cout << "-wavef_file filename" << endl;
-        cout << "-wavef gauslc/boostedgaussian/NRQCD" << endl;
+        cout << "-wavef gauslc/boostedgaussian/DVCS/NRQCD" << endl;
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
         cout << "-schwinger r_c" << endl;
         cout << "-mint, -maxt, -tstep" << endl;
@@ -162,6 +164,8 @@ int main(int argc, char* argv[])
                 wavef_model = BOOSTEDGAUSSIAN;
             else if (string(argv[i+1])=="NRQCD")
                 wavef_model = NRQCD;
+            else if (string(argv[i+1])=="DVCS")
+                wavef_model = DVCS;
             else
             {
                 cerr << "Unknown wave function " << argv[i+1] << endl;
@@ -411,6 +415,11 @@ int main(int argc, char* argv[])
         wavef = new NRQCD_WF(NRQCD_A, NRQCD_B);
         FACTORIZE_ZINT=true;
         cout << "# " << *(NRQCD_WF*)wavef << endl;
+    }
+    else if (wavef_model == DVCS)
+    {
+        wavef = new DVCSPhoton;
+        cout << "# " << *(DVCSPhoton*)wavef << endl;
     }
 
     

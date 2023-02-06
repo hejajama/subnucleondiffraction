@@ -18,6 +18,7 @@ add_library(
 	gdist_dglap.cpp
 	wilsonline.cpp
 	virtual_photon.cpp
+	dvcs_photon.cpp
 	wave_function.cpp
 	qcd.cpp
 	subnucleon_config.cpp
