@@ -162,11 +162,13 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
         gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
         gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result, &error);
         cout << "# vegas warmup " << result << " +/- " << error << endl;
+        int iter=0;
         do
         {
+            iter++;
             gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result, &error);
             cout << "# Vegas interation " << result << " +/- " << error << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
-        } while (fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 and result != 0);
+        } while (iter < 2 or fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5);
         gsl_monte_vegas_free(s);
     }
     
