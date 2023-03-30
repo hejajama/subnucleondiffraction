@@ -14,6 +14,8 @@ bool REAL_PART = true;
 
 bool CORRECTIONS = false;
 
+bool DO_UPC_DIFF = true;
+
 MCINTEGRAL MCINT = VEGAS;
 
 bool FACTORIZE_ZINT = false;

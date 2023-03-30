@@ -93,9 +93,18 @@ int main(int argc, char* argv[])
     bool ipglasma=false;
     bool periodic_boundary_conditions=false;
     
+    bool DO_UPC_DIFF = false;
     // nrqcd parameters
     double NRQCD_A=0.213;
     double NRQCD_B=-0.0157;
+    double mv_UPC = 3.096;// GeV 
+    double mjpsi_UPC = 3.096;// GeV
+    double mrho_UPC = 0.77526;// GeV
+    double R_Nuclear = 6.37;// fm
+    double root_snn = 200.0;// GeV
+    int Z_Nuclear = 79;
+    bool outputed_theta_P = false;
+    bool DacayToScalar = false;
     int NRQCD_param_id = -1; // if >0, use specific parameters from datafile
     
     
@@ -314,6 +323,14 @@ int main(int argc, char* argv[])
         }
         else if (string(argv[i])=="-maxr")
             maxr = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-DOUPC")
+        {
+            if (string(argv[i+1])=="1") {
+                DO_UPC_DIFF = true;
+            } if (string(argv[i+1])=="0") {
+                DO_UPC_DIFF = false;
+            } 
+        }
         else if (string(argv[i])=="-satscale")
             mode = SATURATION_SCALE;
         else if (string(argv[i])=="-wavef_file")
@@ -367,6 +384,31 @@ int main(int argc, char* argv[])
             }
 
         }
+        else if (string(argv[i])=="-UPC_energy")
+            root_snn = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-UPC_Nucleus")
+        {
+            if (string(argv[i+1])=="Au") {
+                    R_Nuclear = 6.37;// fm
+                    Z_Nuclear = 79;
+            } 
+            if (string(argv[i+1])=="Pb") {
+                    R_Nuclear = 6.62;// fm
+                    Z_Nuclear = 82;
+            }
+        }
+        else if (string(argv[i])=="-DacayToScalarmeson")
+        {
+            if (string(argv[i+1])=="1") {
+                    DacayToScalar = true;
+                    mv_UPC = mrho_UPC;
+            } 
+            if (string(argv[i+1])=="0") {
+                    DacayToScalar = false;
+                    mv_UPC = mjpsi_UPC;
+            }
+        }
+        
      else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -567,17 +609,40 @@ int main(int argc, char* argv[])
             
             if(auto_mcintpoints)
                 MCINTPOINTS = MCpoints(t);
-            
-            cout.precision(5);
+
             double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
             double lng = 0;
             if (Qsqr > 0)
                 lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
 
-            cout << t << " ";
-            cout.precision(10);
-            cout << trans  << " " << lng << endl;
-            
+            // Do the UPC diffractive, only count the coherent now.
+            if (DO_UPC_DIFF) {
+                int l_thetaP = 20;
+                double theta_BigP_step = 2.*M_PI/l_thetaP;
+                if (!outputed_theta_P) {
+                    cout << " #  ";
+                    for (double theta_BigP = -1.*M_PI; theta_BigP <= M_PI; theta_BigP+=theta_BigP_step ) {
+                        cout.precision(5);
+                        cout << theta_BigP << " ";
+                    } 
+                    cout << endl;
+                    outputed_theta_P = true;
+                }
+                cout.precision(5);
+                cout << t << " ";
+                cout.precision(10);
+                cout << trans  << " " << lng << " " ;
+                for (double theta_BigP = -1.*M_PI; theta_BigP <= M_PI; theta_BigP+=theta_BigP_step) {
+                    double Inte_PB = diff.Relative_P_abd_B_Inte(mv_UPC, root_snn, theta_BigP, Z_Nuclear, t, R_Nuclear, DacayToScalar);
+                    cout  << Inte_PB << " ";
+                } 
+                cout << endl;
+            } else {
+                cout.precision(5);
+                cout << t << " ";
+                cout.precision(10);
+                cout << trans  << " " << lng << endl;
+            }
 
             // Larger t step probably useful at large t
             /*

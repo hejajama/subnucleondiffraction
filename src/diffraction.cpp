@@ -13,6 +13,7 @@
 #include <gsl/gsl_sf_bessel.h>
 #include "subnucleon_config.hpp"
 #include "nrqcd_wf.hpp"
+#include <cmath>
 
 using namespace std;
 
@@ -98,8 +99,20 @@ struct Inthelper_amplitude
     double b;
     double theta_b;
     double z;
+    double mv; // mass of vector meson
+    double root_snn;
+    double mA; // target mass
+    double BigP; //BigP = 0.5 * (p1-p2)
+    double theta_BigP;
+    double B;  // impact parameters between two nuclei
+    double RA;
+    int A;
+    int Z;
+    bool DacayToScalar;
     Polarization polarization;
 };
+
+double Integra_P_and_B( double *vec, size_t dim, void* par);
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par);
 
@@ -183,8 +196,116 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
 }
 
 
+double Diffraction::Relative_P_abd_B_Inte(double mv, double root_snn, double theta_BigP, int Z, double t, double RA, bool DacayToScalar)
+{
+    Inthelper_amplitude helper;
+    helper.diffraction = this;
+    helper.mv = mv; // the mass of vector meson
+    helper.t = t;
+    helper.root_snn = root_snn;
+    helper.theta_BigP = theta_BigP;
+    helper.Z = Z;
+    helper.RA = RA;
+    helper.DacayToScalar = DacayToScalar;
+
+    double BigP; //BigP = 0.5 * (p1-p2)
+    double B;  // impact parameters between two nuclei
+    // Do MC integral over impact parameters B and BigP
+    // MC integration parameters: B
+    double *lower, *upper;
+    lower = new double[2];
+    upper = new double[2];
+    
+    lower[0] = 2.0 * RA;
+    upper[0] = 10*5.068 ; // Max b
+    lower[1] = 0.4472135954999579 * mv;  //  0.8 M^2 < Q^2 < 1.2 M^2
+    upper[1] = 0.5477225575051661 * mv;  //  0.2 M^2 < P^2 < 0.3 M^2
+    
+    gsl_monte_function F;
+    F.f = &Integra_P_and_B;
+    F.dim = 2;
+    F.params = &helper;
+    
+    double result, error;
+
+    
+    if (MCINT == MISER)
+    {
+        gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
+        gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result, &error);
+        gsl_monte_miser_free(s);
+    }
+    else if (MCINT == VEGAS)
+    {
+        gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
+        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result, &error);
+        //cout << "# vegas warmup " << result << " +/- " << error << endl;
+        int iter=0;
+        do
+        {
+            iter++;
+            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result, &error);
+            //cout << "# Vegas interation for B and P " << result << " +/- " << error << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+        } while (iter < 2 or fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5);
+        gsl_monte_vegas_free(s);
+    }
+    
+    delete lower;
+    delete upper;
+    
+    return result;
+    
+}
+
 
 double Inthelperf_amplitude_z(double z, void* p);
+
+double Integra_P_and_B( double *vec, size_t dim, void* par)
+{
+    Inthelper_amplitude *helper = (Inthelper_amplitude*)par;
+    helper->B = vec[0];
+    helper->BigP = vec[1];
+    double alpha_em = 0.0073;
+    double e_charge = 0.303;// GeV
+    double BW_Gamma; // GeV, The Breit-Wigner width of the J/Psi From PDG. 
+    double mproton = 0.938;// GeV
+    double HbarC = 0.197; // GeV . fm
+    double gamma = helper->root_snn/2./mproton;
+    double Eq2phi02;
+    double BW_prefactor;
+    double bracket;
+
+    double nwB = helper->Z*helper->Z * alpha_em * helper->mv*helper->mv/4./M_PI/M_PI/gamma/gamma *  // w = mv/2*exp(-y), y=  0.0;
+                 gsl_sf_bessel_Knu(1.0, helper->mv / 2. * helper->B / HbarC / gamma) *
+                 gsl_sf_bessel_Knu(1.0, helper->mv / 2. * helper->B / HbarC / gamma);
+
+    
+    double N0tilde = helper->B * (1. - gsl_sf_bessel_J0(helper->B*std::sqrt(helper->t)/HbarC)) * nwB;
+    double N2tilde = helper->B * gsl_sf_bessel_Jn(2.0, helper->B*std::sqrt(helper->t)/HbarC) * nwB;
+    if (helper->DacayToScalar) { // rho -> pi+ + pi-
+        bracket = helper->BigP * helper->BigP / 2. * N0tilde + helper->BigP * helper->BigP/2. * N2tilde * cos( 2. * helper->theta_BigP);
+        BW_prefactor = 12.24 * 12.24; // frhopipi = 12.24
+        BW_Gamma = 0.156;//GeV, rho -> pipi GeV
+    } else { // J/Psi -> mu+ + mu-
+        BW_Gamma = 9.3e-05; // GeV, The Breit-Wigner width of the J/Psi From PDG. 
+        Eq2phi02 = BW_Gamma * helper->mv * helper->mv /16./M_PI/alpha_em/alpha_em;
+        BW_prefactor = 24. * pow(e_charge, 4) * Eq2phi02 / helper->mv;
+        bracket = (1.-2.*helper->BigP * helper->BigP / helper->mv / helper->mv) * N0tilde - 
+                   2.*helper->BigP * helper->BigP / helper->mv / helper->mv * N2tilde * cos( 2. * helper->theta_BigP); //theta_ p = 0.0
+    }
+    double Qsquare = 2. * (-0.25*helper->t + helper->BigP*helper->BigP + 
+                     std::sqrt(pow(-0.5*sqrt(helper->t) + helper->BigP*cos(helper->theta_BigP), 2) +
+                     pow(helper->BigP*sin(helper->theta_BigP), 2)) *
+                     std::sqrt(pow(0.5*sqrt(helper->t) + helper->BigP*cos(helper->theta_BigP), 2) +
+                     pow(helper->BigP*sin(helper->theta_BigP), 2)) 
+                     );
+    
+    //double Qsquare = 4.* helper->BigP * helper->BigP;
+    double Big_int = BW_prefactor/ pow(M_PI, 4)/ 16. * bracket / (helper->mv * helper->mv * BW_Gamma * BW_Gamma + 
+                     (Qsquare - helper->mv * helper->mv) * (Qsquare - helper->mv * helper->mv));
+    Big_int = std::max(Big_int, 0.0);
+    return Big_int * helper->BigP / 2.; //helper->BigP / 2. is from Jacobians
+}
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
 {
