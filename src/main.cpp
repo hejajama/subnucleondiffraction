@@ -74,9 +74,12 @@ int main(int argc, char* argv[])
 //    DGLAPDist *gd=0;  // Initialized and used if we have nucleus consisting of ipsatnucleons
     int he3_id=-1;   // Used to set He3 configuration
     double mint=0;
-    double maxt=1.5;
+    double maxt1=0.1;
+    double maxt2=1.0;
+    double maxt3=1.5;
     double tstep=0.1;
-    
+    double tstep2=0.1;
+    double tstep3=0.1;
     //double xpom=0.000959089;
     double w = 100;
     double xp = -1;
@@ -352,10 +355,18 @@ int main(int argc, char* argv[])
             rng_offset = StrToInt(argv[i+1]);
         else if (string(argv[i])=="-mint")
             mint=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-maxt")
-            maxt=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-tstep")
+        else if (string(argv[i])=="-maxt1")
+            maxt1=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-maxt2")
+            maxt2=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-maxt3")
+            maxt3=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-tstep1")
             tstep=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-tstep2")
+            tstep2=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-tstep3")
+            tstep3=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-no_t_in_xpom")
             t_in_xpom = 0.0;
         else if (string(argv[i])=="-nrqcd_parameters")
@@ -594,7 +605,7 @@ int main(int argc, char* argv[])
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal" << endl;
 
 
-        for (t=mint; t<=maxt; t+=tstep)
+        for (t=mint; t<=maxt3; t+=tstep)
         {
             double xpom;
             if (xp < 0)
@@ -619,6 +630,7 @@ int main(int argc, char* argv[])
             if (DO_UPC_DIFF) {
                 int l_thetaP = 20;
                 double theta_BigP_step = 2.*M_PI/l_thetaP;
+                /*
                 if (!outputed_theta_P) {
                     cout << " #  ";
                     for (double theta_BigP = -1.*M_PI; theta_BigP <= M_PI; theta_BigP+=theta_BigP_step ) {
@@ -628,6 +640,7 @@ int main(int argc, char* argv[])
                     cout << endl;
                     outputed_theta_P = true;
                 }
+                */
                 cout.precision(5);
                 cout << t << " ";
                 cout.precision(10);
@@ -645,12 +658,11 @@ int main(int argc, char* argv[])
             }
 
             // Larger t step probably useful at large t
-            /*
-            if (t>0.08)
-                tstep = 0.015;
-            */
-	    ///if (t>=0.15 )
-            ///    tstep = 0.02;
+            
+            if (t>maxt1)
+                tstep = tstep2;
+	    if (t>=maxt2 )
+                tstep = tstep3;
                 
         }
     }
@@ -659,7 +671,7 @@ int main(int argc, char* argv[])
         cout << "# Real part correction" << endl;
         cout << "# t  transverse  longitudinal" << endl;
         double tstep=0.02;
-        for (t=mint; t<=maxt; t+=tstep)
+        for (t=mint; t<=maxt3; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.04)
