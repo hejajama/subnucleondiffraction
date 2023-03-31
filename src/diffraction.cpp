@@ -218,8 +218,8 @@ double Diffraction::Relative_P_abd_B_Inte(double mv, double root_snn, double the
     
     lower[0] = 2.0 * RA;
     upper[0] = 10*5.068 ; // Max b
-    lower[1] = 0.4472135954999579 * mv;  //  0.8 M^2 < Q^2 < 1.2 M^2
-    upper[1] = 0.5477225575051661 * mv;  //  0.2 M^2 < P^2 < 0.3 M^2
+    lower[1] = 0.3535533905932738 * mv;  //  0.5 M^2 < Q^2 < 1.5 M^2
+    upper[1] = 0.6123724356957945 * mv;  //  0.5/4 M^2 < P^2 < 1.5/4 M^2
     
     gsl_monte_function F;
     F.f = &Integra_P_and_B;
