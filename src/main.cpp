@@ -108,6 +108,8 @@ int main(int argc, char* argv[])
     int Z_Nuclear = 79;
     bool outputed_theta_P = false;
     bool DacayToScalar = false;
+    double Low = 0.8;
+    double High = 1.2;
     int NRQCD_param_id = -1; // if >0, use specific parameters from datafile
     
     
@@ -408,6 +410,10 @@ int main(int argc, char* argv[])
                     Z_Nuclear = 82;
             }
         }
+        else if (string(argv[i])=="-Low")
+            Low = StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-High")
+            High = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-DacayToScalarmeson")
         {
             if (string(argv[i+1])=="1") {
@@ -646,7 +652,7 @@ int main(int argc, char* argv[])
                 cout.precision(10);
                 cout << trans  << " " << lng << " " ;
                 for (double theta_BigP = -1.*M_PI; theta_BigP <= M_PI; theta_BigP+=theta_BigP_step) {
-                    double Inte_PB = diff.Relative_P_abd_B_Inte(mv_UPC, root_snn, theta_BigP, Z_Nuclear, t, R_Nuclear, DacayToScalar);
+                    double Inte_PB = diff.Relative_P_abd_B_Inte(mv_UPC, root_snn, theta_BigP, Z_Nuclear, t, R_Nuclear, Low, High, DacayToScalar);
                     cout  << Inte_PB << " ";
                 } 
                 cout << endl;

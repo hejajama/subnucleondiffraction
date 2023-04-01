@@ -196,7 +196,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
 }
 
 
-double Diffraction::Relative_P_abd_B_Inte(double mv, double root_snn, double theta_BigP, int Z, double t, double RA, bool DacayToScalar)
+double Diffraction::Relative_P_abd_B_Inte(double mv, double root_snn, double theta_BigP, int Z, double t, double RA, double Low, double High, bool DacayToScalar)
 {
     Inthelper_amplitude helper;
     helper.diffraction = this;
@@ -220,8 +220,8 @@ double Diffraction::Relative_P_abd_B_Inte(double mv, double root_snn, double the
     upper[0] = 10*5.068 ; // Max b
     //lower[1] = 0.3535533905932738 * mv;  //  0.5 M^2 < Q^2 < 1.5 M^2
     //upper[1] = 0.6123724356957945 * mv;  //  0.5/4 M^2 < P^2 < 1.5/4 M^2
-    lower[1] = 0.4183300132670378 * mv;  //  0.7 M^2 < Q^2 < 1.3 M^2
-    upper[1] = 0.570087712549569 * mv;  //  0.7/4 M^2 < P^2 < 1.3/4 M^2
+    lower[1] = std::sqrt(Low)/2. * mv;  //  0.7 M^2 < Q^2 < 1.3 M^2
+    upper[1] = std::sqrt(High)/2. * mv;  //  0.7/4 M^2 < P^2 < 1.3/4 M^2
 
     gsl_monte_function F;
     F.f = &Integra_P_and_B;
