@@ -652,7 +652,12 @@ int main(int argc, char* argv[])
                 cout.precision(10);
                 cout << trans  << " " << lng << " " ;
                 for (double theta_BigP = -1.*M_PI; theta_BigP <= M_PI; theta_BigP+=theta_BigP_step) {
-                    double Inte_PB = diff.Relative_P_abd_B_Inte(mv_UPC, root_snn, theta_BigP, Z_Nuclear, t, R_Nuclear, Low, High, DacayToScalar);
+                    double Inte_PB;
+                    if (REAL_PART) {
+                        Inte_PB = diff.Relative_P_abd_B_Inte(mv_UPC, root_snn, theta_BigP, Z_Nuclear, t, R_Nuclear, Low, High, DacayToScalar);
+                    } else {
+                        Inte_PB = 0.0;
+                    }
                     cout  << Inte_PB << " ";
                 } 
                 cout << endl;
