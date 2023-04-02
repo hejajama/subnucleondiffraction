@@ -634,7 +634,7 @@ int main(int argc, char* argv[])
 
             // Do the UPC diffractive, only count the coherent now.
             if (DO_UPC_DIFF) {
-                int l_thetaP = 20;
+                int l_thetaP = 30;
                 double theta_BigP_step = 2.*M_PI/l_thetaP;
                 /*
                 if (!outputed_theta_P) {
