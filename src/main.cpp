@@ -97,6 +97,8 @@ int main(int argc, char* argv[])
     bool periodic_boundary_conditions=false;
     
     bool DO_UPC_DIFF = false;
+    bool DOSoftPhoton = false;
+    double daughter_mass = 0.13957;// GeV
     // nrqcd parameters
     double NRQCD_A=0.213;
     double NRQCD_B=-0.0157;
@@ -419,14 +421,24 @@ int main(int argc, char* argv[])
             if (string(argv[i+1])=="1") {
                     DacayToScalar = true;
                     mv_UPC = mrho_UPC;
+                    daughter_mass = 0.13957;// GeV pion +-
             } 
             if (string(argv[i+1])=="0") {
                     DacayToScalar = false;
                     mv_UPC = mjpsi_UPC;
+                    daughter_mass = 0.1056583745;// GeV mu+-
             }
         }
-        
-     else if (string(argv[i]).substr(0,1)=="-")
+        else if (string(argv[i])=="-DOSoftPhoton")
+        {
+            if (string(argv[i+1])=="1") {
+                    DOSoftPhoton = true;
+            } 
+            if (string(argv[i+1])=="0") {
+                    DOSoftPhoton = false;
+            }
+        }
+        else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
             exit(1);
@@ -610,71 +622,91 @@ int main(int argc, char* argv[])
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
         cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal" << endl;
 
+        int l_thetaP = 30;
+        double theta_BigP_step = 2.*M_PI/l_thetaP;
+        if (DO_UPC_DIFF && DOSoftPhoton) { // Do the soft photon radiation
+             for (t=mint; t<=maxt3; t+=tstep) {
+                 double xpom;
+                 if (xp < 0)
+                     xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+                 else
+                 xpom = xp;
+                 if (xpom > 0.04) {
+                    cerr << "xpom = " << xpom << ", can't do this!" << endl;
+                 }
+                 if(auto_mcintpoints)
+                     MCINTPOINTS = MCpoints(t);
 
-        for (t=mint; t<=maxt3; t+=tstep)
-        {
-            double xpom;
-            if (xp < 0)
-                xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
-            else
-                xpom = xp;
-            if (xpom > 0.04)
-            {
-                cerr << "xpom = " << xpom << ", can't do this!" << endl;
-                //continue;
-            }
-            
-            if(auto_mcintpoints)
-                MCINTPOINTS = MCpoints(t);
-
-            double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
-            double lng = 0;
-            if (Qsqr > 0)
-                lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
-
-            // Do the UPC diffractive, only count the coherent now.
-            if (DO_UPC_DIFF) {
-                int l_thetaP = 30;
-                double theta_BigP_step = 2.*M_PI/l_thetaP;
-                /*
-                if (!outputed_theta_P) {
-                    cout << " #  ";
-                    for (double theta_BigP = -1.*M_PI; theta_BigP <= M_PI; theta_BigP+=theta_BigP_step ) {
-                        cout.precision(5);
-                        cout << theta_BigP << " ";
-                    } 
-                    cout << endl;
-                    outputed_theta_P = true;
-                }
-                */
-                cout.precision(5);
-                cout << t << " ";
-                cout.precision(10);
-                cout << trans  << " " << lng << " " ;
-                for (double theta_BigP = -1.*M_PI; theta_BigP <= M_PI; theta_BigP+=theta_BigP_step) {
-                    double Inte_PB;
-                    if (REAL_PART) {
-                        Inte_PB = diff.Relative_P_abd_B_Inte(mv_UPC, root_snn, theta_BigP, Z_Nuclear, t, R_Nuclear, Low, High, DacayToScalar);
-                    } else {
-                        Inte_PB = 0.0;
-                    }
-                    cout  << Inte_PB << " ";
+                 cout.precision(5);
+                 cout << t << " ";
+                 cout.precision(10);
+                 for (double theta_BigP = -1.*M_PI; theta_BigP <= M_PI; theta_BigP+=theta_BigP_step) {
+                     double trans = diff.Soft_photon_ScatteringAmplitude(xpom, Qsqr, T, mv_UPC, root_snn, theta_BigP, Z_Nuclear, 
+                                                                         t, R_Nuclear, Low, High, daughter_mass, DacayToScalar);
+                     double lng = 0;
+                     if (Qsqr > 0)
+                         lng = diff.Soft_photon_ScatteringAmplitude(xpom, Qsqr, L, mv_UPC, root_snn, theta_BigP, Z_Nuclear, 
+                                                                    t, R_Nuclear, Low, High, daughter_mass, DacayToScalar);
+                     cout  << trans << " " << lng << " ";
                 } 
                 cout << endl;
-            } else {
-                cout.precision(5);
-                cout << t << " ";
-                cout.precision(10);
-                cout << trans  << " " << lng << endl;
-            }
 
-            // Larger t step probably useful at large t
-            
-            if (t>maxt1)
-                tstep = tstep2;
-	    if (t>=maxt2 )
-                tstep = tstep3;
-                
+                if (t>maxt1)
+                    tstep = tstep2;
+                if (t>=maxt2 )
+                    tstep = tstep3;
+             }
+        } else {
+            for (t=mint; t<=maxt3; t+=tstep) {
+                double xpom;
+               if (xp < 0)
+                    xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+                else
+                    xpom = xp;
+                if (xpom > 0.04)
+                {
+                    cerr << "xpom = " << xpom << ", can't do this!" << endl;
+                    //continue;
+                }
+                if(auto_mcintpoints)
+                    MCINTPOINTS = MCpoints(t);
+
+                double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
+                double lng = 0;
+                if (Qsqr > 0)
+                    lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
+
+                // Do the UPC diffractive, only count the coherent now.
+                if (DO_UPC_DIFF) {
+                    //int l_thetaP = 30;
+                    //double theta_BigP_step = 2.*M_PI/l_thetaP;
+                    cout.precision(5);
+                    cout << t << " ";
+                    cout.precision(10);
+                    cout << trans  << " " << lng << " " ;
+                    for (double theta_BigP = -1.*M_PI; theta_BigP <= M_PI; theta_BigP+=theta_BigP_step) {
+                        double Inte_PB;
+                        if (REAL_PART) {
+                            Inte_PB = diff.Relative_P_abd_B_Inte(mv_UPC, root_snn, theta_BigP, Z_Nuclear, t, R_Nuclear, Low, High, DacayToScalar);
+                        } else {
+                            Inte_PB = 0.0;
+                        }
+                        cout  << Inte_PB << " ";
+                    } 
+                    cout << endl;
+                } else {
+                    cout.precision(5);
+                    cout << t << " ";
+                    cout.precision(10);
+                    cout << trans  << " " << lng << endl;
+                }
+
+                // Larger t step probably useful at large t
+                if (t>maxt1)
+                    tstep = tstep2;
+	        if (t>=maxt2 )
+                    tstep = tstep3;
+            }
         }
     }
     else if (mode == CORRECTIONS)

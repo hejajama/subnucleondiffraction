@@ -23,6 +23,11 @@ public:
 
     double Relative_P_abd_B_Inte(double mv, double root_snn, double theta_BigP, int Z, double t, double RA, double Low, double High, bool DacayToScalar);
 
+    double Soft_photon_ScatteringAmplitude(double xpom, double Qsqr, Polarization pol, double mv, double root_snn, 
+           double theta_BigP, int Z, double t, double RA, double Low, double High, double daughter_mass, bool DacayToScalar);
+    std::pair<double, double> ScatteringAmplitude_noexp_Integrand(double xpom, double Qsqr, double t, double r, double theta_r, 
+                              double b, double theta_b, double bp, double theta_bp, double bp2, double theta_bp2, double z, Polarization pol);
+
     // Calculate scattering amplitude in case of cylinderical cymmetry (e.g. ipsat with no constituent quarks)
     double ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t, Polarization pol=T);
     double ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z, Polarization pol=T);

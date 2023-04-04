@@ -100,6 +100,7 @@ struct Inthelper_amplitude
     double theta_b;
     double z;
     double mv; // mass of vector meson
+    double daughter_mass;
     double root_snn;
     double mA; // target mass
     double BigP; //BigP = 0.5 * (p1-p2)
@@ -115,6 +116,8 @@ struct Inthelper_amplitude
 double Integra_P_and_B( double *vec, size_t dim, void* par);
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par);
+
+double Inthelperf_amplitude_soft_photon_mc( double *vec, size_t dim, void* par);
 
 double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Polarization pol)
 {
@@ -187,6 +190,88 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     
     //if (std::abs(error/result) > MCINTACCURACY)
     //    cerr << "#MC integral failed, result " << result << " error " << error << endl;
+    
+    delete lower;
+    delete upper;
+    
+    return result;
+    
+}
+
+
+double Diffraction::Soft_photon_ScatteringAmplitude(double xpom, double Qsqr, Polarization pol, double mv, double root_snn, 
+           double theta_BigP, int Z, double t, double RA, double Low, double High, double daughter_mass, bool DacayToScalar) {
+    Inthelper_amplitude helper;
+    helper.diffraction = this;
+    helper.xpom = xpom;
+    helper.Qsqr = Qsqr;
+    helper.t = t;
+    helper.polarization=pol;
+    
+    helper.mv = mv; // the mass of vector meson
+    helper.t = t;
+    helper.root_snn = root_snn;
+    helper.theta_BigP = theta_BigP;
+    helper.Z = Z;
+    helper.RA = RA;
+    helper.daughter_mass = daughter_mass;
+    helper.DacayToScalar = DacayToScalar;
+
+    // Do MC integral over impact parameters and dipole sizes
+    // Currently hardcoded parameters for jpsi and gold:
+    // Impact parameter up to 100 GeV^-1
+    // Dipole size up to 10 GeV^-1
+    // MC integration parameters: b, theta_b( = theta_p), r, theta_r, Z, rT, theta_rT,  theta_B, B, Big_P
+    double *lower, *upper;
+    lower = new double[10];
+    upper = new double[10];
+    
+    lower[0]=lower[1]=lower[2]=lower[3]=0.;
+    lower[4] = zlimit;
+    lower[5] = lower[6] = lower[7] = 0.0; 
+    lower[8] = 2.* RA; // B
+
+    upper[0] = 10*5.068 ; // Max b
+    upper[1] = 2.0*M_PI; //Max theta_b
+    upper[2] = MAXR; //MAXR;//20; //0.5*5.068;  // Max r
+    upper[3] = 2.0*M_PI;
+    upper[4] = 1.0 - lower[4]; // MAX Z
+    upper[5] = 10*5.068; // max rT
+    upper[6] = 2.0*M_PI;
+    upper[7] = 2.0*M_PI;
+    upper[8] = 10*5.068; // Max B
+
+    lower[9] = std::sqrt(Low)/2. * mv;   //  0.7 M^2 < Q^2 < 1.3 M^2, Big_p
+    upper[9] = std::sqrt(High)/2. * mv;  //  0.7/4 M^2 < P^2 < 1.3/4 M^2
+
+    gsl_monte_function F;
+    F.f = &Inthelperf_amplitude_soft_photon_mc;
+    F.dim = 10;
+    F.params = &helper;
+    
+    double result,error;
+
+    
+    if (MCINT == MISER)
+    {
+        gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
+        gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result, &error);
+        gsl_monte_miser_free(s);
+    }
+    else if (MCINT == VEGAS)
+    {
+        gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
+        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result, &error);
+        //cout << "# vegas warmup " << result << " +/- " << error << endl;
+        int iter=0;
+        do
+        {
+            iter++;
+            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result, &error);
+            //cout << "# Vegas interation " << result << " +/- " << error << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+        } while (iter < 2 or fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5);
+        gsl_monte_vegas_free(s);
+    }
     
     delete lower;
     delete upper;
@@ -324,24 +409,81 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
         
     return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z, helper->polarization);
     
-    /*
-    gsl_integration_workspace *w = gsl_integration_workspace_alloc(ZINT_INTERVALS);
-    
-    gsl_function F;
-    F.function =
-    &Inthelperf_amplitude_z;
-    F.params = par;
-    double result,error;
-    int status = gsl_integration_qags(&F, 0, 1, 0, ZINT_RELACCURACY, ZINT_INTERVALS, w, &result, &error);
-    
-    if (status)
-        cerr << "#ZINT failed, result " << result << " relerror " << error << " r " << helper->r << " b " << helper->b << endl;
-    
-    gsl_integration_workspace_free(w);
-    
-    return result;
-     */
 }
+
+double Inthelperf_amplitude_soft_photon_mc( double *vec, size_t dim, void* par)
+{
+    Inthelper_amplitude *helper = (Inthelper_amplitude*)par;
+    double b = vec[0];
+    double theta_b=vec[1];
+    double r = vec[2];
+    double theta_r = vec[3];
+    double frac_z  = vec[4];
+    double rT  = vec[5];
+    double theta_rT  = vec[6];
+    double theta_B  = vec[7];
+    double B  = vec[8];
+    double Big_P  = vec[9];
+    
+    // MC integration parameters: b, theta_b( = theta_p), r, theta_r, frac_z, rT, theta_rT,  theta_B, B, Big_P
+
+    double alpha_em = 0.0073;
+    double e_charge = 0.303;// GeV
+    double BW_Gamma; // GeV, The Breit-Wigner width of the J/Psi From PDG. 
+    double mproton = 0.938;// GeV
+    double HbarC = 0.197; // GeV . fm
+    double gamma = helper->root_snn/2./mproton;
+    double Eq2phi02;
+    double BW_prefactor;
+    double bracket;
+
+    auto niA_b      = helper->diffraction->ScatteringAmplitude_noexp_Integrand(helper->xpom, helper->Qsqr, helper->t, r, theta_r, b, theta_b, 0., 0., 0., 0., frac_z, helper->polarization);
+    auto niA_bpB    = helper->diffraction->ScatteringAmplitude_noexp_Integrand(helper->xpom, helper->Qsqr, helper->t, r, theta_r, b, theta_b, B, theta_B, 0., 0., frac_z, helper->polarization);
+    auto niA_bprT   = helper->diffraction->ScatteringAmplitude_noexp_Integrand(helper->xpom, helper->Qsqr, helper->t, r, theta_r, b, theta_b, rT, theta_rT, 0., 0., frac_z, helper->polarization);
+    auto niA_bpBprT = helper->diffraction->ScatteringAmplitude_noexp_Integrand(helper->xpom, helper->Qsqr, helper->t, r, theta_r, b, theta_b, B, theta_B, rT, theta_rT, frac_z, helper->polarization);
+
+    // Sudakov Factor
+    double c2 = 2.*std::log(helper->mv/helper->daughter_mass) - 2.772588722239781;// -4log(2);
+    double c4 = 2.*std::log(helper->mv/helper->daughter_mass) - 4.;
+    double mur = 1.1229189671354916 / rT; //2.*std::exp(-0.5772156649)
+    double Sudakov = (1.-2.*alpha_em*c2/M_PI*cos(2.*theta_rT - 2.*helper->theta_BigP) + 
+                      alpha_em*c4/M_PI * cos(4.*theta_rT - 4.*helper->theta_BigP)) *
+                      exp(-1.*alpha_em/M_PI * 2.*std::log(helper->mv/helper->daughter_mass) * 2.*std::log(Big_P/mur/HbarC));
+
+    double bracket2 = (niA_b.first - niA_bpB.first) * (niA_bprT.first - niA_bpBprT.first) 
+                    + (niA_b.second - niA_bpB.second) * (niA_bprT.second - niA_bpBprT.second); // 0.006332573977646111 = 1/4/M_PI/M_PI
+
+    double nwB = helper->Z*helper->Z * alpha_em * helper->mv*helper->mv/4./M_PI/M_PI/gamma/gamma *  // w = mv/2*exp(-y), y=  0.0;
+                 gsl_sf_bessel_Knu(1.0, helper->mv / 2. * B / HbarC / gamma) *
+                 gsl_sf_bessel_Knu(1.0, helper->mv / 2. * B / HbarC / gamma);
+
+    if (helper->DacayToScalar) { // rho -> pi+ + pi-
+        bracket = Big_P * Big_P / 2. * (cos(2.*theta_B - 2.*helper->theta_BigP)+1.);
+        BW_prefactor = 12.24 * 12.24; // frhopipi = 12.24
+        BW_Gamma = 0.156;//GeV, rho -> pipi GeV
+    } else { // J/Psi -> mu+ + mu-
+        BW_Gamma = 9.3e-05; // GeV, The Breit-Wigner width of the J/Psi From PDG. 
+        Eq2phi02 = BW_Gamma * helper->mv * helper->mv /16./M_PI/alpha_em/alpha_em;
+        BW_prefactor = 24. * pow(e_charge, 4) * Eq2phi02 / helper->mv;
+        bracket = 1.-2.*Big_P*Big_P / helper->mv / helper->mv -2.*Big_P*Big_P / helper->mv / helper->mv *
+                   cos(2.*theta_B - 2.*helper->theta_BigP); //theta_ p = 0.0
+    }
+    double Qsquare = 2. * (-0.25*helper->t + Big_P*Big_P + 
+                     std::sqrt(pow(-0.5*sqrt(helper->t) + Big_P*cos(helper->theta_BigP), 2) +
+                     pow(Big_P*sin(helper->theta_BigP), 2)) *
+                     std::sqrt(pow(0.5*sqrt(helper->t) + helper->BigP*cos(helper->theta_BigP), 2) +
+                     pow(Big_P*sin(helper->theta_BigP), 2)) 
+                     );
+    
+    //double Qsquare = 4.* helper->BigP * helper->BigP;
+    double Big_int = BW_prefactor/ pow(M_PI*2., 9)/ 2. / (helper->mv * helper->mv * BW_Gamma * BW_Gamma + 
+                     (Qsquare - helper->mv * helper->mv) * (Qsquare - helper->mv * helper->mv)) *
+                     nwB * bracket * Sudakov * cos(std::sqrt(helper->t) * rT / HbarC * cos(theta_rT)) * 
+                     bracket2;
+    Big_int = std::max(Big_int, 0.0);
+    return Big_int * Big_P / 2.; //helper->BigP / 2. is from Jacobians
+}
+
 
 double Inthelperf_amplitude_z(double z, void* p)
 {
@@ -432,6 +574,89 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     return res;
     
+
+}
+
+std::pair<double, double> Diffraction::ScatteringAmplitude_noexp_Integrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double bp, double theta_bp, double bp2, double theta_bp2, double z, Polarization pol)
+{ 
+    // Recall quark and gluon positions:
+    // Quark: b + zr
+    // Antiquark: b - (1-z) r
+    
+    // If do like Lappi, Mantysaari: set z=1/2 here
+    
+    double bx = b*cos(theta_b) - bp*cos(theta_bp) - bp2*cos(theta_bp2);
+    double by = b*sin(theta_b) - bp*sin(theta_bp) - bp2*sin(theta_bp2);
+    double rx = r*cos(theta_r);
+    double ry = r*sin(theta_r);
+    
+    // q and antiq positions
+    double tmpz = z;
+    z=0.5; // Do not use z when calcualting antiquark/quark positions, just b is geometric mean
+    
+    
+    double qx = bx + z*rx; double qy = by + z*ry;
+    double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
+    
+    z = tmpz;
+    
+    double delta = std::sqrt(t);
+    
+    double x1[2] = {qx,qy};
+    double x2[2] = {qbarx, qbary};
+    double amp_real = dipole->Amplitude(xpom, x1, x2 );
+    double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
+    std::complex<double> amp(amp_real, amp_imag);
+    //amp = amp.real();   // Disable possible imag part for now
+    
+    std::complex<double> result = 2.0*r*b; // r and b from Jacobians, 2 as we have written sigma_qq = 2 N
+    std::complex<double> imag(0,1);
+    
+    if (FACTORIZE_ZINT)
+    {
+        if (wavef->WaveFunctionType() != "NRQCD")
+        {
+            //PsiSqr_L_intz(double Qsqr, double r, double Delta, double phi_r_Delta)
+            cerr << "FACTORIZE_ZINT currently only works with NRQCD wf" << endl;
+            return std::make_pair(0.0, 0.0);;
+        }
+        // Note 1/(4pi) is included in the z integral measure in PsiSqr_T_intz
+        if (pol == T)
+            result *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
+        else
+            result *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta,theta_r);
+            
+        //result *= std::exp(-imag*(b*delta*std::cos(theta_b)))*amp;
+        result *= amp;
+    }
+    else
+    {
+        if (pol == T)
+            result *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
+        else
+            result *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
+        
+        // This integrand is now not integrated over z
+        //std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (0.5 - z)*r*delta*std::cos(theta_r)  )  );
+        
+        result *= amp;// * exponent;
+        
+    }
+    
+	double res=0;
+    /*
+    if (REAL_PART)
+        res = result.real();
+    else
+        res = result.imag();
+    */
+    if (std::isnan(result.real()) or std::isinf(result.imag()))
+    {
+        cerr << "Amplitude integral is " << result.real() << "  " << result.imag() <<  " dipole " << amp << " xp=" << xpom << " Q^2=" << Qsqr << " t="<< t << " r=" << r << " theta_r="<<theta_r << " b="<< b << "theta_b="<< theta_b << " z=" << z << endl;
+        exit(1);
+    }
+    
+    return std::make_pair(result.real(), result.imag());
 
 }
 
