@@ -241,8 +241,12 @@ double Diffraction::Soft_photon_ScatteringAmplitude(double xpom, double Qsqr, Po
     upper[7] = 2.0*M_PI;
     upper[8] = 10*5.068; // Max B
 
-    lower[9] = std::sqrt(Low)/2. * mv;   //  0.7 M^2 < Q^2 < 1.3 M^2, Big_p
-    upper[9] = std::sqrt(High)/2. * mv;  //  0.7/4 M^2 < P^2 < 1.3/4 M^2
+    double Q2Low = Low * mv * mv;
+    double lowbigp = 0.5*std::sqrt((t*Q2Low+Q2Low*Q2Low)/(t+Q2Low - t*cos(theta_BigP)*cos(theta_BigP)));
+    double Q2High = High * mv * mv;
+    double highbigp = 0.5*std::sqrt((t*Q2High+Q2High*Q2High)/(t+Q2High - t*cos(theta_BigP)*cos(theta_BigP)));
+    lower[9] = lowbigp;   //  0.7 M^2 < Q^2 < 1.3 M^2, Big_p
+    upper[9] = highbigp;  //  0.7/4 M^2 < P^2 < 1.3/4 M^2
 
     gsl_monte_function F;
     F.f = &Inthelperf_amplitude_soft_photon_mc;
@@ -361,6 +365,7 @@ double Integra_P_and_B( double *vec, size_t dim, void* par)
     double Eq2phi02;
     double BW_prefactor;
     double bracket;
+    double daughter_mass = 0.139;// GeV
 
     double nwB = helper->Z*helper->Z * alpha_em * helper->mv*helper->mv/4./M_PI/M_PI/gamma/gamma *  // w = mv/2*exp(-y), y=  0.0;
                  gsl_sf_bessel_Knu(1.0, helper->mv / 2. * helper->B / HbarC / gamma) *
@@ -373,20 +378,29 @@ double Integra_P_and_B( double *vec, size_t dim, void* par)
         bracket = helper->BigP * helper->BigP / 2. * N0tilde + helper->BigP * helper->BigP/2. * N2tilde * cos( 2. * helper->theta_BigP);
         BW_prefactor = 12.24 * 12.24; // frhopipi = 12.24
         BW_Gamma = 0.156;//GeV, rho -> pipi GeV
+        daughter_mass = 0.139;// GeV pion
     } else { // J/Psi -> mu+ + mu-
         BW_Gamma = 9.3e-05; // GeV, The Breit-Wigner width of the J/Psi From PDG. 
         Eq2phi02 = BW_Gamma * helper->mv * helper->mv /16./M_PI/alpha_em/alpha_em;
         BW_prefactor = 24. * pow(e_charge, 4) * Eq2phi02 / helper->mv;
+        daughter_mass = 0.1056583745;// GeV muon 
         bracket = (1.-2.*helper->BigP * helper->BigP / helper->mv / helper->mv) * N0tilde - 
                    2.*helper->BigP * helper->BigP / helper->mv / helper->mv * N2tilde * cos( 2. * helper->theta_BigP); //theta_ p = 0.0
     }
+    /*
     double Qsquare = 2. * (-0.25*helper->t + helper->BigP*helper->BigP + 
                      std::sqrt(pow(-0.5*sqrt(helper->t) + helper->BigP*cos(helper->theta_BigP), 2) +
                      pow(helper->BigP*sin(helper->theta_BigP), 2)) *
                      std::sqrt(pow(0.5*sqrt(helper->t) + helper->BigP*cos(helper->theta_BigP), 2) +
                      pow(helper->BigP*sin(helper->theta_BigP), 2)) 
                      );
-    
+    */
+    double Qsquare = -0.5*helper->t + 2.*helper->BigP*helper->BigP + 2. *
+                     std::sqrt( daughter_mass*daughter_mass + 0.25*helper->t + helper->BigP*helper->BigP -
+                                std::sqrt(helper->t)*helper->BigP*cos(helper->theta_BigP) ) *
+                     std::sqrt( daughter_mass*daughter_mass + 0.25*helper->t + helper->BigP*helper->BigP +
+                                std::sqrt(helper->t)*helper->BigP*cos(helper->theta_BigP) );
+
     //double Qsquare = 4.* helper->BigP * helper->BigP;
     double Big_int = BW_prefactor/ pow(M_PI, 4)/ 16. * bracket / (helper->mv * helper->mv * BW_Gamma * BW_Gamma + 
                      (Qsquare - helper->mv * helper->mv) * (Qsquare - helper->mv * helper->mv));
