@@ -404,14 +404,16 @@ int main(int argc, char* argv[])
         else if (string(argv[i])=="-UPC_Nucleus")
         {
             if (string(argv[i+1])=="Au") {
-                    R_Nuclear = 6.37;// fm
+                    //R_Nuclear = 6.37;// fm
                     Z_Nuclear = 79;
             } 
             if (string(argv[i+1])=="Pb") {
-                    R_Nuclear = 6.62;// fm
+                    //R_Nuclear = 6.62;// fm
                     Z_Nuclear = 82;
             }
         }
+        else if (string(argv[i])=="-R_Nuclear")
+            R_Nuclear = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-Low")
             Low = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-High")
