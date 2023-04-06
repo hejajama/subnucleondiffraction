@@ -309,9 +309,15 @@ double Diffraction::Relative_P_abd_B_Inte(double mv, double root_snn, double the
     upper[0] = 10*5.068 ; // Max b
     //lower[1] = 0.3535533905932738 * mv;  //  0.5 M^2 < Q^2 < 1.5 M^2
     //upper[1] = 0.6123724356957945 * mv;  //  0.5/4 M^2 < P^2 < 1.5/4 M^2
-    lower[1] = std::sqrt(Low)/2. * mv;  //  0.7 M^2 < Q^2 < 1.3 M^2
-    upper[1] = std::sqrt(High)/2. * mv;  //  0.7/4 M^2 < P^2 < 1.3/4 M^2
-
+    //lower[1] = std::sqrt(Low)/2. * mv;  //  0.7 M^2 < Q^2 < 1.3 M^2
+    //upper[1] = std::sqrt(High)/2. * mv;  //  0.7/4 M^2 < P^2 < 1.3/4 M^2
+    double Q2Low = Low * mv * mv;
+    double lowbigp = 0.5*std::sqrt((t*Q2Low+Q2Low*Q2Low)/(t+Q2Low - t*cos(theta_BigP)*cos(theta_BigP)));
+    double Q2High = High * mv * mv;
+    double highbigp = 0.5*std::sqrt((t*Q2High+Q2High*Q2High)/(t+Q2High - t*cos(theta_BigP)*cos(theta_BigP)));
+    lower[1] = lowbigp;   //  0.7 M^2 < Q^2 < 1.3 M^2, Big_p
+    upper[1] = highbigp;  //  0.7/4 M^2 < P^2 < 1.3/4 M^2
+    
     gsl_monte_function F;
     F.f = &Integra_P_and_B;
     F.dim = 2;
