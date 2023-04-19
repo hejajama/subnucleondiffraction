@@ -80,6 +80,7 @@ int main(int argc, char* argv[])
     double tstep=0.1;
     double tstep2=0.1;
     double tstep3=0.1;
+    double HBARC = 0.197327053;
     //double xpom=0.000959089;
     double w = 100;
     double xp = -1;
@@ -97,6 +98,7 @@ int main(int argc, char* argv[])
     bool periodic_boundary_conditions=false;
     
     bool DO_UPC_DIFF = false;
+    bool With_photon_kT  =false;
     bool DOSoftPhoton = false;
     double daughter_mass = 0.13957;// GeV
     // nrqcd parameters
@@ -105,7 +107,7 @@ int main(int argc, char* argv[])
     double mv_UPC = 3.096;// GeV 
     double mjpsi_UPC = 3.096;// GeV
     double mrho_UPC = 0.77526;// GeV
-    double R_Nuclear = 6.37;// fm
+    double R_Nuclear = 6.37/HBARC;// fm /hbarc
     double root_snn = 200.0;// GeV
     int Z_Nuclear = 79;
     bool outputed_theta_P = false;
@@ -338,6 +340,14 @@ int main(int argc, char* argv[])
                 DO_UPC_DIFF = false;
             } 
         }
+        else if (string(argv[i])=="-With_photon_kT")
+        {
+            if (string(argv[i+1])=="1") {
+                With_photon_kT = true;
+            } if (string(argv[i+1])=="0") {
+                With_photon_kT = false;
+            } 
+        }
         else if (string(argv[i])=="-satscale")
             mode = SATURATION_SCALE;
         else if (string(argv[i])=="-wavef_file")
@@ -412,8 +422,10 @@ int main(int argc, char* argv[])
                     Z_Nuclear = 82;
             }
         }
-        else if (string(argv[i])=="-R_Nuclear")
+        else if (string(argv[i])=="-R_Nuclear") {
             R_Nuclear = StrToReal(argv[i+1]);
+            R_Nuclear = R_Nuclear / HBARC;
+        }
         else if (string(argv[i])=="-Low")
             Low = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-High")
@@ -673,29 +685,43 @@ int main(int argc, char* argv[])
                 if(auto_mcintpoints)
                     MCINTPOINTS = MCpoints(t);
 
-                double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
+                
+                double trans = 0.0;
+                if (!With_photon_kT) trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
                 double lng = 0;
                 if (Qsqr > 0)
                     lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
 
                 // Do the UPC diffractive, only count the coherent now.
                 if (DO_UPC_DIFF) {
-                    //int l_thetaP = 30;
-                    //double theta_BigP_step = 2.*M_PI/l_thetaP;
-                    cout.precision(5);
-                    cout << t << " ";
-                    cout.precision(10);
-                    cout << trans  << " " << lng << " " ;
-                    for (double theta_BigP = -1.*M_PI; theta_BigP <= M_PI; theta_BigP+=theta_BigP_step) {
+                    if (With_photon_kT) {
+                        cout.precision(5);
+                        cout << t << " ";
                         double Inte_PB;
-                        if (REAL_PART) {
-                            Inte_PB = diff.Relative_P_abd_B_Inte(mv_UPC, root_snn, theta_BigP, Z_Nuclear, t, R_Nuclear, Low, High, DacayToScalar);
-                        } else {
-                            Inte_PB = 0.0;
+                        for (double theta_BigP = -1.*M_PI; theta_BigP <= -1.5; theta_BigP+=theta_BigP_step) {
+                            Inte_PB = diff.Relative_P_abd_B_Inte_mc(xpom, Qsqr, T, mv_UPC, root_snn, theta_BigP, Z_Nuclear, t,
+                                                                    R_Nuclear, Low, High, DacayToScalar);
+                            cout  << Inte_PB << "  ";
                         }
-                        cout  << Inte_PB << " ";
-                    } 
-                    cout << endl;
+                        cout << endl;
+                    } else {
+                        //int l_thetaP = 30;
+                        //double theta_BigP_step = 2.*M_PI/l_thetaP;
+                        cout.precision(5);
+                        cout << t << " ";
+                        cout.precision(10);
+                        cout << trans  << " " << lng << " " ;
+                        for (double theta_BigP = -1.*M_PI; theta_BigP <= -1.5 ; theta_BigP+=theta_BigP_step) {
+                            double Inte_PB;
+                            if (REAL_PART) {
+                                Inte_PB = diff.Relative_P_abd_B_Inte(mv_UPC, root_snn, theta_BigP, Z_Nuclear, t, R_Nuclear, Low, High, DacayToScalar);
+                            } else {
+                                Inte_PB = 0.0;
+                            }
+                            cout  << Inte_PB << " ";
+                        } 
+                        cout << endl;
+                    }
                 } else {
                     cout.precision(5);
                     cout << t << " ";
