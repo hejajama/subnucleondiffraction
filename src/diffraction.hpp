@@ -19,8 +19,9 @@ public:
     
     // Calculate amplitude A, this will later be averaged and squared
     double ScatteringAmplitude(double xpom, double Qsqr, double t,Polarization pol=T );
+    double ScatteringAmplitude_at_fixed_b(double xpom, double Qsqr, double b, double theta_b, Polarization pol);
     double ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol=T);
-
+    double ScatteringAmplitudeIntegrand_fixed_b(double xpom, double Qsqr,  double r, double theta_r, double b, double theta_b, double z, Polarization pol);
     double Relative_P_abd_B_Inte(double mv, double root_snn, double theta_BigP, int Z, double t, double RA, double Low, double High, bool DacayToScalar);
     double Relative_P_abd_B_Inte_mc(double xpom, double Qsqr, Polarization pol, double mv, double root_snn, double theta_BigP, int Z, 
                                     double t, double RA, double Low, double High, bool DacayToScalar);

@@ -98,6 +98,7 @@ int main(int argc, char* argv[])
     bool periodic_boundary_conditions=false;
     
     bool DO_UPC_DIFF = false;
+    bool OUTPUTAONLY = false;
     bool With_photon_kT  =false;
     bool DOSoftPhoton = false;
     double daughter_mass = 0.13957;// GeV
@@ -336,8 +337,17 @@ int main(int argc, char* argv[])
         {
             if (string(argv[i+1])=="1") {
                 DO_UPC_DIFF = true;
-            } if (string(argv[i+1])=="0") {
+            } 
+            if (string(argv[i+1])=="0") {
                 DO_UPC_DIFF = false;
+            } 
+        }
+        else if (string(argv[i])=="-OUTPUTAONLY")
+        {
+            if (string(argv[i+1])=="1") {
+                OUTPUTAONLY = true;
+            } if (string(argv[i+1])=="0") {
+                OUTPUTAONLY = false;
             } 
         }
         else if (string(argv[i])=="-With_photon_kT")
@@ -634,11 +644,31 @@ int main(int argc, char* argv[])
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         else
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
-        cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal" << endl;
 
-        int l_thetaP = 30;
-        double theta_BigP_step = 2.*M_PI/l_thetaP;
-        if (DO_UPC_DIFF && DOSoftPhoton) { // Do the soft photon radiation
+        if (OUTPUTAONLY) {
+          const int l_thetab = 31;
+          double theta_b_step = 2.*M_PI/(l_thetab-1.);
+          const int l_b = 51;
+          double b_step = 0.2;
+          double xpom = xp;
+          if (xpom > 0.04) {
+              cerr << "xpom = " << xpom << ", can't do this!" << endl;
+          }
+          cout.precision(5);
+          for (int ib = 0; ib < l_b; ib++) {
+              for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
+                  double b_at_this_step = b_step * ib * 1.;
+                  double theta_b_at_this_step = theta_b_step * ithetab;
+                  double trans = diff.ScatteringAmplitude_at_fixed_b(xpom, Qsqr, b_at_this_step, theta_b_at_this_step, T);
+                  cout << trans << "  ";
+              }
+              cout << endl;
+          } 
+        } else {
+          cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal" << endl;
+          int l_thetaP = 30;
+          double theta_BigP_step = 2.*M_PI/l_thetaP;
+          if (DO_UPC_DIFF && DOSoftPhoton) { // Do the soft photon radiation
              for (t=mint; t<=maxt3; t+=tstep) {
                  double xpom;
                  if (xp < 0)
@@ -670,7 +700,7 @@ int main(int argc, char* argv[])
                 if (t>=maxt2 )
                     tstep = tstep3;
              }
-        } else {
+          } else {
             for (t=mint; t<=maxt3; t+=tstep) {
                 double xpom;
                if (xp < 0)
@@ -735,6 +765,7 @@ int main(int argc, char* argv[])
 	        if (t>=maxt2 )
                     tstep = tstep3;
             }
+          }
         }
     }
     else if (mode == CORRECTIONS)

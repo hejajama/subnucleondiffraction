@@ -118,6 +118,7 @@ struct Inthelper_amplitude
 double Integra_P_and_B( double *vec, size_t dim, void* par);
 double Inthelperf_amplitude_and_F_mc( double *vec, size_t dim, void* par);
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par);
+double Inthelperf_amplitude_mc_fixed_b( double *vec, size_t dim, void* par);
 double Integra_P_and_B_mc( double *vec, size_t dim, void* par);
 
 double Inthelperf_amplitude_soft_photon_mc( double *vec, size_t dim, void* par);
@@ -200,7 +201,79 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     return result;
     
 }
+double Diffraction::ScatteringAmplitude_at_fixed_b(double xpom, double Qsqr, double b, double theta_b, Polarization pol)
+{
+    Inthelper_amplitude helper;
+    helper.diffraction = this;
+    helper.xpom = xpom;
+    helper.Qsqr = Qsqr;
+    helper.polarization=pol;
+    helper.b = b;
+    helper.theta_b = theta_b;
+    // Do MC integral over impact parameters and dipole sizes
+    // Currently hardcoded parameters for jpsi and gold:
+    // Impact parameter up to 100 GeV^-1
+    // Dipole size up to 10 GeV^-1
+    // MC integration parameters: b, theta_b, r, theta_r, Z
+    double *lower, *upper;
+    if (FACTORIZE_ZINT)
+    {
+        lower = new double[2];
+        upper = new double[2];
+    }
+    else
+    {
+        lower = new double[3];
+        upper = new double[3];
+        lower[2]=zlimit; // Min z
+        upper[2]=1.0 - lower[2];    // Max z
+    }
+    
+    lower[0] = lower[1] = 0;
+    upper[0] = MAXR; //MAXR;//20; //0.5*5.068;  // Max r
+    upper[1] = 2.0*M_PI; // max theta_r
+    
+    gsl_monte_function F;
+    F.f = &Inthelperf_amplitude_mc_fixed_b;
+    F.dim = 2;
+    if (!FACTORIZE_ZINT)
+        F.dim = 3;
+    F.params = &helper;
+    
+    double result,error;
 
+    
+    if (MCINT == MISER)
+    {
+        gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
+        gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result, &error);
+        //cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
+        gsl_monte_miser_free(s);
+    }
+    else if (MCINT == VEGAS)
+    {
+        gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
+        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result, &error);
+        //cout << "# vegas warmup " << result << " +/- " << error << endl;
+        int iter=0;
+        do
+        {
+            iter++;
+            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result, &error);
+            //cout << "# Vegas interation " << result << " +/- " << error << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+        } while (iter < 2 or fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5);
+        gsl_monte_vegas_free(s);
+    }
+    
+    //if (std::abs(error/result) > MCINTACCURACY)
+    //    cerr << "#MC integral failed, result " << result << " error " << error << endl;
+    
+    delete lower;
+    delete upper;
+    
+    return result;
+    
+}
 
 double Diffraction::Soft_photon_ScatteringAmplitude(double xpom, double Qsqr, Polarization pol, double mv, double root_snn, 
            double theta_BigP, int Z, double t, double RA, double Low, double High, double daughter_mass, bool DacayToScalar) {
@@ -575,6 +648,20 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
     
 }
 
+double Inthelperf_amplitude_mc_fixed_b( double *vec, size_t dim, void* par)
+{
+    Inthelper_amplitude *helper = (Inthelper_amplitude*)par;
+    helper->r = vec[0];
+    helper->theta_r = vec[1];
+    
+    double z = 0.5;// Put z=0.5 as it sets b to the geometric average of quarks
+    
+    if (!FACTORIZE_ZINT)
+        z = vec[2];
+        
+    return helper->diffraction->ScatteringAmplitudeIntegrand_fixed_b(helper->xpom, helper->Qsqr, helper->r, helper->theta_r, helper->b, helper->theta_b, z, helper->polarization);
+}
+
 double Inthelperf_amplitude_and_F_mc( double *vec, size_t dim, void* par)
 {
     Inthelper_amplitude *helper = (Inthelper_amplitude*)par;
@@ -828,6 +915,70 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         exit(1);
     }
     
+    return res;
+}
+
+double Diffraction::ScatteringAmplitudeIntegrand_fixed_b(double xpom, double Qsqr,  double r, double theta_r, double b, double theta_b, double z, Polarization pol)
+{ 
+    // Recall quark and gluon positions:
+    // Quark: b + zr
+    // Antiquark: b - (1-z) r
+    // If do like Lappi, Mantysaari: set z=1/2 here
+    double bx = b*cos(theta_b);
+    double by = b*sin(theta_b);
+    double rx = r*cos(theta_r);
+    double ry = r*sin(theta_r);
+    // q and antiq positions
+    double tmpz = z;
+    z=0.5; // Do not use z when calcualting antiquark/quark positions, just b is geometric mean
+    double qx = bx + z*rx; double qy = by + z*ry;
+    double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
+    z = tmpz;
+    double delta = 0.0;
+    double x1[2] = {qx,qy};
+    double x2[2] = {qbarx, qbary};
+    double amp_real = dipole->Amplitude(xpom, x1, x2 );
+    double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
+    std::complex<double> amp(amp_real, amp_imag);
+    //amp = amp.real();   // Disable possible imag part for now
+    std::complex<double> result = 2.0*r; // r from Jacobians, 2 as we have written sigma_qq = 2 N
+    std::complex<double> imag(0,1);
+    if (FACTORIZE_ZINT)
+    {
+        if (wavef->WaveFunctionType() != "NRQCD")
+        {
+            //PsiSqr_L_intz(double Qsqr, double r, double Delta, double phi_r_Delta)
+            cerr << "FACTORIZE_ZINT currently only works with NRQCD wf" << endl;
+            return 0;
+        }
+        // Note 1/(4pi) is included in the z integral measure in PsiSqr_T_intz
+        if (pol == T)
+            result *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
+        else
+            result *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta,theta_r);
+        result *= std::exp(-imag*(b*delta*std::cos(theta_b)))*amp;
+    }
+    else
+    {
+        if (pol == T)
+            result *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
+        else
+            result *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
+        // This integrand is now not integrated over z
+        //std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (0.5 - z)*r*delta*std::cos(theta_r)  )  );
+        result *= amp;
+    }
+	double res=0;
+    if (REAL_PART)
+        res = result.real();
+    else
+        res = result.imag();
+    
+    if (std::isnan(res) or std::isinf(res))
+    {
+        cerr << "Amplitude integral is " << res << " dipole " << amp << " xp=" << xpom << " Q^2=" << Qsqr <<  " r=" << r << " theta_r="<<theta_r << " b="<< b << "theta_b="<< theta_b << " z=" << z << endl;
+        exit(1);
+    }
     return res;
 }
 
