@@ -646,10 +646,10 @@ int main(int argc, char* argv[])
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
 
         if (OUTPUTAONLY) {
-          const int l_thetab = 31;
+          const int l_thetab = 301;
           double theta_b_step = 2.*M_PI/(l_thetab-1.);
-          const int l_b = 51;
-          double b_step = 0.2;
+          const int l_b = 5001;
+          double b_step = 50./(l_b -1.);
           double xpom = xp;
           if (xpom > 0.04) {
               cerr << "xpom = " << xpom << ", can't do this!" << endl;
@@ -658,7 +658,7 @@ int main(int argc, char* argv[])
           for (int ib = 0; ib < l_b; ib++) {
               for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
                   double b_at_this_step = b_step * ib * 1.;
-                  double theta_b_at_this_step = theta_b_step * ithetab;
+                  double theta_b_at_this_step = theta_b_step * ithetab * 1.;
                   double trans = diff.ScatteringAmplitude_at_fixed_b(xpom, Qsqr, b_at_this_step, theta_b_at_this_step, T);
                   cout << trans << "  ";
               }
