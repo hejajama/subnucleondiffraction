@@ -648,7 +648,7 @@ int main(int argc, char* argv[])
         if (OUTPUTAONLY) {
           const int l_thetab = 301;
           double theta_b_step = 2.*M_PI/(l_thetab-1.);
-          const int l_b = 5001;
+          const int l_b = 501;
           double b_step = 50./(l_b -1.);
           double xpom = xp;
           if (xpom > 0.04) {
