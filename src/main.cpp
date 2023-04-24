@@ -650,6 +650,7 @@ int main(int argc, char* argv[])
           double theta_b_step = 2.*M_PI/(l_thetab-1.);
           const int l_b = 501;
           double b_step = 50./(l_b -1.);
+          double t_step = 0.0001;
           double xpom = xp;
           if (xpom > 0.04) {
               cerr << "xpom = " << xpom << ", can't do this!" << endl;
@@ -663,7 +664,24 @@ int main(int argc, char* argv[])
                   cout << trans << "  ";
               }
               cout << endl;
-          } 
+          }
+
+          for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
+              double t_at_this_step = t_step * ithetab * 1.;
+              cout << t_at_this_step << "  ";
+              if (t_at_this_step > 0.004) t_step = 0.0002;
+              if (t_at_this_step > 0.01) t_step = 0.0005;
+          }
+          cout << endl;
+          
+          for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
+              double t_at_this_step = t_step * ithetab * 1.;
+              double trans = diff.ScatteringAmplitude(xpom, Qsqr, t_at_this_step, T);
+              cout << trans << "  ";
+              if (t_at_this_step > 0.004) t_step = 0.0002;
+              if (t_at_this_step > 0.01) t_step = 0.0005;
+          }
+          cout << endl;
         } else {
           cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal" << endl;
           int l_thetaP = 30;
