@@ -649,7 +649,7 @@ int main(int argc, char* argv[])
           const int l_thetab = 301;
           double theta_b_step = 2.*M_PI/(l_thetab-1.);
           const int l_b = 501;
-          double b_step = 150./(l_b -1.);
+          double b_step = 60./(l_b -1.);
           double t_step = 0.0001;
           double xpom = xp;
           if (xpom > 0.04) {
