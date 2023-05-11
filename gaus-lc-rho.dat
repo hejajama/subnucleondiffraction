@@ -11,8 +11,8 @@
 # e_f, m_f, M_V, N_T, N_L, R_T, R_L and del
 #
 #
-#e_f: Effective charge: 2/3
-e_f:0.33333333
+#e_f: Effective charge: 1/sqrt(2)
+e_f:0.70710678
 #N_T, N_L, R_T, R_L: Normalization for transversial/lognitudial components
 N_T:4.47
 N_L:1.79
@@ -20,7 +20,7 @@ N_L:1.79
 R_T:4.6797
 #sqrt(10.4)
 R_L:3.2249
-m_f:1.14
+m_f:0.14
 M_V:0.776
 # delta: 0 or 1: one part of the wave functio is multiplied by delta
 del:0
