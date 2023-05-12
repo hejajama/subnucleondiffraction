@@ -650,12 +650,16 @@ int main(int argc, char* argv[])
           double theta_b_step = 2.*M_PI/(l_thetab-1.);
           const int l_b = 501;
           double b_step = 60./(l_b -1.);
-          double t_step = 0.0001;
           double xpom = xp;
+          double maxt1 = 0.01;
+          double maxt2 = 0.05;
+          double t_step = 0.0001;
+          double tstep2 = 0.0003;
+          double tstep3 = 0.0008;
           if (xpom > 0.04) {
               cerr << "xpom = " << xpom << ", can't do this!" << endl;
           }
-          cout.precision(5);
+          cout.precision(6);
           for (int ib = 0; ib < l_b; ib++) {
               for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
                   double b_at_this_step = b_step * ib * 1.;
@@ -665,21 +669,22 @@ int main(int argc, char* argv[])
               }
               cout << endl;
           }
-
+          double t_at_this_step = 0.0;
           for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
-              double t_at_this_step = t_step * ithetab * 1.;
               cout << t_at_this_step << "  ";
-              if (t_at_this_step > 0.004) t_step = 0.0002;
-              if (t_at_this_step > 0.01) t_step = 0.0005;
+              t_at_this_step = t_at_this_step + t_step * 1.;
+              if (t_at_this_step > maxt1) t_step = tstep2;
+              if (t_at_this_step > maxt2) t_step = tstep3;
           }
           cout << endl;
           
+          t_at_this_step = 0.0;
           for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
-              double t_at_this_step = t_step * ithetab * 1.;
               double trans = diff.ScatteringAmplitude(xpom, Qsqr, t_at_this_step, T);
               cout << trans << "  ";
-              if (t_at_this_step > 0.004) t_step = 0.0002;
-              if (t_at_this_step > 0.01) t_step = 0.0005;
+              t_at_this_step = t_at_this_step + t_step * 1.;
+              if (t_at_this_step > maxt1) t_step = tstep2;
+              if (t_at_this_step > maxt2) t_step = tstep3;
           }
           cout << endl;
         } else {
