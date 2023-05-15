@@ -670,6 +670,7 @@ int main(int argc, char* argv[])
               cout << endl;
           }
           double t_at_this_step = 0.0;
+          t_step = 0.0001;
           for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
               cout << t_at_this_step << "  ";
               t_at_this_step = t_at_this_step + t_step * 1.;
@@ -679,6 +680,7 @@ int main(int argc, char* argv[])
           cout << endl;
           
           t_at_this_step = 0.0;
+          t_step = 0.0001;
           for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
               double trans = diff.ScatteringAmplitude(xpom, Qsqr, t_at_this_step, T);
               cout << trans << "  ";
