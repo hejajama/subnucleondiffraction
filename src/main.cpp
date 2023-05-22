@@ -662,17 +662,20 @@ int main(int argc, char* argv[])
           if (xpom > 0.04) {
               cerr << "xpom = " << xpom << ", can't do this!" << endl;
           }
-          cout.precision(6);
-          double R_WS;
-          for (int ix = 60; ix >0; ix--) {
-              WilsonLine &wl =((IPGlasma*)amp)->GetWilsonLine(ix*1., 0.);
-              double tr = wl.Trace().real();
-              if (abs(1.0 - tr/3.0) > epslion ) {
-                  R_WS = ix*1.;
-                  break;
+          cout.precision(5);
+          double R_WS[l_thetab];
+          double epslion_step = 1.0/l_thetab;
+          for (int ir = 0; ir < l_thetab; ir++) {
+              epslion = ir * epslion_step * 1.;
+              for (int ix = 60; ix >0; ix--) {
+                  WilsonLine &wl =((IPGlasma*)amp)->GetWilsonLine(ix*1., 0.);
+                 double tr = wl.Trace().real();
+                  if (abs(1.0 - tr/3.0) > epslion ) {
+                      R_WS[ir] = ix*1.;
+                      break;
+                  }
               }
           }
-          
           for (int ib = 0; ib < l_b; ib++) {
               for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
                   double b_at_this_step = b_step * ib * 1.;
@@ -704,7 +707,11 @@ int main(int argc, char* argv[])
           cout << endl;
           // output the R_WS
           for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
-              cout << R_WS << "  ";
+              cout << epslion_step * ithetab * 1. << "  ";
+          }
+          cout << endl;
+          for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
+              cout << R_WS[ithetab] << "  ";
           }
           cout << endl;
         } else {
