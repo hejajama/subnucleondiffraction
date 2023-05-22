@@ -81,6 +81,7 @@ int main(int argc, char* argv[])
     double tstep2=0.1;
     double tstep3=0.1;
     double HBARC = 0.197327053;
+    double epslion = 1.e-1;
     //double xpom=0.000959089;
     double w = 100;
     double xp = -1;
@@ -169,6 +170,8 @@ int main(int argc, char* argv[])
             Qsqr = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-W")
             w=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-epslion")
+            epslion = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-xp")
             xp=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-real")
@@ -660,6 +663,16 @@ int main(int argc, char* argv[])
               cerr << "xpom = " << xpom << ", can't do this!" << endl;
           }
           cout.precision(6);
+          double R_WS;
+          for (int ix = 60; ix >0; ix--) {
+              WilsonLine &wl =((IPGlasma*)amp)->GetWilsonLine(ix*1., 0.);
+              double tr = wl.Trace().real();
+              if (abs(1.0 - tr/3.0) > epslion ) {
+                  R_WS = ix*1.;
+                  break;
+              }
+          }
+          
           for (int ib = 0; ib < l_b; ib++) {
               for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
                   double b_at_this_step = b_step * ib * 1.;
@@ -687,6 +700,11 @@ int main(int argc, char* argv[])
               t_at_this_step = t_at_this_step + t_step * 1.;
               if (t_at_this_step > maxt1) t_step = tstep2;
               if (t_at_this_step > maxt2) t_step = tstep3;
+          }
+          cout << endl;
+          // output the R_WS
+          for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
+              cout << R_WS << "  ";
           }
           cout << endl;
         } else {
