@@ -930,9 +930,9 @@ double Diffraction::ScatteringAmplitudeIntegrand_fixed_b(double xpom, double Qsq
     double ry = r*sin(theta_r);
     // q and antiq positions
     double tmpz = z;
-    z=0.5; // Do not use z when calcualting antiquark/quark positions, just b is geometric mean
-    double qx = bx + z*rx; double qy = by + z*ry;
-    double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
+    //z=0.5; // Do not use z when calcualting antiquark/quark positions, just b is geometric mean
+    double qx = bx + (1.-z)*rx; double qy = by + (1.-z)*ry;
+    double qbarx = bx - z*rx; double qbary = by - z*ry;
     z = tmpz;
     double delta = 0.0;
     double x1[2] = {qx,qy};
