@@ -15,8 +15,8 @@
 e_f:0.33333333
 #N_T, N_L, R_T, R_L: Normalization for transversial/lognitudial components
 N_T:0.919
-N_L:0.911
-#sqrt(11.2
+N_L:0.825
+#sqrt(11.2)
 R:3.3466  
 m_f:0.14
 M_V:1.019
