@@ -25,7 +25,6 @@ extern int MCINTPOINTS ;
 
 extern bool REAL_PART;  // Calculate real part of the amplitude
 
-extern bool DO_UPC_DIFF;  // Do the UPC diffractive calculation only 
 enum MCINTEGRAL
 {
     VEGAS,

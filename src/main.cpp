@@ -74,14 +74,9 @@ int main(int argc, char* argv[])
 //    DGLAPDist *gd=0;  // Initialized and used if we have nucleus consisting of ipsatnucleons
     int he3_id=-1;   // Used to set He3 configuration
     double mint=0;
-    double maxt1=0.1;
-    double maxt2=1.0;
-    double maxt3=1.5;
+    double maxt=1.5;
     double tstep=0.1;
-    double tstep2=0.1;
-    double tstep3=0.1;
-    double HBARC = 0.197327053;
-    double epslion = 1.e-1;
+    
     //double xpom=0.000959089;
     double w = 100;
     double xp = -1;
@@ -98,24 +93,9 @@ int main(int argc, char* argv[])
     bool ipglasma=false;
     bool periodic_boundary_conditions=false;
     
-    bool DO_UPC_DIFF = false;
-    bool OUTPUTAONLY = false;
-    bool With_photon_kT  =false;
-    bool DOSoftPhoton = false;
-    double daughter_mass = 0.13957;// GeV
     // nrqcd parameters
     double NRQCD_A=0.213;
     double NRQCD_B=-0.0157;
-    double mv_UPC = 3.096;// GeV 
-    double mjpsi_UPC = 3.096;// GeV
-    double mrho_UPC = 0.77526;// GeV
-    double R_Nuclear = 6.37/HBARC;// fm /hbarc
-    double root_snn = 200.0;// GeV
-    int Z_Nuclear = 79;
-    bool outputed_theta_P = false;
-    bool DacayToScalar = false;
-    double Low = 0.8;
-    double High = 1.2;
     int NRQCD_param_id = -1; // if >0, use specific parameters from datafile
     
     
@@ -170,8 +150,6 @@ int main(int argc, char* argv[])
             Qsqr = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-W")
             w=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-epslion")
-            epslion = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-xp")
             xp=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-real")
@@ -336,31 +314,6 @@ int main(int argc, char* argv[])
         }
         else if (string(argv[i])=="-maxr")
             maxr = StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-DOUPC")
-        {
-            if (string(argv[i+1])=="1") {
-                DO_UPC_DIFF = true;
-            } 
-            if (string(argv[i+1])=="0") {
-                DO_UPC_DIFF = false;
-            } 
-        }
-        else if (string(argv[i])=="-OUTPUTAONLY")
-        {
-            if (string(argv[i+1])=="1") {
-                OUTPUTAONLY = true;
-            } if (string(argv[i+1])=="0") {
-                OUTPUTAONLY = false;
-            } 
-        }
-        else if (string(argv[i])=="-With_photon_kT")
-        {
-            if (string(argv[i+1])=="1") {
-                With_photon_kT = true;
-            } if (string(argv[i+1])=="0") {
-                With_photon_kT = false;
-            } 
-        }
         else if (string(argv[i])=="-satscale")
             mode = SATURATION_SCALE;
         else if (string(argv[i])=="-wavef_file")
@@ -382,18 +335,10 @@ int main(int argc, char* argv[])
             rng_offset = StrToInt(argv[i+1]);
         else if (string(argv[i])=="-mint")
             mint=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-maxt1")
-            maxt1=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-maxt2")
-            maxt2=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-maxt3")
-            maxt3=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-tstep1")
+        else if (string(argv[i])=="-maxt")
+            maxt=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-tstep")
             tstep=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-tstep2")
-            tstep2=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-tstep3")
-            tstep3=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-no_t_in_xpom")
             t_in_xpom = 0.0;
         else if (string(argv[i])=="-nrqcd_parameters")
@@ -422,50 +367,7 @@ int main(int argc, char* argv[])
             }
 
         }
-        else if (string(argv[i])=="-UPC_energy")
-            root_snn = StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-UPC_Nucleus")
-        {
-            if (string(argv[i+1])=="Au") {
-                    //R_Nuclear = 6.37;// fm
-                    Z_Nuclear = 79;
-            } 
-            if (string(argv[i+1])=="Pb") {
-                    //R_Nuclear = 6.62;// fm
-                    Z_Nuclear = 82;
-            }
-        }
-        else if (string(argv[i])=="-R_Nuclear") {
-            R_Nuclear = StrToReal(argv[i+1]);
-            R_Nuclear = R_Nuclear / HBARC;
-        }
-        else if (string(argv[i])=="-Low")
-            Low = StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-High")
-            High = StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-DacayToScalarmeson")
-        {
-            if (string(argv[i+1])=="1") {
-                    DacayToScalar = true;
-                    mv_UPC = mrho_UPC;
-                    daughter_mass = 0.13957;// GeV pion +-
-            } 
-            if (string(argv[i+1])=="0") {
-                    DacayToScalar = false;
-                    mv_UPC = mjpsi_UPC;
-                    daughter_mass = 0.1056583745;// GeV mu+-
-            }
-        }
-        else if (string(argv[i])=="-DOSoftPhoton")
-        {
-            if (string(argv[i+1])=="1") {
-                    DOSoftPhoton = true;
-            } 
-            if (string(argv[i+1])=="0") {
-                    DOSoftPhoton = false;
-            }
-        }
-        else if (string(argv[i]).substr(0,1)=="-")
+     else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
             exit(1);
@@ -647,175 +549,48 @@ int main(int argc, char* argv[])
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         else
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
+        cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal" << endl;
 
-        if (OUTPUTAONLY) {
-          const int l_thetab = 301;
-          double theta_b_step = 2.*M_PI/(l_thetab-1.);
-          const int l_b = 501;
-          double b_step = 60./(l_b -1.);
-          double xpom = xp;
-          double maxt1 = 0.01;
-          double maxt2 = 0.05;
-          double t_step = 0.0001;
-          double tstep2 = 0.0003;
-          double tstep3 = 0.0008;
-          if (xpom > 0.04) {
-              cerr << "xpom = " << xpom << ", can't do this!" << endl;
-          }
-          cout.precision(5);
-          double R_WS[l_thetab];
-          double epslion_step = 1.0/l_thetab;
-          for (int ir = 0; ir < l_thetab; ir++) {
-              epslion = ir * epslion_step * 1.;
-              for (int ix = 60; ix >0; ix--) {
-                  WilsonLine &wl =((IPGlasma*)amp)->GetWilsonLine(ix*1., 0.);
-                 double tr = wl.Trace().real();
-                  if (abs(1.0 - tr/3.0) > epslion ) {
-                      R_WS[ir] = ix*1.;
-                      break;
-                  }
-              }
-          }
-          for (int ib = 0; ib < l_b; ib++) {
-              for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
-                  double b_at_this_step = b_step * ib * 1.;
-                  double theta_b_at_this_step = theta_b_step * ithetab * 1.;
-                  double trans = diff.ScatteringAmplitude_at_fixed_b(xpom, Qsqr, b_at_this_step, theta_b_at_this_step, T);
-                  cout << trans << "  ";
-              }
-              cout << endl;
-          }
-          double t_at_this_step = 0.0;
-          t_step = 0.0001;
-          for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
-              cout << t_at_this_step << "  ";
-              t_at_this_step = t_at_this_step + t_step * 1.;
-              if (t_at_this_step > maxt1) t_step = tstep2;
-              if (t_at_this_step > maxt2) t_step = tstep3;
-          }
-          cout << endl;
-          
-          t_at_this_step = 0.0;
-          t_step = 0.0001;
-          for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
-              double trans = diff.ScatteringAmplitude(xpom, Qsqr, t_at_this_step, T);
-              cout << trans << "  ";
-              t_at_this_step = t_at_this_step + t_step * 1.;
-              if (t_at_this_step > maxt1) t_step = tstep2;
-              if (t_at_this_step > maxt2) t_step = tstep3;
-          }
-          cout << endl;
-          // output the R_WS
-          for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
-              cout << epslion_step * ithetab * 1. << "  ";
-          }
-          cout << endl;
-          for (int ithetab = 0; ithetab < l_thetab; ithetab++) {
-              cout << R_WS[ithetab] << "  ";
-          }
-          cout << endl;
-        } else {
-          cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal" << endl;
-          int l_thetaP = 30;
-          double theta_BigP_step = 2.*M_PI/l_thetaP;
-          if (DO_UPC_DIFF && DOSoftPhoton) { // Do the soft photon radiation
-             for (t=mint; t<=maxt3; t+=tstep) {
-                 double xpom;
-                 if (xp < 0)
-                     xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
-                 else
-                 xpom = xp;
-                 if (xpom > 0.04) {
-                    cerr << "xpom = " << xpom << ", can't do this!" << endl;
-                 }
-                 if(auto_mcintpoints)
-                     MCINTPOINTS = MCpoints(t);
 
-                 cout.precision(5);
-                 cout << t << " ";
-                 cout.precision(10);
-                 for (double theta_BigP = -1.*M_PI; theta_BigP <= M_PI; theta_BigP+=theta_BigP_step) {
-                     double trans = diff.Soft_photon_ScatteringAmplitude(xpom, Qsqr, T, mv_UPC, root_snn, theta_BigP, Z_Nuclear, 
-                                                                         t, R_Nuclear, Low, High, daughter_mass, DacayToScalar);
-                     double lng = 0;
-                     if (Qsqr > 0)
-                         lng = diff.Soft_photon_ScatteringAmplitude(xpom, Qsqr, L, mv_UPC, root_snn, theta_BigP, Z_Nuclear, 
-                                                                    t, R_Nuclear, Low, High, daughter_mass, DacayToScalar);
-                     cout  << trans << " " << lng << " ";
-                } 
-                cout << endl;
-
-                if (t>maxt1)
-                    tstep = tstep2;
-                if (t>=maxt2 )
-                    tstep = tstep3;
-             }
-          } else {
-            for (t=mint; t<=maxt3; t+=tstep) {
-                double xpom;
-               if (xp < 0)
-                    xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
-                else
-                    xpom = xp;
-                if (xpom > 0.04)
-                {
-                    cerr << "xpom = " << xpom << ", can't do this!" << endl;
-                    //continue;
-                }
-                if(auto_mcintpoints)
-                    MCINTPOINTS = MCpoints(t);
-
+        for (t=mint; t<=maxt; t+=tstep)
+        {
+            double xpom;
+            if (xp < 0)
+                xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+            else
+                xpom = xp;
+            if (xpom > 0.04)
+            {
+                cerr << "xpom = " << xpom << ", can't do this!" << endl;
+                //continue;
+            }
+            
+            if(auto_mcintpoints)
+                MCINTPOINTS = MCpoints(t);
+            double Delta_theta;
+            cout.precision(5);
+            cout << t << "  ";
+            for (int itheta=0; itheta<10; itheta++) {
                 
-                double trans = 0.0;
-                if (!With_photon_kT) trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
+                Delta_theta = itheta * M_PI/10.;
+                double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, Delta_theta, T); //Wenbin
                 double lng = 0;
                 if (Qsqr > 0)
-                    lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
+                    lng = diff.ScatteringAmplitude(xpom, Qsqr, t, Delta_theta, L);
 
-                // Do the UPC diffractive, only count the coherent now.
-                if (DO_UPC_DIFF) {
-                    if (With_photon_kT) {
-                        cout.precision(5);
-                        cout << t << " ";
-                        double Inte_PB;
-                        for (double theta_BigP = -1.*M_PI; theta_BigP <= -1.5; theta_BigP+=theta_BigP_step) {
-                            Inte_PB = diff.Relative_P_abd_B_Inte_mc(xpom, Qsqr, T, mv_UPC, root_snn, theta_BigP, Z_Nuclear, t,
-                                                                    R_Nuclear, Low, High, DacayToScalar);
-                            cout  << Inte_PB << "  ";
-                        }
-                        cout << endl;
-                    } else {
-                        //int l_thetaP = 30;
-                        //double theta_BigP_step = 2.*M_PI/l_thetaP;
-                        cout.precision(5);
-                        cout << t << " ";
-                        cout.precision(10);
-                        cout << trans  << " " << lng << " " ;
-                        for (double theta_BigP = -1.*M_PI; theta_BigP <= -1.5 ; theta_BigP+=theta_BigP_step) {
-                            double Inte_PB;
-                            if (REAL_PART) {
-                                Inte_PB = diff.Relative_P_abd_B_Inte(mv_UPC, root_snn, theta_BigP, Z_Nuclear, t, R_Nuclear, Low, High, DacayToScalar);
-                            } else {
-                                Inte_PB = 0.0;
-                            }
-                            cout  << Inte_PB << " ";
-                        } 
-                        cout << endl;
-                    }
-                } else {
-                    cout.precision(5);
-                    cout << t << " ";
-                    cout.precision(10);
-                    cout << trans  << " " << lng << endl;
-                }
-
-                // Larger t step probably useful at large t
-                if (t>maxt1)
-                    tstep = tstep2;
-	        if (t>=maxt2 )
-                    tstep = tstep3;
+                cout.precision(8);
+                cout << trans  << "  " << lng << "  ";
             }
-          }
+            cout << endl;
+
+            // Larger t step probably useful at large t
+            
+            if (t>0.8)
+                tstep = 0.05;
+            
+	    if (t>=1.0 )
+                tstep = 0.1;
+                
         }
     }
     else if (mode == CORRECTIONS)
@@ -823,7 +598,7 @@ int main(int argc, char* argv[])
         cout << "# Real part correction" << endl;
         cout << "# t  transverse  longitudinal" << endl;
         double tstep=0.02;
-        for (t=mint; t<=maxt3; t+=tstep)
+        for (t=mint; t<=maxt; t+=tstep)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.04)
