@@ -9,6 +9,7 @@
 #include "subnucleon_config.hpp"
 #include <string>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_rng.h>
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
@@ -18,6 +19,8 @@ using std::cout;
 using std::cerr;
 using std::endl;
 extern gsl_rng *global_rng;
+
+typedef unsigned int uint;
 
 const int NC=3;
 
@@ -47,6 +50,23 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
         return 0;
         
     } 
+    
+    if (AA_impact_parameter > 0)
+    {
+        // If center of the dipole is inside the other nucleus, return 0
+        // Note: azimuthal angle of the spectator (AA_theta) is sampled for every run separately.
+        // In order to produce more statistics, one can just use the same wilson line and run with different rng seed
+        Vec qv1(q1[0],q1[1]);
+        Vec qv2(q2[0],q2[1]);
+        Vec nuke2(AA_impact_parameter*std::cos(AA_theta), AA_impact_parameter*std::sin(AA_theta));
+        Vec center = (qv1+qv2)*0.5; // should probalby use z-weighted center-of-mass, but I don't have access to z_i here
+        // If I wanted to use com, then need to this this cut at the level of the integrand in diffraction.cpp
+
+        
+        if ((center-nuke2).LenSqr() < SQR(AA_nuclear_radius))
+            return 0;
+
+    }
 
     double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
 
@@ -143,7 +163,7 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
     // First find corresponding grid indeces
     WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
     WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
-    
+
     //antiquark = antiquark.HermitianConjugate();
     
     WilsonLine prod;
@@ -256,6 +276,7 @@ IPGlasma::IPGlasma(std::string file)
         exit(1);
 
     periodic_boundary_conditions=false;
+    SetPeripheralExclusion(-1,-1, 0); // By default no excluded part of the nucleus
 }
 
 IPGlasma::IPGlasma(std::string file, double step, WilsonLineDataFileType type)
@@ -266,6 +287,7 @@ IPGlasma::IPGlasma(std::string file, double step, WilsonLineDataFileType type)
         exit(1);
 
     periodic_boundary_conditions=false;
+    SetPeripheralExclusion(-1,-1, 0); // By default no excluded part of the nucleus
 }
 
 

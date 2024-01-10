@@ -49,6 +49,8 @@ public:
     void SetSchwinger(bool s, double rc=0);
     void ApplyPeriodicBoundaryConditions(double q[2]); 
 
+    void SetPeripheralExclusion(double B, double R_A, double th) { AA_impact_parameter=B; AA_nuclear_radius=R_A; AA_theta = th; }
+
 private:
     
     
@@ -60,7 +62,9 @@ private:
     double schwinger_rc; // Use Schwinger for dipoles larger than schwinger_rc
 
     bool periodic_boundary_conditions;
-    
+    double AA_impact_parameter; // If >0, consider peripheral collisions and remove points that are closer to the other nucleus than AA_nuclear_radius.
+    double AA_nuclear_radius;    
+    double AA_theta; // Azimuthal angle of the other nucleus relative to the momentum transfer direction
     std::string datafile;
     
     
