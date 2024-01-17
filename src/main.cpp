@@ -96,6 +96,8 @@ int main(int argc, char* argv[])
     double NRQCD_A=0.213;
     double NRQCD_B=-0.0157;
     int NRQCD_param_id = -1; // if >0, use specific parameters from datafile
+
+    bool peripheral_exclusion=false; // true: exclude part of the nucleus when doing peripheral collisions
     
     
     cout << "# SubNucleon Diffraction by H. Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2021" << endl;
@@ -272,7 +274,7 @@ int main(int argc, char* argv[])
                             }
                         }
                         else if (string(argv[i+2])=="ipglasma_binary")
-                            nucleon = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), BINARY);
+                            nucleon = new IPGlasma(argv[i+3], 0, BINARY);
                         else if (string(argv[i+2])=="ipglasma")
                             nucleon = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), TEXT);
                         nucleons.push_back(nucleon);
@@ -360,6 +362,10 @@ int main(int argc, char* argv[])
             }
 
         }
+        else if (string(argv[i])=="-peripheral_exclusion")
+        {
+            peripheral_exclusion=true;
+        }
         else if (string(argv[i])=="-lhc")
             KINEMATICS = LHC;
         else if (string(argv[i])=="-rhic")
@@ -418,6 +424,8 @@ int main(int argc, char* argv[])
         cerr << "Only IPGlasma dipoles support periodic boundary conditions! " << endl;
         exit(1);
     } 
+
+    
 
     
     WaveFunction *wavef;
@@ -499,11 +507,13 @@ int main(int argc, char* argv[])
              for (double x=min+step/2; x < max-step/2; x+=step)
             {
                 double p[2] = {x,y};
+                double p2[2]={x+1,y+1};
                 
                 WilsonLine &wl =((IPGlasma*)amp)->GetWilsonLine(x,y);
                 double tr = wl.Trace().real();
              
-                cout << y/5.068 << " " << x/5.068 << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->AmplitudeImaginaryPart(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << " " << 1.0 - tr/3.0 <<endl;
+                cout << y/5.068 << " " << x/5.068 << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->AmplitudeImaginaryPart(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << " " << 1.0 - tr/3.0 << " " 
+                << ((IPGlasma*)amp)->Amplitude(0.01, p,p2)  <<endl;
             }
          cout << endl;
         }
@@ -588,11 +598,23 @@ int main(int argc, char* argv[])
            MAXB = 1000;
            MINB = 2.0*6.37*5.068*0.9;
        }
+
+       if (peripheral_exclusion)
+       {
+            // Ok we are doing peripheral collisions, let's compute only for peripheral collisions
+            MINB = 2*5.068;
+            MAXB = 20*5.068;
+       }
         
         const double IGNORE_THB_AFTER_B = 200;
         
         std::cout << std::scientific;
         std::cout << std::setprecision(10);
+
+        if (ipglasma and peripheral_exclusion)
+        {
+            cout <<"# Excluding part of the nucleus, using R_A=6.62fm " << endl;
+        }
         
         // LHC
         for (double B = MINB;  B < MAXB; B+=bstep)
@@ -604,11 +626,18 @@ int main(int argc, char* argv[])
 
  
                 
+        
             
 //#pragma omp parallel for
  //           for (int i=0; i<THPOINTS; i++)
  //           {
             for (double theta_B = 0; theta_B <= MAXTH; theta_B += MAXTH/THPOINTS) {
+
+                if (ipglasma and peripheral_exclusion)
+                {
+                    ((IPGlasma*)amp)->SetPeripheralExclusion(B, 6.62*5.608, theta_B);
+                    
+                }
 
                 //double theta_B = MAXTH/THPOINTS; * i;
                 //double theta_B=1;
