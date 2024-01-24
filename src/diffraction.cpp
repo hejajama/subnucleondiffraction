@@ -275,7 +275,8 @@ double Is_point_charge(double B, void* p)
     }
     
     double y = -std::log(sqrts * par->xpom / MV);
-   
+
+
     if (KINEMATICS==RHIC) y=0;
 
     if (y < -2.7 and y > -2.8) y = -2.75;

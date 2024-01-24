@@ -635,7 +635,14 @@ int main(int argc, char* argv[])
 
                 if (ipglasma and peripheral_exclusion)
                 {
-                    ((IPGlasma*)amp)->SetPeripheralExclusion(B, 6.62*5.608, theta_B);
+                    // Note discussion in Sec. II of 2207.03712:
+                    // We compute the EM field at distance B from the source nucleus. 
+                    // B is the vector from the source to the target
+                    // SetPeripehralExclusion considers the photon source nucleus to be at coordinate
+                    // (B cos(th), B sin(th))
+                    // As th is the direction of vector B, the soure nucleus has to be placed 
+                    // "to the opposite site", i.e. at angle th+M_PI 
+                    ((IPGlasma*)amp)->SetPeripheralExclusion(B, 6.62*5.608, theta_B+M_PI);
                     
                 }
 
