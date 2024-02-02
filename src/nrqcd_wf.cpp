@@ -71,14 +71,14 @@ double NRQCD_WF::PsiSqr_T_intz(double Qsqr, double r, double Delta, double phi_r
     result = A*e*ef*std::sqrt(mc*NC)*K0/(2.0*std::sqrt(2.0)*M_PI);
     
     // Rel correction
-    result += B / (16.0*std::sqrt(2)*std::pow(mc,3./2.)*M_PI) * e*ef*
+    result += B / (16.0*std::sqrt(2)*std::pow(mc,3./2.)*M_PI*2.*eps) * e*ef*
     (
-        -8*(2.0*mc*mc+Qsqr)*std::sqrt(NC/(4.0*mc*mc+Qsqr))*r*gsl_sf_bessel_K1(eps*r)
-     + std::sqrt(NC)*K0*(28.0+r*r*(8.0*mc*mc+Delta*Delta) + r*r*Delta*Delta*std::cos(2.0*phi_r_Delta))
+        -8*std::sqrt(NC)*(2.0*mc*mc+Qsqr)*r*gsl_sf_bessel_K1(eps*r)
+     + std::sqrt(NC)*2.*eps*K0*(28.0+r*r*(8.0*mc*mc+Delta*Delta) + r*r*Delta*Delta*std::cos(2.0*phi_r_Delta))
      );
     
     
-    return result;
+    return -result; // Overall sign included here, but it does not matter in VM production
 }
 
 double NRQCD_WF::PsiSqr_L_intz(double Qsqr, double r, double Delta, double phi_r_Delta)
@@ -95,7 +95,7 @@ double NRQCD_WF::PsiSqr_L_intz(double Qsqr, double r, double Delta, double phi_r
             + K0*(36.0+r*r*(8.0*mc*mc+Delta*Delta) +r*r*Delta*Delta*std::cos(2.0*phi_r_Delta))
     );
     
-    return result;
+    return -2.0*result; // 2.0 from helicity sum
 }
 
 
