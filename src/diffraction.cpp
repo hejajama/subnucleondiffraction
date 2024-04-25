@@ -266,7 +266,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     if (FACTORIZE_ZINT)
     {
-        if (wavef->WaveFunctionType() != "NRQCD")
+        /* if (wavef->WaveFunctionType() != "NRQCD")
         {
             //PsiSqr_L_intz(double Qsqr, double r, double Delta, double phi_r_Delta)
             cerr << "FACTORIZE_ZINT currently only works with NRQCD wf" << endl;
@@ -277,7 +277,12 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
             result *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
         else
             result *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta,theta_r);
-            
+          */  
+        if (pol == T)
+            result *= wavef->PsiSqr_T_intz(Qsqr, r);
+        else
+            result *= wavef->PsiSqr_L_intz(Qsqr, r);
+
         result *= std::exp(-imag*(b*delta*std::cos(theta_b)))*amp;
         
     }

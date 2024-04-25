@@ -26,12 +26,15 @@
 #include "../src/subnucleon_config.hpp"
 #include "../src/ipglasma.hpp"
 #include "../src/dis.hpp"
-#include <amplitudelib/virtual_photon.hpp>
-#include "../src/gitsha1.h"
+#include "../src/qcd.hpp"
+#include "../src//virtual_photon.hpp"
+//#include "../src/gitsha1.h"
+//
+#define g_GIT_SHA1 ""
+#define g_GIT_LOCAL_CHANGES "" 
 
 #include <gsl/gsl_rng.h>
 
-#include <tools/tools.hpp>
 #include <gsl/gsl_errno.h>
 
 #include <string>
@@ -41,11 +44,10 @@
 #include <sstream>
 #include <gsl/gsl_errno.h>
 using namespace std;
-using namespace Amplitude;
 
 //double x0 = 0.01;
 double x0 = 0.01; //0.00175;
-double ds = 0.0004;
+double ds = 0.004;
 gsl_rng* global_rng;
 WilsonLineDataFileType DATATYPE = BINARY;
 
@@ -59,38 +61,36 @@ double mean(vector<double> &v)
 int main(int argc, char* argv[])
 {
 	double minq2=1;
+    double alphas=-1;
     MCINTPOINTS=5e4; 
 //    MCINTPOINTS=1e5;
     FACTORIZE_ZINT=true;
     gsl_set_error_handler(&ErrHandler);
+    int schwinger=-1;
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
 	double ipglasma_step = 5.12/700.0; //0.01;
     cout << "# F2 fitter, intpoints " << MCINTPOINTS <<  endl;
     cout << "# Git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__ << endl;
-    if (argc < 8)
+    if (argc < 6)
     {
-        cout << "Syntax: " << argv[0] << " jimwlkdir step maxstep heradata alphas config ds x0 schwinger"  << endl;
+        cout << "Syntax: " << argv[0] << " jimwlkdir step maxstep heradata config "  << endl;
         return 0;
     }
     
     string jimwlkdir = argv[1];
     int step = StrToInt(argv[2]);
     int maxstep = StrToInt(argv[3]);
-    double alphas = StrToReal(argv[5]);
     string herafile = argv[4];
-    double quarkmass = 1.4;
-    int averages = StrToInt(argv[6]);
-    ds = StrToReal(argv[7]); 
-    x0  = StrToReal(argv[8]);
-    double schwinger = StrToReal(argv[9]);
+    double quarkmass = 1.3528;
+    int config = StrToInt(argv[5]);
    
     cout << "# Command: " ; for (unsigned int i=0; i<argc; i++) cout << argv[i] << " ";
     cout << endl;
  
     bool fixed_coupling = false;
     double minx=0;
-    if (alphas > 0)
+    /*if (alphas > 0)
     {
         // Fixed coupling
         fixed_coupling = true;
@@ -99,12 +99,12 @@ int main(int argc, char* argv[])
         cout << "# x range in fit: " << x0 << " - " << minx << ", # of configs" << averages << endl;
     }
     else
-    {
+    {*/
         double maxy =  M_PI*M_PI * maxstep * ds;
         minx = x0*exp(-maxy);
-        cout << "# x range in fit: " << x0 << " - " << minx << ", # of configs" << averages << endl;
+        cout << "# x range in fit: " << x0 << " - " << minx << ", #  config" << config << endl;
 
-    }
+   // }
     
     bool scale_x = true;   // scale bjorken x to take into account the quark mass
     bool include_light = false;
@@ -153,6 +153,7 @@ int main(int argc, char* argv[])
     {
 	if (qsqrvals[i] < minq2)
 		continue;
+        
         double x = xvals[i];
         double sqrts = std::sqrt( qsqrvals[i]/(x * yvals[i]) );
       	double xcharm = x; 
@@ -196,9 +197,9 @@ int main(int argc, char* argv[])
 	cout << "# Evolsteps_c " << evolsteps_c << " lower " << steps_lower_c << " upper " << steps_upper_c << endl;
         
         VirtualPhoton charm;
-        charm.SetQuark(Amplitude::C, quarkmass);
+        charm.SetQuark(C, quarkmass);
 		VirtualPhoton light;
-        light.SetQuark(Amplitude::LIGHT, 0.14);
+        light.SetQuark(LIGHT, 0.14);
         vector<double> xs_t_upper;
         vector<double> xs_l_upper;
         vector<double> xs_t_lower;
@@ -211,7 +212,7 @@ int main(int argc, char* argv[])
 
 
         //for(int conf = 0; conf < averages; conf++)
-        int conf = averages; // Do only single configuration, average later separately!
+        int conf = config; // Do only single configuration, average later separately!
         {
             stringstream fname_upper;
             stringstream fname_lower;
