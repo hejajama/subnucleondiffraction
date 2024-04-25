@@ -344,7 +344,7 @@ int main(int argc, char* argv[])
         else if (string(argv[i])=="-nrqcd_parameters")
         {
             NRQCD_A=StrToReal(argv[i+1]);
-            NRQCD_B=StrToReal(argv[i+1]);
+            NRQCD_B=StrToReal(argv[i+2]);
         }
         else if (string(argv[i])=="-nrqcd_parameters_from_file")
         {
