@@ -13,6 +13,7 @@
 #include <sstream>
 #include <cstdlib>
 
+typedef unsigned int uint;
 
 using std::cout;
 using std::cerr;
