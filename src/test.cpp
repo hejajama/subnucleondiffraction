@@ -51,7 +51,7 @@ TEST(forward_jpsi_amplitude_ipsat_mzwf)
     
     double xp=1e-3; double Qsqr=10; double t=0.1;
     MCINTPOINTS=1e7;
-    ASSERT_ALMOST_EQUAL(diff.ScatteringAmplitude(xp, Qsqr, t, T),0.04884376518,1e-5); 
+    ASSERT_ALMOST_EQUAL(diff.ScatteringAmplitude(xp, Qsqr, t, T),1.04884376518,1e-5); 
 
 }
 
