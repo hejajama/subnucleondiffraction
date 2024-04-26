@@ -573,8 +573,7 @@ Ipsat_Proton::Ipsat_Proton()
     ipsat = MZSAT;
 #endif
     saturation=true;
-    
-                                           // (4.939286653112, 1.1, 0.009631194037871, 3.058791613883, 1.342035015621);
+;
     Init();
     
 }
@@ -627,6 +626,22 @@ Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
     Init();
     
 }
+
+Ipsat_Proton::Ipsat_Proton(Ipsat_version version, IPsat_fit_parameteters params)
+{
+    if (version != MZSAT)
+    {
+        cerr << "Only MZsat ipsat setup supports different fit parameters" << endl;
+        exit(1);
+    }
+    ipsat = MZSAT;
+    mzipsat = new MZ_ipsat::DipoleAmplitude(params.C, params.mu0, params.lambdag, params.Ag, params.mc);
+    mzipsat->SetSaturation(params.saturation);
+    saturation=params.saturation;
+    Init();
+}
+
+
 Ipsat_Proton::Ipsat_Proton(DGLAPDist *gd)
 {
     gdist = gd;

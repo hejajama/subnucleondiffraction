@@ -179,10 +179,24 @@ int main(int argc, char* argv[])
             
             if (A==1)
             {
-                if (string(argv[i+2])=="ipsatproton" or string(argv[i+2])=="lcpt")
+                if (string(argv[i+2])=="ipsatproton" or string(argv[i+2])=="ipsatprotonparam" or string(argv[i+2])=="lcpt")
                 {
 					if (string(argv[i+2])=="ipsatproton")
 	                    amp = new Ipsat_Proton(MZSAT);
+                    else if (string(argv[i+2])=="ipsatprotonparam")
+                    {
+                        IPsat_fit_parameteters ipsatparam;
+                        ipsatparam.saturation=true;
+                        // In this case the parameterers followinb Bp and BG are 
+                        //    C, mu0, lambdag, Ag, mc
+                        ipsatparam.C=StrToReal(argv[i+5]);
+                        ipsatparam.mu0 = StrToReal(argv[i+6]);
+                        ipsatparam.lambdag=StrToReal(argv[i+7]);
+                        ipsatparam.Ag=StrToReal(argv[i+8]);
+                        ipsatparam.mc=StrToReal(argv[i+9]);
+
+                        amp = new Ipsat_Proton(MZSAT, ipsatparam);
+                    }
 					else
 						amp = new Ipsat_Proton(LCPT);
                     ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+3]));
@@ -201,11 +215,7 @@ int main(int argc, char* argv[])
                             } 
                             else if (string(argv[i+5])=="com")
                                  ((Ipsat_Proton*)amp)->SetQuarkCenterOfMassToOrigin(true);
-                            else if (string(argv[i+5]).substr(0,1)!="-")
-                            {
-                                cerr << "Unknown ipsatproton option " << argv[i+4] << endl;
-                                exit(1);
-                            }
+                           
                         }
                     }
                 }
