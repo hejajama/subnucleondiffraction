@@ -37,7 +37,16 @@ add_executable(
 	dis.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp
 	)
-
+add_executable(
+	test
+	test.cpp
+	diffraction.cpp
+	gauss_boost.cpp
+	gaus_lc.cpp
+	nrqcd_wf.cpp
+	dis.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/gitsha1.cpp
+)	
 include_directories(.)
 
 find_package(GSL REQUIRED)    #
@@ -51,5 +60,16 @@ target_link_libraries(
 	GSL::gsl
 	GSL::gslcblas
 )
+target_link_libraries(
+	test
+	PRIVATE
+	ddis
+	#dipolelib # LCPT dipole
+	#ColorDipole  #IPSAT12 fit
+	mzipsat
+	GSL::gsl
+	GSL::gslcblas
+)
+
 
 
