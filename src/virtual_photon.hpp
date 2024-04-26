@@ -69,6 +69,8 @@ class VirtualPhoton : public WaveFunction {
          * @param mass quark mass, optional, default values used if not given
          */
         void SetQuark(Parton p, double mass=-1);
+
+        std::string WaveFunctionType() { return "Photon"; }
         
         
     private:
