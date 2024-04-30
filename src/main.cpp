@@ -189,11 +189,11 @@ int main(int argc, char* argv[])
                         ipsatparam.saturation=true;
                         // In this case the parameterers followinb Bp and BG are 
                         //    C, mu0, lambdag, Ag, mc
-                        ipsatparam.C=StrToReal(argv[i+5]);
-                        ipsatparam.mu0 = StrToReal(argv[i+6]);
+                        ipsatparam.C=StrToReal(argv[i+6]);
+                        ipsatparam.mu0 = std::sqrt(1.1); // StrToReal(argv[i+6]);
                         ipsatparam.lambdag=StrToReal(argv[i+7]);
                         ipsatparam.Ag=StrToReal(argv[i+8]);
-                        ipsatparam.mc=StrToReal(argv[i+9]);
+                        ipsatparam.mc=StrToReal(argv[i+5]);
 
                         amp = new Ipsat_Proton(MZSAT, ipsatparam);
                     }
@@ -252,13 +252,26 @@ int main(int argc, char* argv[])
 
                     for (int j=0; j<A; j++)
                     {
-                      DipoleAmplitude *nucleon; 
-                        if (string(argv[i+2])=="ipsatproton")
+                        DipoleAmplitude *nucleon; 
+                        if (string(argv[i+2])=="ipsatproton" or string(argv[i+2])=="ipsatprotonparam")
                         {
-                            //if (j==0)
-                            //    gd = new DGLAPDist;
-                            //Ipsat_Proton *nucleon = new Ipsat_Proton(gd);
-                            nucleon = new Ipsat_Proton(MZSAT);
+                            if (string(argv[i+2])=="ipsatproton")
+                                nucleon = new Ipsat_Proton(MZSAT);
+                            else if (string(argv[i+2])=="ipsatprotonparam")
+                            {
+                                IPsat_fit_parameteters ipsatparam;
+                                ipsatparam.saturation=true;
+                                // In this case the parameterers followinb Bp and BG are 
+                                //    C, mu0, lambdag, Ag, mc
+                                ipsatparam.C=StrToReal(argv[i+6]);
+                                ipsatparam.mu0 = std::sqrt(1.1); // StrToReal(argv[i+6]);
+                                ipsatparam.lambdag=StrToReal(argv[i+7]);
+                                ipsatparam.Ag=StrToReal(argv[i+8]);
+                                ipsatparam.mc=StrToReal(argv[i+5]);
+
+                                nucleon = new Ipsat_Proton(MZSAT, ipsatparam);
+                            }
+
                             ((Ipsat_Proton*)nucleon)->SetProtonWidth(StrToReal(argv[i+3]));
                             ((Ipsat_Proton*)nucleon)->SetQuarkWidth(StrToReal(argv[i+4]));
 
@@ -280,7 +293,7 @@ int main(int argc, char* argv[])
                                          ((Ipsat_Proton*)nucleon)->SetQuarkCenterOfMassToOrigin(true); 
                                     }
 
-                                    else if (string(argv[i+5]).substr(0,1)!="-")
+                                    else if (string(argv[i+5]).substr(0,1)!="-" and string(argv[i+2])!="ipsatprotonparam")
                                     {
                                         cerr << "Unknown ipsatproton option " << argv[i+5] << endl;
                                         exit(1);
