@@ -53,6 +53,17 @@ enum Fluctuation_shape
     LOCAL_FLUCTUATIONS
 };
 
+struct IPsat_fit_parameteters
+{
+     // Default params: double C=2.2894; double mu0 = std::sqrt(1.1); double lambdag=0.08289; double Ag=2.1953; double mc=1.3528;
+    double C;
+    double mu0;
+    double lambdag;
+    double Ag;
+    double mc;
+    bool saturation;
+};
+
 class Ipsat_Proton : public DipoleAmplitude
 {
 public:
@@ -76,6 +87,7 @@ public:
     Ipsat_Proton();
     Ipsat_Proton(DGLAPDist *gd);    // Use global gdist
     Ipsat_Proton(Ipsat_version version);
+    Ipsat_Proton(Ipsat_version version, IPsat_fit_parameteters params);
     ~Ipsat_Proton();
     
     std::vector<Vec>& GetQuarks();

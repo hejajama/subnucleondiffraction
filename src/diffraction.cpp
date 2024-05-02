@@ -26,6 +26,7 @@ Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
     num_of_averages = 1;
     zlimit=0.00000001;
 	MAXR=10*5.068;
+    show_vegas_iterations=true;
 }
 
 
@@ -161,13 +162,16 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     {
         gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
         gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result, &error);
-        cout << "# vegas warmup " << result << " +/- " << error << endl;
+
+        if (ShowVegasIterations())
+            cout << "# vegas warmup " << result << " +/- " << error << endl;
         int iter=0;
         do
         {
             iter++;
             gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result, &error);
-            cout << "# Vegas interation " << result << " +/- " << error << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+            if (ShowVegasIterations())
+                cout << "# Vegas interation " << result << " +/- " << error << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
         } while (iter < 2 or fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5);
         gsl_monte_vegas_free(s);
     }
@@ -266,23 +270,21 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     if (FACTORIZE_ZINT)
     {
-        /* if (wavef->WaveFunctionType() != "NRQCD")
         {
-            //PsiSqr_L_intz(double Qsqr, double r, double Delta, double phi_r_Delta)
-            cerr << "FACTORIZE_ZINT currently only works with NRQCD wf" << endl;
-            return 0;
+            // Note 1/(4pi) is included in the z integral measure in PsiSqr_T_intz
+            if (pol == T)
+                result *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
+            else
+                result *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta,theta_r);
         }
-        // Note 1/(4pi) is included in the z integral measure in PsiSqr_T_intz
-        if (pol == T)
-            result *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
         else
-            result *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta,theta_r);
-          */  
-        if (pol == T)
-            result *= wavef->PsiSqr_T_intz(Qsqr, r);
-        else
-            result *= wavef->PsiSqr_L_intz(Qsqr, r);
-
+        {
+            if (pol == T)
+                result *= wavef->PsiSqr_T_intz(Qsqr, r);
+            else
+                result *= wavef->PsiSqr_L_intz(Qsqr, r);
+        }
+            
         result *= std::exp(-imag*(b*delta*std::cos(theta_b)))*amp;
         
     }

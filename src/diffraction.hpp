@@ -32,6 +32,9 @@ public:
     void SetNumOfAverages(int n);
     
     void SetZLimit(double zl) { zlimit = zl; }
+
+    bool ShowVegasIterations() { return show_vegas_iterations; }
+    void ShowVegasIterations(bool s) { show_vegas_iterations = s; }
     
     DipoleAmplitude* GetDipole();
     WaveFunction* GetWaveFunction();
@@ -50,6 +53,7 @@ private:
     double zlimit;
     
     double beta;
+    double show_vegas_iterations;
     
 };
 #endif /* diffraction_hpp */

@@ -179,10 +179,24 @@ int main(int argc, char* argv[])
             
             if (A==1)
             {
-                if (string(argv[i+2])=="ipsatproton" or string(argv[i+2])=="lcpt")
+                if (string(argv[i+2])=="ipsatproton" or string(argv[i+2])=="ipsatprotonparam" or string(argv[i+2])=="lcpt")
                 {
 					if (string(argv[i+2])=="ipsatproton")
 	                    amp = new Ipsat_Proton(MZSAT);
+                    else if (string(argv[i+2])=="ipsatprotonparam")
+                    {
+                        IPsat_fit_parameteters ipsatparam;
+                        ipsatparam.saturation=true;
+                        // In this case the parameterers followinb Bp and BG are 
+                        //    C, mu0, lambdag, Ag, mc
+                        ipsatparam.C=StrToReal(argv[i+5]);
+                        ipsatparam.mu0 = StrToReal(argv[i+6]);
+                        ipsatparam.lambdag=StrToReal(argv[i+7]);
+                        ipsatparam.Ag=StrToReal(argv[i+8]);
+                        ipsatparam.mc=StrToReal(argv[i+9]);
+
+                        amp = new Ipsat_Proton(MZSAT, ipsatparam);
+                    }
 					else
 						amp = new Ipsat_Proton(LCPT);
                     ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+3]));
@@ -201,11 +215,7 @@ int main(int argc, char* argv[])
                             } 
                             else if (string(argv[i+5])=="com")
                                  ((Ipsat_Proton*)amp)->SetQuarkCenterOfMassToOrigin(true);
-                            else if (string(argv[i+5]).substr(0,1)!="-")
-                            {
-                                cerr << "Unknown ipsatproton option " << argv[i+4] << endl;
-                                exit(1);
-                            }
+                           
                         }
                     }
                 }
@@ -344,7 +354,7 @@ int main(int argc, char* argv[])
         else if (string(argv[i])=="-nrqcd_parameters")
         {
             NRQCD_A=StrToReal(argv[i+1]);
-            NRQCD_B=StrToReal(argv[i+1]);
+            NRQCD_B=StrToReal(argv[i+2]);
         }
         else if (string(argv[i])=="-nrqcd_parameters_from_file")
         {
@@ -618,8 +628,7 @@ int main(int argc, char* argv[])
     
     else if (mode == F2)
     {
-        cerr << "NOTE: CHECK THAT THIS WORKS WITH THE WAVE FUNCTIONS FROM AMPLITUDELIB" << endl;
-	FACTORIZE_ZINT=true;
+	    FACTORIZE_ZINT=true;
         cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm tot F_L(light) F_L(charm) F_L(tot)" << endl;
         double orig_x = xbj;
         WaveFunction * photon = new VirtualPhoton();;
