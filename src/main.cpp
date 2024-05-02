@@ -252,13 +252,13 @@ int main(int argc, char* argv[])
 
                     for (int j=0; j<A; j++)
                     {
-                        DipoleAmplitude *nucleon; 
+                      DipoleAmplitude *nucleon; 
                         if (string(argv[i+2])=="ipsatproton" or string(argv[i+2])=="ipsatprotonparam")
-                        {
+                        {   
                             if (string(argv[i+2])=="ipsatproton")
                                 nucleon = new Ipsat_Proton(MZSAT);
                             else if (string(argv[i+2])=="ipsatprotonparam")
-                            {
+                            {   
                                 IPsat_fit_parameteters ipsatparam;
                                 ipsatparam.saturation=true;
                                 // In this case the parameterers followinb Bp and BG are 
@@ -270,8 +270,7 @@ int main(int argc, char* argv[])
                                 ipsatparam.mc=StrToReal(argv[i+5]);
 
                                 nucleon = new Ipsat_Proton(MZSAT, ipsatparam);
-                            }
-
+                            } 
                             ((Ipsat_Proton*)nucleon)->SetProtonWidth(StrToReal(argv[i+3]));
                             ((Ipsat_Proton*)nucleon)->SetQuarkWidth(StrToReal(argv[i+4]));
 
