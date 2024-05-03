@@ -2,11 +2,13 @@
 #include <complex>
 #include "vector.hpp"
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_integration.h>
 #include "gauss_boost.hpp"
 #include "ipsat_proton.hpp"
 #include "diffraction.hpp"
 #include "subnucleon_config.hpp"
 #include "virtual_photon.hpp"
+#include "gauss_boost.hpp"
 
 //#include "src/wilsonline.hpp"
 
@@ -102,10 +104,66 @@ TEST(structure_function_ipsat)
         
     // note: precisio (last argument) is absolute precision, not relative
     ASSERT_ALMOST_EQUAL(structurefun+structurefun_c, 0.530119, 0.001);
-
-
    
 }
+
+struct inthelperf_boosted_gauss
+{
+    double z;
+    BoostedGauss* wf;
+};
+double integrand_r(double r, void* p) {
+    inthelperf_boosted_gauss* par = static_cast<inthelperf_boosted_gauss*>(p);
+    double mf = par->wf->QuarkMass();
+    double z = par->z;
+    return 1 / (z * z * (1. - z) * (1. - z)) * 2.0 * M_PI * r * (std::pow(mf * par->wf->Psi_T(r, z), 2)
+        + (z * z + std::pow(1. - z, 2))* std::pow(par->wf->Psi_T_DR(r, z),2));
+};
+
+// Define the integrand_z function without lambda capture
+double integrand_z(double z, void* p) {
+    inthelperf_boosted_gauss* par = static_cast<inthelperf_boosted_gauss*>(p);
+    par->z = z;
+    gsl_function F;
+    F.function = &integrand_r;
+    F.params = p;
+    double result;
+    double error;
+
+    gsl_integration_workspace* w = gsl_integration_workspace_alloc(1000);
+
+    gsl_integration_qags(&F, 0, 999, 0, 1e-6, 1000, w, &result, &error);
+
+    gsl_integration_workspace_free(w);
+    double Nc = 3;
+
+    result = result * Nc / (2.0 * M_PI);
+    return result;
+}
+
+TEST(gauss_boosted_normalization)
+{
+    BoostedGauss wf("gauss-boosted_mzsat.dat");
+    inthelperf_boosted_gauss p; p.wf=&wf;
+
+
+    double result;
+    double error;
+
+    gsl_function F;
+    F.function = integrand_z;
+    F.params = &p;
+
+    gsl_integration_workspace* w = gsl_integration_workspace_alloc(1000);
+    double eps=1e-4;
+    gsl_integration_qags(&F, eps, 1-eps, 0, 1e-6, 1000, w, &result, &error);
+
+    gsl_integration_workspace_free(w);
+
+    ASSERT_ALMOST_EQUAL(result, 1, 1e-3);
+
+}
+
 
 // DO NOT REMOVE
 // Generates a main() function that runs all of your tests.
