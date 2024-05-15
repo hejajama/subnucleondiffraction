@@ -51,12 +51,16 @@ class BoostedGauss : public WaveFunction {
     
         
     private:
+        REAL Psi(REAL r, REAL z);
+        REAL Psi_DR(REAL r, REAL z);
+
         // Parameters
         REAL e_f;
         REAL N_T, N_L; // Constants for Psi_T and Psi_L
         REAL R;
         REAL m_f,M_V;
         REAL alpha; // needed for higher exited states like 2s
+        REAL alpha2; // needed for higher 3s
         int S;      // S=1 is J/Psi etc.
         int delta;  // There are two different longitudial wave functions,
                     // delta=0 or delta=1

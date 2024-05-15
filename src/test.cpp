@@ -107,6 +107,9 @@ TEST(structure_function_ipsat)
    
 }
 
+
+
+// Wave function normalizations
 struct inthelperf_boosted_gauss
 {
     double z;
@@ -141,29 +144,88 @@ double integrand_z(double z, void* p) {
     return result;
 }
 
-TEST(gauss_boosted_normalization)
+TEST(gauss_boosted_normalization_jpsi)
 {
     BoostedGauss wf("gauss-boosted_mzsat.dat");
     inthelperf_boosted_gauss p; p.wf=&wf;
 
-
-    double result;
-    double error;
+    double result, error;
 
     gsl_function F;
     F.function = integrand_z;
     F.params = &p;
 
     gsl_integration_workspace* w = gsl_integration_workspace_alloc(1000);
-    double eps=1e-4;
+    double eps=1e-5;
     gsl_integration_qags(&F, eps, 1-eps, 0, 1e-6, 1000, w, &result, &error);
-
-    gsl_integration_workspace_free(w);
-
     ASSERT_ALMOST_EQUAL(result, 1, 1e-3);
 
+    gsl_integration_workspace_free(w); 
 }
 
+TEST(gauss_boosted_normalization_upsilon_1s)
+{
+    BoostedGauss wf("gauss-boosted-upsilon.dat");
+    inthelperf_boosted_gauss p; p.wf=&wf;
+
+    double result, error;
+
+    gsl_function F;
+    F.function = integrand_z;
+    F.params = &p;
+
+    gsl_integration_workspace* w = gsl_integration_workspace_alloc(1000);
+    double eps=1e-5;
+    gsl_integration_qags(&F, eps, 1-eps, 0, 1e-6, 1000, w, &result, &error);
+    ASSERT_ALMOST_EQUAL(result, 1, 1e-2);
+
+    gsl_integration_workspace_free(w); 
+}
+
+TEST(gauss_boosted_normalization_upsilon_2s)
+{
+    BoostedGauss wf("gauss-boosted-upsilon-2s.dat");
+    inthelperf_boosted_gauss p; p.wf=&wf;
+
+    ASSERT_ALMOST_EQUAL(wf.Psi_T(1,0.3),-0.0215006,1e-5);
+    ASSERT_ALMOST_EQUAL(wf.Psi_T_DR(1,0.5),0.056788,1e-5);
+
+    double result, error;
+
+    gsl_function F;
+    F.function = integrand_z;
+    F.params = &p;
+
+    gsl_integration_workspace* w = gsl_integration_workspace_alloc(1000);
+    double eps=1e-5;
+    gsl_integration_qags(&F, eps, 1-eps, 0, 1e-6, 1000, w, &result, &error);
+    ASSERT_ALMOST_EQUAL(result, 1, 1e-2);
+
+    gsl_integration_workspace_free(w); 
+}
+
+TEST(gauss_boosted_normalization_upsilon_3s)
+{
+    BoostedGauss wf("gauss-boosted-upsilon-3s.dat");
+    inthelperf_boosted_gauss p; p.wf=&wf;
+
+    // Values computed for the wave functions presented in 0905.0102
+     ASSERT_ALMOST_EQUAL(wf.Psi_T(2,0.3),-0.012636,1e-5);
+     ASSERT_ALMOST_EQUAL(wf.Psi_T_DR(2,0.3),0.0111469,1e-5);
+
+    double result, error;
+
+    gsl_function F;
+    F.function = integrand_z;
+    F.params = &p;
+
+    gsl_integration_workspace* w = gsl_integration_workspace_alloc(1000);
+    double eps=1e-5;
+    gsl_integration_qags(&F, eps, 1-eps, 0, 1e-6, 1000, w, &result, &error);
+    ASSERT_ALMOST_EQUAL(result, 1, 1e-2);
+
+    gsl_integration_workspace_free(w); 
+}
 
 // DO NOT REMOVE
 // Generates a main() function that runs all of your tests.

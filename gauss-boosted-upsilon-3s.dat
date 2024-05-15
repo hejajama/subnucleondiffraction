@@ -1,0 +1,30 @@
+# Parameters for upsilon and \gamma^* wave function overlap
+# 
+# Model: Boosted gaussian 
+#
+# Parameters from arXiv:0905.0102 (only transverse)
+#
+# Syntax of this file is the following:
+# Lines starting with # are comments
+# Parameters are given as a pair key:value
+# Values are in units of GeV^n and possible keys are:
+# e_f, m_f, M_V, N_T, N_L, R, S alpha,alpha2 and del
+#
+#
+#e_f: Effective charge: 
+e_f:0.333333
+#N_T, N_L, R_T, R_L: Normalization for transversial/lognitudial components
+#In 0905.0102 normalization factor 0.481 for the scalar part is given
+N_T:0.668
+N_L:0
+#sqrt(1.028)
+R:1.013903348
+m_f:4.20
+M_V:10.3552
+# delta: 0 or 1: one part of the wave functio is multiplied by delta
+del:1
+# State S=n, J/Psi is S=1
+S:3
+# alpha needed for higher S states, no effect for S=1
+alpha:-1.219
+alpha2:0.217

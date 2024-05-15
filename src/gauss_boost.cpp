@@ -62,7 +62,8 @@ BoostedGauss::BoostedGauss(std::string file)
         return;
     }
     std::string line;
-    
+    alpha2=0;
+
     while(!f.eof() )
     {
         std::getline(f, line);
@@ -84,8 +85,11 @@ BoostedGauss::BoostedGauss(std::string file)
             delta=StrToInt(line.substr(4));
         if (line.substr(0,2)=="S:")
             S=StrToInt(line.substr(2));
-        if (line.substr(0,5)=="alpha")
+        if (line.substr(0,6)=="alpha2")
+            alpha2=StrToReal(line.substr(7));      
+        else if (line.substr(0,5)=="alpha") // else if, as this would be true for alpha2 as well
             alpha=StrToReal(line.substr(6));
+              
     }
     f.close();
 
@@ -214,43 +218,84 @@ REAL BoostedGauss::PsiSqr_L_intz(REAL Qsqr, REAL r)
  */
 REAL BoostedGauss::Psi_T(REAL r, REAL z)
 {
-    return N_T*z*(1.0-z)*exp(-SQR(m_f)*SQR(R)/(8.0*z*(1.0-z))
-        - 2.0*z*(1-z)*SQR(r)/SQR(R) + SQR(m_f)*SQR(R)/2.0 )
-        * (1.0 + alpha*
-                ( 2.0 - SQR(m_f*R) + SQR(m_f*R)/(4.0*z*(1.0-z))
-                    - 4.0*z*(1.0-z)*SQR(r)/SQR(R) ) );
-}
+    return N_T*Psi(r,z);
+}             
 
 REAL BoostedGauss::Psi_L(REAL r, REAL z)
 {
-        return N_L*z*(1.0-z)*exp(-SQR(m_f)*SQR(R)/(8.0*z*(1.0-z))
-        - 2.0*z*(1.0-z)*SQR(r)/SQR(R) + SQR(m_f)*SQR(R)/2.0 )
-            * (1.0 + alpha*
-                ( 2.0 - SQR(m_f*R) + SQR(m_f*R)/(4.0*z*(1.0-z))
-                    - 4.0*z*(1.0-z)*SQR(r)/SQR(R) ) );
+    return N_L*Psi(r,z);
+}
+
+// Scalar part of the wave function without normalizatin factor
+REAL BoostedGauss::Psi(REAL r, REAL z)
+{
+    double res = z*(1.0-z)*exp(-SQR(m_f)*SQR(R)/(8.0*z*(1.0-z))
+        - 2.0*z*(1-z)*SQR(r)/SQR(R) + SQR(m_f)*SQR(R)/2.0 );
+    if (S==1)
+        return res;
+    
+    double g = 2.0 - SQR(m_f*R) 
+        + SQR(m_f*R)/(4.*z*(1.-z)) - 4.*z*(1.-z)*SQR(r)/SQR(R);
+
+    if (S ==2)
+        return res *(1 + alpha * g);
+    else if (S==3)
+        return res*(1.+alpha*g+alpha2*(SQR(g) + 4.*(1.-4.*z*(1.-z)*SQR(r)/SQR(R))));
+    else
+    {
+        std::cerr << "Unknown state " << S << " in BoostedGauss::Psi_T" << std::endl;
+        return 0;
+    }
+}
+
+// \partial_r Psi(r,z)
+REAL BoostedGauss::Psi_DR(REAL r, REAL z)
+{
+    if (S==1)
+        return -4.0*z*(1.0-z)*r/SQR(R)*Psi(r,z); ;
+    
+    // We need the "S=1" wave function denoted by G_nS in 0905.0102
+    double Gn = z*(1.0-z)*exp(-SQR(m_f)*SQR(R)/(8.0*z*(1.0-z))
+        - 2.0*z*(1-z)*SQR(r)/SQR(R) + SQR(m_f)*SQR(R)/2.0 ); 
+    double Gn_der = -4.0*z*(1.0-z)*r/SQR(R)*Gn;
+
+    if (S>1)
+    {
+        double der1 = -8*r*(1.-z)*z*alpha*Gn/SQR(R) 
+            + (2.-SQR(m_f*R)+SQR(m_f*R)/(4.*z*(1.-z))-4.*SQR(r)*z*(1.-z)/SQR(R))*alpha*Gn_der;
+        if (S==2)
+            return Gn_der+der1;
+ 
+        double der2 = (-((32*r*(1-z)*z)/SQR(R)) 
+            - (16*r*(1-z)*z*(2-SQR(m_f)*SQR(R) + (SQR(m_f)*SQR(R))/(4*(1-z)*z) - (4*r*r*(1-z)*z)/SQR(R)))/SQR(R)) 
+                * alpha2 * Gn;
+        double der2_2 = (4 * (1 - (4 * SQR(r) * (1 - z) * z) / SQR(R)) + (2 - SQR(m_f) * SQR(R) + (SQR(m_f) * SQR(R)) / (4 * (1 - z) * z) - (4 * r * r * (1 - z) * z) / SQR(R)) * (2 - SQR(m_f) * SQR(R) + (SQR(m_f) * SQR(R)) / (4 * (1 - z) * z) - (4 * r * r * (1 - z) * z) / SQR(R))) * alpha2 * Gn_der;
+        return Gn_der + der1 + der2 + der2_2;
+    }
+    std::cerr << "Unknown state " << S << " in BoostedGauss::Psi_DR" << std::endl;
+    return 0;
 }
 
 // \partial_r Psi_T(r,z)
 REAL BoostedGauss::Psi_T_DR(REAL r, REAL z)
 {
-    return -4.0*z*(1.0-z)*r/SQR(R)*Psi_T(r,z)
-        -8.0*alpha*N_T*SQR(z*(1.0-z)) * r/SQR(R)
-            * std::exp(-SQR(m_f)*SQR(R)/(8.0*z*(1.0-z))
-                - 2.0*z*(1-z)*SQR(r)/SQR(R) + SQR(m_f)*SQR(R)/2.0 )  ;
+    return N_T*Psi_DR(r,z);
 }
 
 // \partial_r PSI_L(r,z)
 REAL BoostedGauss::Psi_L_DR(REAL r, REAL z)
 {
-    return -4.0*z*(1-z)*r/SQR(R)*Psi_L(r,z)
-        -8.0*alpha*N_L*SQR(z*(1.0-z)) * r/SQR(R)
-            * std::exp(-SQR(m_f)*SQR(R)/(8.0*z*(1.0-z))
-                - 2.0*z*(1.0-z)*SQR(r)/SQR(R) + SQR(m_f)*SQR(R)/2.0 )  ;
+    return N_L*Psi_DR(r,z);
 }
 
 // \partial^2_r PSI_L(r,z)
 REAL BoostedGauss::Psi_L_D2R(REAL r, REAL z)
 {
+    if (S>2)
+    {
+        std::cerr << "BoostedGauss::Psi_L_D2R not implemented for S>2" << std::endl;
+        exit(1);
+    }
     return -4.0*z*(1.0-z)/SQR(R)*Psi_L(r,z) 
         + SQR(4.0*z*(1.0-z)*r/SQR(R))*Psi_L(r,z)
             - 8.0*alpha*N_T*SQR(z*(1.0-z))/std::pow(R,4.0)
@@ -270,7 +315,8 @@ std::string BoostedGauss::GetParamString()
     str << "e_f = "
     << e_f << ", m_f = " << m_f << ", M_V = " << M_V << ", N_T = "
     << N_T << ", N_L = " << N_L << ", R = " << R 
-    << ", delta = " << delta << " " << " S = " << S << ", alpha = " << alpha ;
+    << ", delta = " << delta << " " << " S = " << S << ", alpha = " << alpha
+    << ", alpha_2=" << alpha2 ;
     return str.str();
 }
 
