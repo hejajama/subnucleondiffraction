@@ -562,21 +562,7 @@ void Ipsat_Proton::Init()
     
     intworkspace_zint = gsl_integration_workspace_alloc(INTPOINTS_ZINT);
 }
-Ipsat_Proton::Ipsat_Proton()
-{
-    
-    allocated_gdist = false;
-    
-#ifdef USE_FORTRAN_IPSAT12
-    ipsat = IPSAT12;
-#else
-    ipsat = MZSAT;
-#endif
-    saturation=true;
-;
-    Init();
-    
-}
+
 Ipsat_Proton::Ipsat_Proton(Ipsat_version version)
 {
     allocated_gdist = false;

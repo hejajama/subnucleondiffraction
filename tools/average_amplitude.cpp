@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 	helper.b=b; helper.theta_b=0;
     //helper.b=b;
     
-    Ipsat_Proton ipsat;
+    Ipsat_Proton ipsat(MZSAT);
     ipsat.SetProtonWidth(0);
     ipsat.SetQuarkWidth(4.0);
     ipsat.InitializeTarget();

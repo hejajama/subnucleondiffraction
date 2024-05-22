@@ -84,7 +84,6 @@ public:
     // Setup the target. In practice sample nucleon positions from Woods Saxon
     void InitializeTarget();
     
-    Ipsat_Proton();
     Ipsat_Proton(DGLAPDist *gd);    // Use global gdist
     Ipsat_Proton(Ipsat_version version);
     Ipsat_Proton(Ipsat_version version, IPsat_fit_parameteters params);
