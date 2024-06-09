@@ -74,7 +74,7 @@ double Diffraction::Correction(double xpom, double Qsqr, double t, Polarization 
     
     double beta = std::tan(lambda*M_PI/2.0);
     
-    double Rg = 1.0; //std::pow(2.0, 2.0*lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(lambda+5.0/2.0)/gsl_sf_gamma(lambda+4.0);
+    double Rg = std::pow(2.0, 2.0*lambda+3)/std::sqrt(M_PI) * gsl_sf_gamma(lambda+5.0/2.0)/gsl_sf_gamma(lambda+4.0);
     return (1.0+beta*beta)*Rg*Rg;
 }
 
@@ -343,10 +343,10 @@ double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qs
     f.function = inthelperf_amplitude_rotationalsym_b;
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
     double result,error;
-    int status = gsl_integration_qag(&f, 0, 100, 0, 0.0001, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
+    int status = gsl_integration_qag(&f, 0, 100, 0, 0.001, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
     
     if (status)
-        cerr << "#bint failed, result " << result << " relerror " << error << " t " <<t << endl;
+        cerr << "#bint failed, result " << result << " relerror " << std::abs(error/result) << " t " <<t << endl;
     
     gsl_integration_workspace_free(w);
     
@@ -396,10 +396,10 @@ double inthelperf_amplitude_rotationalsym_b(double b, void* p)
     f.function = inthelperf_amplitude_rotationalsym_r;
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS_ROTSYM);
     double result,error;
-    int status = gsl_integration_qag(&f, std::log(1e-6), std::log(50), 0, 0.0001, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
+    int status = gsl_integration_qag(&f, std::log(1e-6), std::log(50), 0, 0.001, INTPOINTS_ROTSYM, GSL_INTEG_GAUSS51, w, &result, &error);
     
     if (status)
-        cerr << "#Rint failed, result " << result << " relerror " << error << " b " << b << " t " << par->t << endl;
+        cerr << "#R int failed, result " << result << " relerror " << std::abs(error/result) << " b " << b << " t " << par->t << endl;
     
     gsl_integration_workspace_free(w);
     
@@ -429,7 +429,7 @@ double inthelperf_amplitude_rotationalsym_r(double lnr, void* p)
     if (status)
     {
         if (!(std::isnan(result)) and std::abs(result)>1e-20)
-            cerr << "#zint failed, result " << result << " relerror " << error << " b " << par->b << " t " <<par->t << endl;
+            cerr << "#zint failed, result " << result << " relerror " << std::abs(error/result) << " b " << par->b << " t " <<par->t << endl;
         if (std::isnan(result) and par->b < 30)
             cerr << " Nan also at b=" << par->b << endl;
         result=0;
