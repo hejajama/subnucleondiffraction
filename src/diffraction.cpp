@@ -270,6 +270,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     if (FACTORIZE_ZINT)
     {
+    if (wavef->WaveFunctionType() == "NRQCD")
         {
             // Note 1/(4pi) is included in the z integral measure in PsiSqr_T_intz
             if (pol == T)
