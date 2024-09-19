@@ -127,9 +127,9 @@ double Ipsat_Proton::Amplitude( double xpom, double q1[2], double q2[2])
     
     
     if (saturation)
-        return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew* ipsat_exponent * tpsum  );
+        return 1.0 - std::exp( - r.LenSqr() * 1.0/quarks.size() * skew* ipsat_exponent * tpsum  );
     else
-        return r.LenSqr() * 1.0/quarks.size() * GetQsFluctuation(b.GetX(),b.GetY()) * skew* ipsat_exponent * tpsum;
+        return r.LenSqr() * 1.0/quarks.size() * skew* ipsat_exponent * tpsum;
     
 
    
@@ -216,163 +216,75 @@ double Ipsat_Proton::Amplitude_Tp(double xpom, double r, double tp)  // Dipole a
 
 
 void Ipsat_Proton::InitializeTarget()
-{
-    double smallestdist=999; double largestdist=0;
-    double tmpdist;
-
-    
+{  
     
     quarks.clear();
     quark_bp.clear();
-    
-    // Correlated sampling
-    if (shape == ALBACETE)
+
+    // Sample uncorrelated quark positions
+
+    // Sample 3 quarks
+    for (int i = 0; i < 3; i++)
     {
-        /*
-         * Implement arXiv:1605.09176.
-         * Quark positions s_i are sampled from a distribution
-         * prod_i<j, i,j=1...n_q  (1-exp(-mu*|s_i - s_j|^2/R^2))
-         * Where s_i are sampled also from a Gaussian distribution that has width R
-         * Note that in this case we keep the proton center-of-mass at the origin, thus
-         * we only sample two quarks which then fixes the position of the third quark
-         * Implemented using simple rejection method
-         *
-         * Note that we use a Gaussian distribution exp(-b^2/2B) when sampling the
-         * constituent quark radii, which is different parametrization form Ref.
-         */
-        double r_c = 0.3 * 5.068;   // Repulsive core radius 0.3fm
-        if (B_p < 1e-5)
+        // Radius from uniform distribution
+        double radius = 0;
+        double maxr = 30;
+
+        if (shape == GAUSSIAN)
         {
-            std::cerr << "Does not support zero size proton!" << std::endl;
-            exit(1);
-        }
-        else
-        {
-            std::vector<Vec> tmpquarkvec;
-            int rejections=-1;
-            do{
-                rejections++;
-                tmpquarkvec.clear();
-                double xsum=0;
-                double ysum=0;
-                for (int i=0; i<number_of_quarks-1; i++)
-                {
-                    // Sample quark i
-                    double x,y;
-                    x=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
-                    y=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
-                    xsum +=x;
-                    ysum +=y;
-                    Vec s(x,y);
-                    tmpquarkvec.push_back(s);
-                }
-                // Calculate last quark position by fixing origin=center of mass
-                Vec q( -xsum, -ysum );
-                tmpquarkvec.push_back(q);
-                
-            } while (gsl_rng_uniform(global_rng) > RepulsiveGaussianDistribution(tmpquarkvec, r_c));
-            cout << "# Rejected " << rejections << " configurations due to short-range repulsive correlations" << endl;
-            // Save accepted quarks
-             for (int i=0; i<tmpquarkvec.size(); i++)
+            double x, y, z;
+            if (B_p < 1e-5)
             {
-                quark_bp.push_back(B_q);
-                quarks.push_back(tmpquarkvec[i]);
-                quarks3d.push_back(tmpquarkvec[i]);
+                x = y = z = 0;
+                // radius=0;
             }
-            
-        }
-     }
-    else if (shape == MORELAND)
-    {
-        // Scott's Python script converted to C++
-        // see original in scott_sampler/sampler.py
-        // Numbers are in fm, converted to GeV^-1 at the end
-        // NOTE: Some parameters also copied to SampleQSFluctuations
-        double radius = 0.87;
-        double structure_parameter = 0.3;
-        unsigned int constituent_number=5;
-        double sigma_fluct=0.81;
-        double constituent_width = 0.2 + structure_parameter*(radius - 0.2);
-        double sampling_radius = std::sqrt( std::pow(radius,2) - std::pow(constituent_width,2));
-        double gamma_shape = 1./(constituent_number*std::pow(sigma_fluct,2) );
-        
-        for (unsigned int i=0; i < constituent_number; i++)
-        {
-            double qx = gsl_ran_gaussian(global_rng, sampling_radius);
-            double qy = gsl_ran_gaussian(global_rng, sampling_radius);
-            Vec tmpvec(qx*FMGEV,qy*FMGEV,0);
-            Vec tmpvec3d(qx*FMGEV,qy*FMGEV,0);  // Not really 3d!
+
+            else
+            {
+                x = gsl_ran_gaussian(global_rng, std::sqrt(B_p));
+                y = gsl_ran_gaussian(global_rng, std::sqrt(B_p));
+                z = gsl_ran_gaussian(global_rng, std::sqrt(B_p));
+                /*
+                do{
+                    radius = gsl_rng_uniform(global_rng) * maxr;
+                } while (gsl_rng_uniform(global_rng) > GaussianRadiusDistribution(radius));
+                 */
+            }
+            // Sample angle
+            // double angle = 2.0*M_PI*gsl_rng_uniform(global_rng);
+            // Vec tmpvec(radius*std::cos(angle), radius*std::sin(angle));
+            Vec tmpvec(x, y, 0);
+            Vec tmpvec3d(x, y, z);
             quarks.push_back(tmpvec);
-            quark_bp.push_back(constituent_width*constituent_width*FMGEV*FMGEV);
             quarks3d.push_back(tmpvec3d);
-            
+            quark_bp.push_back(B_q);
+        }
+        else if (shape == EXPONENTIAL)
+        {
+            // We have to sample x,y,z separately
+            double x, y, z;
+            if (B_p < 1e-5)
+            {
+                x = y = z = 0;
+            }
+            else
+            {
+                do
+                {
+                    x = 2.0 * (gsl_rng_uniform(global_rng) - 0.5) * maxr;
+                    y = 2.0 * (gsl_rng_uniform(global_rng) - 0.5) * maxr;
+                    z = 2.0 * (gsl_rng_uniform(global_rng) - 0.5) * maxr;
+                } while (gsl_rng_uniform(global_rng) > ExponentialDistribution(x, y, z));
+            }
+            Vec tmpvec(x, y, 0);
+            quarks.push_back(tmpvec);
+            Vec tmpvec3d(x, y, z);
+            quarks3d.push_back(tmpvec3d);
+            quark_bp.push_back(B_q);
         }
     }
-        // Sample uncorrelated quark positions
-     else {
-         
-        // Sample 3 quarks
-        for (int i=0; i<3; i++)
-        {
-            // Radius from uniform distribution
-            double radius=0;
-            double maxr = 30;
-            
-            if (shape == GAUSSIAN)
-            {
-                double x,y,z;
-                if (B_p < 1e-5)
-                {
-                    x=y=z=0;
-                    //radius=0;
-                }
-                
-                else
-                {
-                    x=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
-                    y=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
-                    z=gsl_ran_gaussian(global_rng, std::sqrt(B_p));
-                    /*
-                    do{
-                        radius = gsl_rng_uniform(global_rng) * maxr;
-                    } while (gsl_rng_uniform(global_rng) > GaussianRadiusDistribution(radius));
-                     */
-                }
-                // Sample angle
-                //double angle = 2.0*M_PI*gsl_rng_uniform(global_rng);
-                //Vec tmpvec(radius*std::cos(angle), radius*std::sin(angle));
-                Vec tmpvec(x,y,0);
-                Vec tmpvec3d(x,y,z);
-                quarks.push_back(tmpvec);
-                quarks3d.push_back(tmpvec3d);
-                quark_bp.push_back(B_q);
-            }
-            else if (shape == EXPONENTIAL)
-            {
-                // We have to sample x,y,z separately
-                double x,y,z;
-                if (B_p < 1e-5)
-                {
-                    x=y=z=0;
-                }
-                else
-                {
-                    do{
-                        x = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
-                        y = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
-                        z = 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr;
-                    } while (gsl_rng_uniform(global_rng) > ExponentialDistribution(x,y,z));
-                }
-                Vec tmpvec(x,y,0);
-                quarks.push_back(tmpvec);
-                Vec tmpvec3d(x,y,z);
-                quarks3d.push_back(tmpvec3d);
-                quark_bp.push_back(B_q);
-            }
-            
-        }
-     }
-    
+
+
     SampleQsFluctuations();
 
     // set center of mass to origin
@@ -436,8 +348,6 @@ void Ipsat_Proton::SampleQsFluctuations()
     
     if (fluctuation_shape == FLUCTUATE_QUARKS)
     {
-        
-        
     
         // Saturation scale of each quark fluctuates from a Gaussian distribution
         // Note that as Q_s^2 ~ xg * T_q, and we get ln Q_s^2 fluctuations from
@@ -450,16 +360,15 @@ void Ipsat_Proton::SampleQsFluctuations()
         for (int i=0; i<nq; i++)
         {
             double f = 1;
-            if (shape == MORELAND)
-            {
-                double sigma_fluct=0.81;
-                double gamma_shape = 1./(nq*std::pow(sigma_fluct,2) );
-                f=gsl_ran_gamma(global_rng, gamma_shape, 1./gamma_shape);
-            }
-            else
+            if (Qs_fluctuation_sigma > 0)
             {
                 f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
                 f = std::exp(f)/lognormal_mean;
+            }
+            else
+            {
+                f=1;
+                cout << "# Note: Q_s fluctuations are turned off but someone  called SampleQsFluctuations()" << endl;
             }
             qs_fluctuations_quarks.push_back(f);
             sum+=f;
@@ -468,42 +377,6 @@ void Ipsat_Proton::SampleQsFluctuations()
         for (int i=0; i<nq; i++) cout << qs_fluctuations_quarks[i] << " ";
         cout << " average Q_s^2 fluctuation " << sum/nq << endl;
         
-    }
-    else if (fluctuation_shape == LOCAL_FLUCTUATIONS)
-    {
-        // Note for small grids: The saturation scale at point (x,y) is found by
-        // seeking from the coordinates lists the index for which coordinates[i]<x<coordinates[i+1]
-        // Thus, in practice having points=3 corresponds to 2x2 grid, as the leftmost values are never used
-        double size = 10;
-        int points = 11;    // x*x grid
-        double step = (2.0*size)/(points-1);
-        for (double x=-size; x<=size; x+=step)
-            qs_fluctuation_coordinates.push_back(x);
-        
-        
-        //double fluct=gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
-        double fluct_coef_sum=0; int pts=0; double stdev = 0;
-        for (int yind=0; yind<points; yind++)
-        {
-            std::vector<double> row;
-            for (int xind=0; xind<points; xind++)
-            {
-                double fluct;
-                if (Qs_fluctuation_sigma > 0)
-                {
-                    double f = gsl_ran_gaussian(global_rng, Qs_fluctuation_sigma);
-                    fluct = std::exp(f)/lognormal_mean;
-                    fluct_coef_sum += fluct; pts++; stdev += std::pow(1.0-fluct,2.0);
-                }
-                else
-                    fluct=0;
-                row.push_back(fluct);
-                
-            }
-            qs_fluctuation.push_back(row);
-        }
-        
-        cout << "# Sampled local Q_s^2 fluctuations, grid " << size << "x" << size << ", cell size " << 2.0*size/(points-1) / FMGEV << " fm, fluctuation width " << Qs_fluctuation_sigma << ", mean of lognormal distribution " << lognormal_mean <<", average Q_s^2 modification " << fluct_coef_sum/pts << ", average dev: sqrt(<(modification-1)^2>) = " << std::sqrt(stdev/pts) << endl;
     }
     else
     {
@@ -527,20 +400,6 @@ double Ipsat_Proton::GetQuarkQsFluctuation(unsigned int i)
 }
 
 
-/*
- * Get Q_s fluctuations on the transverse plane
- * Note that if we have Q_s fluctuations individually for each quark, then these
- * fluctuations are taken care in QuarkThickness() function
- */
-double Ipsat_Proton::GetQsFluctuation(double x, double y)
-{
-    if (fluctuation_shape == LOCAL_FLUCTUATIONS)
-    {
-        cerr << "Ipsat_Proton::GetQsFluctuation is not supported anymore" << endl;
-        exit(1); 
-    }
-    return 1;
-}
 
 void Ipsat_Proton::SetQsFluctuation(double s)
 {
@@ -755,7 +614,7 @@ double inthelperf_exponential3d(double z, void *p)
 
 double Ipsat_Proton::QuarkThickness(double r, int i)
 {
-    if (shape == GAUSSIAN or shape == ALBACETE or shape==MORELAND)
+    if (shape == GAUSSIAN)
     {
         double bp = quark_bp[i];
         double fluct = 1.0;
@@ -813,25 +672,7 @@ double Ipsat_Proton::ExponentialDistribution(double x, double y, double z)
     return std::exp( - std::sqrt( x*x + y*y + z*z ) / B_p );
     
 }
-/*
- * Distribution from 1605.09176
- *  prod i<j 1..3 (1-exp( -|s_i-s_j|^2/rc^2))
- */
-double Ipsat_Proton::RepulsiveGaussianDistribution(std::vector<Vec> quarks, double rc)
-{
-    double result = 1.0;
-    for (unsigned int i=0; i<quarks.size(); i++)
-    {
-        for (unsigned int j=i+1; j<quarks.size(); j++)
-        {
-            Vec d = quarks[i] - quarks[j];
-            result *= 1.0 - std::exp( - d.LenSqr() / (rc*rc)) ;
-        }
-    }
-    
-    return result;
-    
-}
+
 struct inthelper_fluxtube_z{ Ipsat_Proton* proton; Vec b;  std::vector<Vec> quarks; Vec center;};
 double inthelperf_fluxtube_z(double z, void* p);
 
@@ -1047,9 +888,7 @@ std::string Ipsat_Proton::InfoStr()
         ss << "Gaussian distribution exp(-b^2/(2B_p))";
     else if (shape == EXPONENTIAL)
         ss << "Exponential distribution, exp(-b/B)";
-    else if (shape==MORELAND)
-        ss << "Scott Moreland's protons";
-    
+   
     ss << endl;
     
     ss << "# Structure: ";

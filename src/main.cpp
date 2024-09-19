@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
     double xp = -1;
     bool skewedness = false;
     double qsfluct_sigma=0;
-    Fluctuation_shape fluctshape = LOCAL_FLUCTUATIONS;
+    Fluctuation_shape fluctshape = FLUCTUATE_QUARKS;
     bool auto_mcintpoints = false;
     std::string wavef_file = "";
     bool schwinger = false;
@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
     {
         cout << "-Q2, -W, -xp: set kinematics" << endl;
         cout << "-real, -imag: set real/imaginary part" << endl;
-        cout << "-dipole A [ipglasma,ipglasma_binary,ipsatproton,smoothnuke] [ipglasmafile ipglasmastep (fm), ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [albacete] [com]    com: move origi nto Center of Mass (with constituent quark ipsat)" << endl;
+        cout << "-dipole A [ipglasma,ipglasma_binary,ipsatproton,smoothnuke] [ipglasmafile ipglasmastep (fm), ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [com]    com: move origin to Center of Mass (with constituent quark ipsat)" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points/auto" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
@@ -201,22 +201,17 @@ int main(int argc, char* argv[])
 						amp = new Ipsat_Proton(LCPT);
                     ((Ipsat_Proton*)amp)->SetProtonWidth(StrToReal(argv[i+3]));
                     ((Ipsat_Proton*)amp)->SetQuarkWidth(StrToReal(argv[i+4]));
-                    if (string(argv[i+5]) == "ALBACETE")
-                        ((Ipsat_Proton*)amp)->SetShape(ALBACETE);
-                    else
+
+                    ((Ipsat_Proton *)amp)->SetShape(GAUSSIAN);
+                    if (argc > i + 5)
                     {
-                        ((Ipsat_Proton*)amp)->SetShape(GAUSSIAN);
-                        if (argc > i+5)
+                        if (string(argv[i + 5]) == "fluxtube")
                         {
-                            if (string(argv[i+5])=="fluxtube")
-                            {
-                                ((Ipsat_Proton*)amp)->SetStructure(CENTER_TUBES);
-                                ((Ipsat_Proton*)amp)->SetFluxTubeNormalization(StrToReal(argv[i+5]));
-                            } 
-                            else if (string(argv[i+5])=="com")
-                                 ((Ipsat_Proton*)amp)->SetQuarkCenterOfMassToOrigin(true);
-                           
+                            ((Ipsat_Proton *)amp)->SetStructure(CENTER_TUBES);
+                            ((Ipsat_Proton *)amp)->SetFluxTubeNormalization(StrToReal(argv[i + 5]));
                         }
+                        else if (string(argv[i + 5]) == "com")
+                            ((Ipsat_Proton *)amp)->SetQuarkCenterOfMassToOrigin(true);
                     }
                 }
                 else if (string(argv[i+2])=="ipglasma")
@@ -274,29 +269,23 @@ int main(int argc, char* argv[])
                             ((Ipsat_Proton*)nucleon)->SetProtonWidth(StrToReal(argv[i+3]));
                             ((Ipsat_Proton*)nucleon)->SetQuarkWidth(StrToReal(argv[i+4]));
 
-   
-                            if (string(argv[i+5]) == "ALBACETE")
-                                ((Ipsat_Proton*)nucleon)->SetShape(ALBACETE);
-                            else
+                            ((Ipsat_Proton *)nucleon)->SetShape(GAUSSIAN);
+                            if (argc > i + 5)
                             {
-                                ((Ipsat_Proton*)nucleon)->SetShape(GAUSSIAN);
-                                if (argc > i+5)
+                                if (string(argv[i + 5]) == "fluxtube")
                                 {
-                                    if (string(argv[i+5])=="fluxtube")
-                                    {
-                                        ((Ipsat_Proton*)nucleon)->SetStructure(CENTER_TUBES);
-                                        ((Ipsat_Proton*)nucleon)->SetFluxTubeNormalization(StrToReal(argv[i+5]));
-                                    }
-                                    else if (string(argv[i+5])=="com")
-                                    {
-                                         ((Ipsat_Proton*)nucleon)->SetQuarkCenterOfMassToOrigin(true); 
-                                    }
+                                    ((Ipsat_Proton *)nucleon)->SetStructure(CENTER_TUBES);
+                                    ((Ipsat_Proton *)nucleon)->SetFluxTubeNormalization(StrToReal(argv[i + 5]));
+                                }
+                                else if (string(argv[i + 5]) == "com")
+                                {
+                                    ((Ipsat_Proton *)nucleon)->SetQuarkCenterOfMassToOrigin(true);
+                                }
 
-                                    else if (string(argv[i+5]).substr(0,1)!="-" and string(argv[i+2])!="ipsatprotonparam")
-                                    {
-                                        cerr << "Unknown ipsatproton option " << argv[i+5] << endl;
-                                        exit(1);
-                                    }
+                                else if (string(argv[i + 5]).substr(0, 1) != "-" and string(argv[i + 2]) != "ipsatprotonparam")
+                                {
+                                    cerr << "Unknown ipsatproton option " << argv[i + 5] << endl;
+                                    exit(1);
                                 }
                             }
                         }
@@ -324,9 +313,7 @@ int main(int argc, char* argv[])
             qsfluct_sigma = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-qsfluctshape")
         {
-            if (string(argv[i+1])=="local")
-                fluctshape = LOCAL_FLUCTUATIONS;
-            else if (string(argv[i+1])=="quarks")
+            if (string(argv[i+1])=="quarks")
                 fluctshape = FLUCTUATE_QUARKS;
             else
             {

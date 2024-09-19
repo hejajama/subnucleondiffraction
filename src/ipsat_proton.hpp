@@ -36,8 +36,6 @@ enum Proton_shape
 {
     GAUSSIAN,
     EXPONENTIAL,
-    ALBACETE,   // implement 1605.09176
-    MORELAND    // Scott Moreland pA bayesian analysis
 };
 
 // Quark structure
@@ -50,7 +48,6 @@ enum Structure
 enum Fluctuation_shape
 {
     FLUCTUATE_QUARKS,
-    LOCAL_FLUCTUATIONS
 };
 
 struct IPsat_fit_parameteters
@@ -105,7 +102,6 @@ public:
     
     void SampleQsFluctuations();
     
-    double GetQsFluctuation(double x, double y);   // return Exp(f(x,y)) that multiplies xg
     void SetQsFluctuation(double s);    // Set sigma for ln Q_s fluctuation
     double GetQuarkQsFluctuation(unsigned int i);   // Get Q_s fluctuation for the given quark
     
@@ -149,7 +145,6 @@ private:
     
     double GaussianRadiusDistribution(double r);    // Used to sample Gaussian radius
     double ExponentialDistribution(double x, double y, double z);   // Exponential distribution for a vector
-    double RepulsiveGaussianDistribution(std::vector<Vec> quarks, double rc); // Distribution from 1605.09176
     
     bool allocated_gdist;   // True if we have allocated memory for gdist in here
     
