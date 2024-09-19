@@ -36,19 +36,17 @@ int main(int argc, char* argv[])
 {
     // Arguments: ipglasma filename  b  schwinger_r
     string fname = argv[1];
-    double rc= StrToReal(argv[3]);
+   // double rc= StrToReal(argv[3]);
     double b = StrToReal(argv[2]);
-    double step = StrToReal(argv[4]);
-    cout << "# Filename: " << fname << " b " << b << " Gev^-1 schwinger rc " << rc << " step[fm]" << endl;
+   // double step = StrToReal(argv[4]);
+    cout << "# Filename: " << fname << " b " << b << " Gev^-1 " << endl;
 
     
     gsl_rng_env_setup();
     global_rng = gsl_rng_alloc(gsl_rng_default);
     gsl_set_error_handler_off ();
     
-    IPGlasma glasma(fname, step);
-	if (rc > 0)
-	glasma.SetSchwinger(true, rc);
+    IPGlasma glasma(fname, 0, BINARY);
     bhelper helper;
     helper.glasma = &glasma;
 	helper.b=b; helper.theta_b=0;
@@ -60,8 +58,8 @@ int main(int argc, char* argv[])
     ipsat.InitializeTarget();
     
     gsl_function f;
-    f.function = &bhelperf;  // do a circle around the proton
-    //f.function = &rhelperf;
+    f.function = &bhelperf_theta;  // do a circle around the proton
+    //f.function = &rhelperf; // only rotate the dipole
 	f.params = &helper;
     
     cout << "# r [1/GeV]  N(x=" << argv[2] << ", y=+/- r/2),  <N(r, " << b+MINB << "<b<"<<b+MAXB << "), IPsat N(r,b=" << argv[2] << ")" << endl;
@@ -75,8 +73,8 @@ int main(int argc, char* argv[])
         gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS);
 	//MAXB = (5.12/2.0*5.068-r/2.0);	// so that q/qbar is never outside the lattice
         double result,error;
-        int status = gsl_integration_qag(&f, b+MINB, b+MAXB, 0, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
-	//int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 1e-5, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
+        //int status = gsl_integration_qag(&f, b+MINB, b+MAXB, 0, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
+	 int status = gsl_integration_qag(&f, 0, 2.0*M_PI, 0, INTACCURACY, INTPOINTS, GSL_INTEG_GAUSS51, w, &result, &error);
         
         //if (status)
           //  cerr << "#bint failed (" << gsl_strerror (status) << ", result  " << result << " relerror " << error/result << " r " <<r  << endl;
@@ -84,15 +82,17 @@ int main(int argc, char* argv[])
         
         gsl_integration_workspace_free(w);
   		//result /= (2.0*M_PI);     
-        result = result / (2.0*M_PI*M_PI*( (MAXB + b)*(MAXB+b) - (MINB+b)*(MINB+b)) );
-	//	result = result / (2.0*M_PI*2.0*M_PI);
+        //result = result / (2.0*M_PI*M_PI*( (MAXB + b)*(MAXB+b) - (MINB+b)*(MINB+b)) );
+		result = result / (2.0*M_PI*2.0*M_PI);
+
+        cout << r << " " << result << endl;
         
         // IPsat comparison
-	double b = StrToReal(argv[2]);
+	/*double b = StrToReal(argv[2]);
         Vec q1(b+0.5*r,0); Vec q2(b-0.5*r,0);
         double ipsat_n = ipsat.DipoleAmplitude::Amplitude(1e-2, q1, q2);
         
-        cout << r << " " << fixedresult << " " << result << " " << ipsat_n << endl;
+        cout << r << " " << fixedresult << " " << result << " " << ipsat_n << endl; */
     }
     
     
@@ -136,8 +136,9 @@ double bhelperf_theta(double theta_b, void* p)
     
    	// Fix r angle by theta_b
    	// r parallel to b
+    /*
 	double theta_r = theta_b; //+M_PI/2.0;
-   	return rhelperf(theta_r, par); 
+   	return rhelperf(theta_r, par); */
 
     
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(INTPOINTS);
