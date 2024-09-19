@@ -246,71 +246,66 @@ int main(int argc, char* argv[])
                     // Construct nucleus
                     std::vector<DipoleAmplitude* > nucleons;
 //                  NOTE: we need to initialize these separately (which is slow) if we want independent e-b-e fluct
-//                 DipoleAmplitude* nucleon;
-//                        nucleon = new Ipsat_Proton(MZSAT);
-//                       nucleon->SetSkewedness(skewedness);
-
-                    for (int j=0; j<A; j++)
+                    DipoleAmplitude* nucleon;
+                    if (string(argv[i+2])=="ipsatproton" or string(argv[i+2])=="ipsatprotonparam")
                     {
-                      DipoleAmplitude *nucleon; 
-                        if (string(argv[i+2])=="ipsatproton" or string(argv[i+2])=="ipsatprotonparam")
-                        {   
-                            if (string(argv[i+2])=="ipsatproton")
-                                nucleon = new Ipsat_Proton(MZSAT);
-                            else if (string(argv[i+2])=="ipsatprotonparam")
-                            {   
-                                IPsat_fit_parameteters ipsatparam;
-                                ipsatparam.saturation=true;
-                                // In this case the parameterers followinb Bp and BG are 
-                                //    C, mu0, lambdag, Ag, mc
-                                ipsatparam.C=StrToReal(argv[i+6]);
-                                ipsatparam.mu0 = std::sqrt(1.1); // StrToReal(argv[i+6]);
-                                ipsatparam.lambdag=StrToReal(argv[i+7]);
-                                ipsatparam.Ag=StrToReal(argv[i+8]);
-                                ipsatparam.mc=StrToReal(argv[i+5]);
+                        if (string(argv[i + 2]) == "ipsatproton")
+                            nucleon = new Ipsat_Proton(MZSAT);
+                        else if (string(argv[i + 2]) == "ipsatprotonparam")
+                        {
+                            IPsat_fit_parameteters ipsatparam;
+                            ipsatparam.saturation = true;
+                            // In this case the parameterers followinb Bp and BG are
+                            //    C, mu0, lambdag, Ag, mc
+                            ipsatparam.C = StrToReal(argv[i + 6]);
+                            ipsatparam.mu0 = std::sqrt(1.1); // StrToReal(argv[i+6]);
+                            ipsatparam.lambdag = StrToReal(argv[i + 7]);
+                            ipsatparam.Ag = StrToReal(argv[i + 8]);
+                            ipsatparam.mc = StrToReal(argv[i + 5]);
 
-                                nucleon = new Ipsat_Proton(MZSAT, ipsatparam);
-                            } 
-                            ((Ipsat_Proton*)nucleon)->SetProtonWidth(StrToReal(argv[i+3]));
-                            ((Ipsat_Proton*)nucleon)->SetQuarkWidth(StrToReal(argv[i+4]));
+                            nucleon = new Ipsat_Proton(MZSAT, ipsatparam);
+                        }
+                        ((Ipsat_Proton *)nucleon)->SetProtonWidth(StrToReal(argv[i + 3]));
+                        ((Ipsat_Proton *)nucleon)->SetQuarkWidth(StrToReal(argv[i + 4]));
 
-   
-                            if (string(argv[i+5]) == "ALBACETE")
-                                ((Ipsat_Proton*)nucleon)->SetShape(ALBACETE);
-                            else
+                        if (string(argv[i + 5]) == "ALBACETE")
+                            ((Ipsat_Proton *)nucleon)->SetShape(ALBACETE);
+                        else
+                        {
+                            ((Ipsat_Proton *)nucleon)->SetShape(GAUSSIAN);
+                            if (argc > i + 5)
                             {
-                                ((Ipsat_Proton*)nucleon)->SetShape(GAUSSIAN);
-                                if (argc > i+5)
+                                if (string(argv[i + 5]) == "fluxtube")
                                 {
-                                    if (string(argv[i+5])=="fluxtube")
-                                    {
-                                        ((Ipsat_Proton*)nucleon)->SetStructure(CENTER_TUBES);
-                                        ((Ipsat_Proton*)nucleon)->SetFluxTubeNormalization(StrToReal(argv[i+5]));
-                                    }
-                                    else if (string(argv[i+5])=="com")
-                                    {
-                                         ((Ipsat_Proton*)nucleon)->SetQuarkCenterOfMassToOrigin(true); 
-                                    }
+                                    ((Ipsat_Proton *)nucleon)->SetStructure(CENTER_TUBES);
+                                    ((Ipsat_Proton *)nucleon)->SetFluxTubeNormalization(StrToReal(argv[i + 5]));
+                                }
+                                else if (string(argv[i + 5]) == "com")
+                                {
+                                    ((Ipsat_Proton *)nucleon)->SetQuarkCenterOfMassToOrigin(true);
+                                }
 
-                                    else if (string(argv[i+5]).substr(0,1)!="-" and string(argv[i+2])!="ipsatprotonparam")
-                                    {
-                                        cerr << "Unknown ipsatproton option " << argv[i+5] << endl;
-                                        exit(1);
-                                    }
+                                else if (string(argv[i + 5]).substr(0, 1) != "-" and string(argv[i + 2]) != "ipsatprotonparam")
+                                {
+                                    cerr << "Unknown ipsatproton option " << argv[i + 5] << endl;
+                                    exit(1);
                                 }
                             }
                         }
-                        else if (string(argv[i+2])=="ipglasma_binary")
-                            nucleon = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), BINARY);
-                        else if (string(argv[i+2])=="ipglasma")
-                            nucleon = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), TEXT);
+                    }
+                    else if (string(argv[i + 2]) == "ipglasma_binary")
+                        nucleon = new IPGlasma(argv[i + 3], StrToReal(argv[i + 4]), BINARY);
+                    else if (string(argv[i + 2]) == "ipglasma")
+                        nucleon = new IPGlasma(argv[i + 3], StrToReal(argv[i + 4]), TEXT);
+
+                    for (int j = 0; j < A; j++)
+                    {
                         nucleons.push_back(nucleon);
                     }
                     amp = new Nucleons(nucleons);
-                    ((Nucleons*) amp)->SetDeuteronStructure(NUCLEONS);
+                    ((Nucleons *)amp)->SetDeuteronStructure(NUCLEONS);
                 } // End construct nucleus
             }
-            
         }
         else if (string(argv[i])=="-print_nucleus")
         {
