@@ -99,12 +99,13 @@ struct Inthelper_amplitude
     double b;
     double theta_b;
     double z;
+    bool real_part;
     Polarization polarization;
 };
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par);
 
-double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Polarization pol)
+double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Polarization pol, bool real_part)
 {
     Inthelper_amplitude helper;
     helper.diffraction = this;
@@ -112,6 +113,7 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     helper.Qsqr = Qsqr;
     helper.t = t;
     helper.polarization=pol;
+    helper.real_part = real_part;
 
     
     
@@ -172,7 +174,9 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
             gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result, &error);
             if (ShowVegasIterations())
                 cout << "# Vegas interation " << result << " +/- " << error << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
-        } while (iter < 2 or fabs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5);
+            if (iter>10)
+                break;
+        } while (iter < 2 or ( std::abs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 or std::abs(error/result) > MCINTACCURACY));
         gsl_monte_vegas_free(s);
     }
     
@@ -203,7 +207,7 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
     if (!FACTORIZE_ZINT)
         z = vec[4];
         
-    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z, helper->polarization);
+    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z, helper->polarization, helper->real_part);
     
     /*
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(ZINT_INTERVALS);
@@ -231,7 +235,7 @@ double Inthelperf_amplitude_z(double z, void* p)
     return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z);
 }
 
-double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol)
+double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol, bool real_part)
 { 
     
         
@@ -247,14 +251,11 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     double ry = r*sin(theta_r);
     
     // q and antiq positions
-    double tmpz = z;
-    z=0.5; // Do not use z when calcualting antiquark/quark positions, just b is geometric mean
+    // Note my convention is that b is the center of the dipole (geometric center), not center of mass (z weighted)
+    // Consequently I get (0.5-z)r.Delta phase    
     
-    
-    double qx = bx + z*rx; double qy = by + z*ry;
-    double qbarx = bx - (1.0-z)*rx; double qbary = by - (1.0-z)*ry;
-    
-    z = tmpz;
+    double qx = bx + 0.5*rx; double qy = by + 0.5*ry;
+    double qbarx = bx - 0.5*rx; double qbary = by - 0.5*ry;
     
     double delta = std::sqrt(t);
     
@@ -304,7 +305,10 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     }
     
 	double res=0;
-    if (REAL_PART)
+    // Note: As I'm using GSL to integrate and I use a routine that assumes a scalar function, this is quite inefficeint as 
+    // everything above is computed separately for the real and imaginary parts. Performance could be optimized by using an 
+    // integration routine supportin vector valued functions
+    if (real_part)
         res = result.real();
     else
         res = result.imag();

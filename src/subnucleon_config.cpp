@@ -8,9 +8,7 @@
 #include <iostream>
 #include <sstream>
 
-int MCINTPOINTS = 1e7;
-
-bool REAL_PART = true;
+int MCINTPOINTS = 2e5;
 
 bool CORRECTIONS = false;
 
