@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
     int NRQCD_param_id = -1; // if >0, use specific parameters from datafile
     
     
-    cout << "# SubNucleon Diffraction by H. Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2021" << endl;
+    cout << "# SubNucleon Diffraction by H. Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2024" << endl;
     cout << "# Git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__ << endl; 
     cout << "# Command: ";
     for (int i=1; i<argc; i++)
@@ -717,8 +717,8 @@ string InfoStr()
     else info << "# Imaginary part";
     
     if (FACTORIZE_ZINT)
-        info <<". z integral factorized";
-    else info << ". z integral not factorized";
+        info <<"# z integral factorized";
+    else info << "# z integral not factorized";
     
     
     return info.str();
@@ -728,11 +728,11 @@ string InfoStr()
 int MCpoints(double t)
 {
     if (t<0.1)
-        return 5e6;
+        return 5e5;
     else if (t<0.6)
-        return 1e7;
+        return 1e6;
     else
-        return 1e8;
+        return 1e7;
 }
 
 
