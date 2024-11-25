@@ -563,7 +563,7 @@ int main(int argc, char* argv[])
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         else
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
-        cout << "# t  dsigma/dt [GeV^-4] columns: transverse real, transverse imag, longitudinal real, longitudinal imag" << endl;
+        cout << "# t  amplitude [GeV^-2] columns: transverse real, transverse imag, longitudinal real, longitudinal imag" << endl;
 
 
         for (t=mint; t<=maxt; t+=tstep)
