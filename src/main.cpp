@@ -92,6 +92,8 @@ int main(int argc, char* argv[])
 
     bool ipglasma=false;
     bool periodic_boundary_conditions=false;
+
+    bool only_real_part=false;
     
     // nrqcd parameters
     double NRQCD_A=0.213;
@@ -109,8 +111,8 @@ int main(int argc, char* argv[])
     if (string(argv[1])=="-help")
     {
         cout << "-Q2, -W, -xp: set kinematics" << endl;
-        cout << "-real, -imag: set real/imaginary part" << endl;
         cout << "-dipole A [ipglasma,ipglasma_binary,ipsatproton,smoothnuke] [ipglasmafile ipglasmastep (fm), ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [com]    com: move origin to Center of Mass (with constituent quark ipsat)" << endl;
+        cout << "-only_real_part: do not compute the imaginary part (replaced by 0)" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points/auto" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
@@ -152,10 +154,8 @@ int main(int argc, char* argv[])
             w=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-xp")
             xp=StrToReal(argv[i+1]);
-        else if (string(argv[i])=="-real")
-            REAL_PART = true;
-        else if (string(argv[i])=="-imag")
-            REAL_PART = false;
+        else if (string(argv[i])=="-only_real_part")
+            only_real_part=true;
         else if (string(argv[i])=="-wavef")
         {
             if (string(argv[i+1])=="gauslc")
@@ -466,6 +466,8 @@ int main(int argc, char* argv[])
     Diffraction diff(*amp, *wavef);
     diff.SetMaxR(maxr*5.068);
 
+    diff.ShowVegasIterations(false);
+
     
     cout << "# " << InfoStr() << endl;
     //cout << "# " << *wavef << endl;
@@ -554,11 +556,14 @@ int main(int argc, char* argv[])
     
     else if (mode == AMPLITUDE_DT)
     {
+
+        if (only_real_part)
+            cout <<"# Note: imaginary part set to 0" << endl;
         if (xp < 0)
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         else
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
-        cout << "# t  dsigma/dt [GeV^-4] Transverse Longitudinal" << endl;
+        cout << "# t  amplitude [GeV^-2] columns: transverse real, transverse imag, longitudinal real, longitudinal imag" << endl;
 
 
         for (t=mint; t<=maxt; t+=tstep)
@@ -578,14 +583,21 @@ int main(int argc, char* argv[])
                 MCINTPOINTS = MCpoints(t);
             
             cout.precision(5);
-            double trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
-            double lng = 0;
+            double trans_r = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
+            double trans_i = 0;
+            if (!only_real_part)
+                trans_i = diff.ScatteringAmplitude(xpom, Qsqr, t, T, false); // note: last argument is real_part, false=imag part
+
+            double lng_r = 0;
             if (Qsqr > 0)
-                lng = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
+                lng_r = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
+            double lng_i = 0;
+            if (Qsqr > 0 and !only_real_part)
+                lng_i = diff.ScatteringAmplitude(xpom, Qsqr, t, L, false);
 
             cout << t << " ";
             cout.precision(10);
-            cout << trans  << " " << lng << endl;
+            cout << trans_r  << " " << trans_i << " " << lng_r << " " << lng_i << endl;
             
 
             // Larger t step probably useful at large t
@@ -711,10 +723,6 @@ string InfoStr()
         info << "unknown!";
     
     info << endl << amp->InfoStr();
-
-    
-    if (REAL_PART) info << "# Real part";
-    else info << "# Imaginary part";
     
     if (FACTORIZE_ZINT)
         info <<". z integral factorized";

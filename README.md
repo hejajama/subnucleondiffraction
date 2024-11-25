@@ -12,6 +12,8 @@ where V is a vector meson (Upsilon, JPsi, rho, phi)
 
 **Note** This code is constantly developed, and individual commits are not guaranteed to work properly. If you want to use this code in your project, it is probably good idea to first communicate directly with Heikki Mäntysaari <heikki.mantysaari@jyu.fi>
 
+**Note 2** As of Nov/2024, the output format has changed, the code now always computes the real and imaginary parts and prints both results.
+
 
 ## Compiling
  
@@ -38,52 +40,49 @@ User has to specify the dipole-target scattering amplitude. Supported dipole amp
 
  * IPsat with event-by-event fluctuating geometry
  * Wilson lines generated using the IPGlasma code (https://github.com/schenke/ipglasma)
+ * JIMWLK-evolved Wilson lines also work, the evolution can be solved using (https://github.com/hejajama/jimwlk)
 
 Examples
 
-    GSL_RNG_SEED=1 ./build/bin/subnucleondiffraction -dipole 1 ipsatproton 3.3 0.7 -real -Q2 0 -W 75 -mcintpoints 1e5
+    GSL_RNG_SEED=1 ./build/bin/subnucleondiffraction -dipole 1 ipsatproton 3.3 0.7 -Q2 0 -W 75 -mcintpoints 1e5
     
-Calculates diffractive scattering amplitude (real part, imaginary part: use `-imag` instead of `-real`)
-Q2  is the photon virtuality in GeV<sup>2</sup> and W is the center-of-mass energy (again in GeV). This woud use 10<sup>5</sup> MC integration points points are used in (adaptive) Monte Carlo integration. The MonteCarlo method (Vegas or MISER) can be selected using the `-mcint` flag (see `src/main.cpp`)
+Calculates diffractive scattering amplitude. Q2  is the photon virtuality in GeV<sup>2</sup> and W is the center-of-mass energy (again in GeV). This woud use 10<sup>5</sup> MC integration points in Monte Carlo integration. The MonteCarlo method (Vegas [default] or MISER) can be selected using the `-mcint` flag (see `src/main.cpp`)
 
 Using a heavy nucleus instead of proton, replace `1 -> 197` (Au) or any other A. For A>3 Woods-Saxon is used. Deuteron and 3He are handled separately.
 
-Random seed is set by `GSL_RNG_SEED` enviromental variable. One **must** use the same RNG_SEED when calculating real and 
-imaginary parts!
+Random seed is set by `GSL_RNG_SEED` enviromental variable. 
 
-Round proton is "ipsatproton 0 4" (first number controls the width of the Gaussian from which the hot spot locations are sampled, and the second number is the width of the hot spots. This code always uses three hotspots, edit `src/ipsat_proton.cpp` if necessary. If teh center-of-mass should be moved to the origin, add `com` at the end:
+Round IPsat-proton is e.g. `ipsatproton 0 4` (first number controls the width of the Gaussian from which the hot spot locations are sampled, and the second number is the width of the hot spot. This code always uses three hotspots, edit `src/ipsat_proton.cpp` if necessary. If the center-of-mass should be moved to the origin, add `com` at the end:
 
     -dipole 1 ipsatproton 4.5 1.0 com
 
-Q_s fluctuations for constituent quarks are set as:
+The magnitude of the Q_s fluctuations is set as
 
-    -qsfluct 0.5 -qsfluctshape quarks 
-    
-where the first number is the width of the log-normal distribution sigma.
+    -qsfluct 0.5
 
 Wilson lines generated using the IPGlasma code can be used instead of the IPsat dipole as follows: 
     
     -dipole 1 ipglasma FILENAME step
 
-The step size in fm, and should be `L/N` (`L` is the lattice length, `N` number of lattice points)
+The step size in fm, and should be `L/N` (`L` is the lattice length, `N` number of lattice points). Note: everywhere else this code uses GeV^n units.
 
-Or, it is more efficient use Wilson lines in binary format
+It is more efficient use Wilson lines in binary format (generated using the `writeInitialWilsonLines 2` option in IP-Glasma)
 
     -dipole 1 ipglasma_binary FILENAME
 
 In this case there is no need to specify the step size.
  
-The code outputs
+The code outputs the squared momentum transfer |t| and complex scattering amplitudes separately for the transverse and longitudinal photon, the syntax is
 
-    t   amplitude(T)  amplitude(L)
+    t   transverse real, transverse imag, longitudinal real, longitudinal imag
 
-So amplitudes for different polarizations separately. All dimensionful units in this code are in GeV unless stated otherwise. Note that the user has to calculate real and imaginary parts separately (but the imaginary part does not affect the coherent cross section).
+ All dimensionful units in this code are in GeV unless stated otherwise, so amplitude is in 1/GeV^2 (cross section 1/GeV^4). 
 
-The coherent cross section is then 
+The coherent diffractive cross section is 
 
     dsigma/dt = 1/(16 pi ) <A>^2   [in 1/GeV^4]
 
-Where \<A\> is the average of the amplitudes.
+Where \<A\> is the average of the amplitudes. Note that the factor $1/(16\pi)$ is not included in this code!
 
 Similalry the incoherent corss section is computed by replacing `<A>^2` by `<A^2> - <A>^2`
 
@@ -108,7 +107,7 @@ The default IPsat fit used is
  * H. Mäntysaari, P. Zurita,  Phys.Rev.D 98 (2018) 036002, arXiv:1804.05311 [hep-ph]
 
 This program also contains codes to evaluate the dipole amplitude from the
-IPsat fit 
+IPsat fit (not build by default)
 
  * A. Rezaeian, M. Siddikov, M. Van de Klundert, R. Venugopalan Phys.Rev. D87 (2013) no.3, 034002 
 
