@@ -373,6 +373,11 @@ void Ipsat_Proton::SampleQsFluctuations()
             qs_fluctuations_quarks.push_back(f);
             sum+=f;
         }
+
+        // Hack to test identical Q_s for all nucleons
+        for (int i=1; i < nq; i++)
+            qs_fluctuations_quarks[i] = qs_fluctuations_quarks[0];
+
         cout << "# Sampled " << nq << " quark fluctuations ";
         for (int i=0; i<nq; i++) cout << qs_fluctuations_quarks[i] << " ";
         cout << " average Q_s^2 fluctuation " << sum/nq << endl;
