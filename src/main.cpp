@@ -208,7 +208,8 @@ int main(int argc, char* argv[])
                         if (string(argv[i + 5]) == "fluxtube")
                         {
                             ((Ipsat_Proton *)amp)->SetStructure(CENTER_TUBES);
-                            ((Ipsat_Proton *)amp)->SetFluxTubeNormalization(StrToReal(argv[i + 5]));
+                            ((Ipsat_Proton *)amp)->SetFluxTubeNormalization(StrToReal(argv[i + 6]));
+                            ((Ipsat_Proton *)amp)->SetQuarkCenterOfMassToOrigin(true);
                         }
                         else if (string(argv[i + 5]) == "com")
                             ((Ipsat_Proton *)amp)->SetQuarkCenterOfMassToOrigin(true);
@@ -507,6 +508,10 @@ int main(int argc, char* argv[])
         double origin[2]={0,0};
         double max = 25;
         double min = -25;
+        if (A==1)
+        {
+            max=7; min=-7;
+        }
         double step = 0.1;
         cout << "# x y N(0,(x,y)) T(b) " << endl;
         for (double y=min+step/2; y < max-step/2; y+=step)

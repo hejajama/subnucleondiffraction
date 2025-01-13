@@ -772,6 +772,7 @@ double inthelperf_fluxtube_z(double z, void* p)
     cout << "b " << b3d << endl;
     */
     double mindist=999999999999;
+    double density=0;
     for (unsigned int i=0; i<par->quarks.size(); i++)
     {
     
@@ -795,6 +796,7 @@ double inthelperf_fluxtube_z(double z, void* p)
             {
                 mindist=dist;
             }
+            density += par->proton->QuarkThickness(dist, i);
             continue;
             //return par->proton->QuarkThickness(dist, 0);
         }
@@ -806,12 +808,15 @@ double inthelperf_fluxtube_z(double z, void* p)
         projection*= scaling;
         
         Vec dist = quark_to_b - projection;
-        
+
+        density += par->proton->QuarkThickness(dist.Len(), i);        
 
         if (dist.Len() < mindist)
             mindist = dist.Len();
         
     }
+
+    return density;
     
     //cout << "mindist " << mindist << " b " << par->b << endl;
 
@@ -826,7 +831,7 @@ void Ipsat_Proton::NormalizeFluxTubeThickness()
 {
     //cout << "Normalizing fluxtube\n" << endl;
     //fluxtube_normalization = 1.0;
-    //return;
+    return;
     
     /// NOTE: not used, as we acutally want total energy to depend on normalization
     // FluxTubeThicknes should be normalized to unity, so calculate
@@ -846,8 +851,8 @@ void Ipsat_Proton::NormalizeFluxTubeThickness()
     gsl_integration_workspace_free(w);
     //cout << "Fluxtube normalization " << result << " pm " << error << endl;
     
-    cout << result << endl;;
-    exit(1);
+   // cout << result << endl;;
+   //exit(1);
     //fluxtube_normalization = 1.0/result;
     
     
