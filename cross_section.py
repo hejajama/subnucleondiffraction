@@ -59,9 +59,12 @@ def CoherentCrossSection(dirname:str,minconf:int=0,maxconf:int=250, amplitude:bo
             print("# Error with file ",fn, " ",e)
             continue
             
-        if len(dat)==0:
+        if len(dat)==0 or np.isnan(dat).any() or np.isinf(dat).any():
+            print("# Skip file with NaN or Inf entries " , i)
             print("# Skip emtpy file " , i)
             continue
+
+
     
         if len(tvals)==0:
             tvals=dat[:,0]
@@ -128,7 +131,8 @@ def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400, f
         except IOError:
             print("# File ", fn, " does not exist, skip")
             continue
-
+        if len(tmpdata) == 0 or np.isnan(tmpdata).any() or np.isinf(tmpdata).any():
+            print("# Skip file with NaN or Inf entries " + fn)
         if len(tmpdata) == 0:
             print("# Empty file " + fn)
             continue

@@ -257,7 +257,14 @@ void Ipsat_Proton::InitializeTarget()
             Vec tmpvec3d(x, y, z);
             quarks.push_back(tmpvec);
             quarks3d.push_back(tmpvec3d);
-            quark_bp.push_back(B_q);
+            
+            double sampled_width = -1;
+            while (sampled_width < 0)
+                sampled_width = gsl_ran_gaussian(global_rng, std::sqrt(B_q)/4.) + B_q;
+            
+            quark_bp.push_back(sampled_width);
+
+            //quark_bp.push_back(B_q);
         }
         else if (shape == EXPONENTIAL)
         {
@@ -284,6 +291,11 @@ void Ipsat_Proton::InitializeTarget()
         }
     }
 
+/*
+    cout <<"# Quark widths sampled: " << endl;
+    for (int i=0; i<quark_bp.size(); i++)
+        cout << quark_bp[i] << " ";
+*/
 
     SampleQsFluctuations();
 
@@ -773,6 +785,7 @@ double inthelperf_fluxtube_z(double z, void* p)
     */
     double mindist=999999999999;
     double density=0;
+    double maxdensity=0;
     for (unsigned int i=0; i<par->quarks.size(); i++)
     {
     
@@ -797,6 +810,11 @@ double inthelperf_fluxtube_z(double z, void* p)
                 mindist=dist;
             }
             density += par->proton->QuarkThickness(dist, i);
+
+            double tmpdensity = par->proton->QuarkThickness(dist, i);
+            if (tmpdensity > maxdensity)
+                maxdensity = tmpdensity;
+
             continue;
             //return par->proton->QuarkThickness(dist, 0);
         }
@@ -811,16 +829,22 @@ double inthelperf_fluxtube_z(double z, void* p)
 
         density += par->proton->QuarkThickness(dist.Len(), i);        
 
+        double tmpdensity= par->proton->QuarkThickness(dist.Len(), i);
+        if (tmpdensity > maxdensity)
+            maxdensity = tmpdensity;
+
         if (dist.Len() < mindist)
             mindist = dist.Len();
         
     }
 
-    return density;
+    return maxdensity;
+    // return density 
+    //  return par->proton->QuarkThickness(mindist, 0);
     
     //cout << "mindist " << mindist << " b " << par->b << endl;
 
-    return par->proton->QuarkThickness(mindist, 0);
+   
     
     
 }
