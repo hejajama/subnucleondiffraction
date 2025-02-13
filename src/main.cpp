@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
     double mint=0;
     double maxt=1.5;
     double tstep=0.1;
-    
+    std::vector<double> tlist;
     //double xpom=0.000959089;
     double w = 100;
     double xp = -1;
@@ -348,6 +348,8 @@ int main(int argc, char* argv[])
             maxt=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-tstep")
             tstep=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-tlist")
+            tlist = StrToList(argv[i+1]);
         else if (string(argv[i])=="-no_t_in_xpom")
             t_in_xpom = 0.0;
         else if (string(argv[i])=="-nrqcd_parameters")
@@ -381,13 +383,16 @@ int main(int argc, char* argv[])
             cerr << "Unknown parameter " << argv[i] << endl;
             exit(1);
         }
-        
+
     }
-    
-    
-    
-    
-    
+
+    if (tlist.size() == 0) {
+        for (double t = mint; t < maxt; t += tstep)
+            tlist.push_back(t);
+    }
+
+
+
     // Initialize global random number generator
     const gsl_rng_type * rngtype;
     gsl_rng_env_setup();
@@ -566,7 +571,8 @@ int main(int argc, char* argv[])
         cout << "# t  amplitude [GeV^-2] columns: transverse real, transverse imag, longitudinal real, longitudinal imag" << endl;
 
 
-        for (t=mint; t<=maxt; t+=tstep)
+        //for (t=mint; t<=maxt; t+=tstep)
+        for (auto t: tlist)
         {
             double xpom;
             if (xp < 0)
@@ -615,7 +621,8 @@ int main(int argc, char* argv[])
         cout << "# Real part correction" << endl;
         cout << "# t  transverse  longitudinal" << endl;
         double tstep=0.02;
-        for (t=mint; t<=maxt; t+=tstep)
+        //for (t=mint; t<=maxt; t+=tstep)
+        for (auto t: tlist)
         {
             double xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.04)

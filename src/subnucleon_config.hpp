@@ -7,6 +7,7 @@
 
 #include <gsl/gsl_errno.h>
 #include <string>
+#include <vector>
 
 const int ZINT_INTERVALS = 20;
 const double ZINT_RELACCURACY = 0.0001;
@@ -56,6 +57,7 @@ void ErrHandler(const char * reason,
 
 int StrToInt(std::string str);
 double StrToReal(std::string str);
+std::vector<double> StrToList(std::string str);
 
 #endif /* subnucleon_config_h */
 
