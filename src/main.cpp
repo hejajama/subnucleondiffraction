@@ -41,6 +41,7 @@ gsl_rng* global_rng;
 enum MODE
 {
     AMPLITUDE_DT,   // Calculate amplitude as a function of t, real/imag part set by other cli argument
+    TOTALCROSSSECTION,  // calculate quantities for computing total cross section
     CORRECTIONS ,    // Caluclate corrections, require dipole amplitude with rotational symmetry
     PRINT_NUCLEUS,
     F2,             // Calculate F2
@@ -309,6 +310,8 @@ int main(int argc, char* argv[])
             skewedness = true;
         else if (string(argv[i])=="-corrections")
             mode = CORRECTIONS;
+        else if (string(argv[i])=="-totalcrosssections")
+            mode = TOTALCROSSSECTION;
         else if (string(argv[i])=="-qsfluct")
             qsfluct_sigma = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-qsfluctshape")
@@ -614,6 +617,51 @@ int main(int argc, char* argv[])
 	    ///if (t>=0.15 )
             ///    tstep = 0.02;
                 
+        }
+    }
+    else if (mode == TOTALCROSSSECTION)
+    {
+        if (xp < 0)
+            cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
+        else
+            cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
+        cout << "# b  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag" << endl;
+
+        double bmin = 0.;
+        double bmax = 10.;
+        double db = 0.5;
+        int nb = static_cast<int>(bmax - bmin)/db + 1;
+        std::vector<double> blist(nb, 0.);
+        for (int ib = 0; ib < nb; ib++) {
+            blist[ib] = bmin + ib*db;
+        }
+        for (auto b: blist) {
+            double xpom;
+            if (xp < 0)
+                xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+            else
+                xpom = xp;
+            if (xpom > 0.04)
+            {
+                cerr << "xpom = " << xpom << ", can't do this!" << endl;
+                //continue;
+            }
+
+            cout.precision(5);
+            double trans_r = diff.ScatteringAmplitudeF(xpom, Qsqr, b, T);
+            double trans_i = diff.ScatteringAmplitudeF(xpom, Qsqr, b, T, false);
+
+            double lng_r = 0;
+            double lng_i = 0;
+            if (Qsqr > 0) {
+                lng_r = diff.ScatteringAmplitudeF(xpom, Qsqr, b, L);
+                lng_i = diff.ScatteringAmplitudeF(xpom, Qsqr, b, L, false);
+            }
+
+            cout << b << " ";
+            cout.precision(10);
+            cout << trans_r  << " " << trans_i << " " << lng_r << " " << lng_i << endl;
+
         }
     }
     else if (mode == CORRECTIONS)
