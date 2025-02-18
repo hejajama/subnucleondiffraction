@@ -78,6 +78,8 @@ int main(int argc, char* argv[])
     double maxt=1.5;
     double tstep=0.1;
     std::vector<double> tlist;
+    double maxb = 10. / 0.19733;    // GeV^-1
+    int nbperp = 25;
     //double xpom=0.000959089;
     double w = 100;
     double xp = -1;
@@ -126,6 +128,7 @@ int main(int argc, char* argv[])
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
         cout << "-schwinger r_c" << endl;
         cout << "-mint, -maxt, -tstep" << endl;
+        cout << "-maxb, -nbperp" << endl;
         cout << "-nrqcd_parameters A B" << endl;
         cout << "-nrqcd_parameters_from_file" << endl;
         cout << "-periodic_boundary_conditions: use periodic boundary conditions" << endl;
@@ -353,6 +356,10 @@ int main(int argc, char* argv[])
             tstep=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-tlist")
             tlist = StrToList(argv[i+1]);
+        else if (string(argv[i])=="-maxb")
+            maxb=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-nbperp")
+            nbperp=StrToInt(argv[i+1]);
         else if (string(argv[i])=="-no_t_in_xpom")
             t_in_xpom = 0.0;
         else if (string(argv[i])=="-nrqcd_parameters")
@@ -627,13 +634,10 @@ int main(int argc, char* argv[])
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
         cout << "# b (GeV^-1)  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag" << endl;
 
-        double bmin = 0.;
-        double bmax = 15.;
-        double db = 0.5;
-        int nb = static_cast<int>(bmax - bmin) / db;
-        std::vector<double> blist(nb, 0.);
-        for (int ib = 0; ib < nb; ib++) {
-            blist[ib] = (bmin + (ib + 0.5) * db) / 0.19733;  // GeV^-1
+        double db = maxb / nbperp;              // GeV^-1
+        std::vector<double> blist(nbperp, 0.);
+        for (int ib = 0; ib < nbperp; ib++) {
+            blist[ib] = (ib + 0.5) * db;        // GeV^-1
         }
         for (auto b: blist) {
             double xpom;
