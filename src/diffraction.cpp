@@ -319,8 +319,8 @@ double Inthelperf_amplitudeF_mc(double *vec, size_t dim, void* par) {
     if (!FACTORIZE_ZINT)
         z = vec[3];
 
-    return helper->diffraction->ScatteringAmplitudeIntegrand(
-        helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r,
+    return helper->diffraction->ScatteringAmplitudeIntegrand2(
+        helper->xpom, helper->Qsqr, helper->r, helper->theta_r,
         helper->b, helper->theta_b, z, helper->polarization, helper->real_part);
 }
 
@@ -333,7 +333,7 @@ double Inthelperf_amplitude_z(double z, void* p)
 
 double Diffraction::ScatteringAmplitudeIntegrand(
     double xpom, double Qsqr, double t, double r, double theta_r,
-    double b, double theta_b, double z, Polarization pol, bool real_part) { 
+    double b, double theta_b, double z, Polarization pol, bool real_part) {
 
     // Recall quark and gluon positions:
     // Quark: b + zr
@@ -411,6 +411,71 @@ double Diffraction::ScatteringAmplitudeIntegrand(
         exit(1);
     }
 
+    return res;
+}
+
+
+double Diffraction::ScatteringAmplitudeIntegrand2(
+    double xpom, double Qsqr, double r, double theta_r,
+    double b, double theta_b, double z, Polarization pol, bool real_part) { 
+
+    // Recall quark and gluon positions:
+    // Quark: b + zr
+    // Antiquark: b - (1-z) r
+    // If do like Lappi, Mantysaari: set z=1/2 here
+
+    double bx = b*cos(theta_b);
+    double by = b*sin(theta_b);
+    double rx = r*cos(theta_r);
+    double ry = r*sin(theta_r);
+
+    // q and antiq positions
+    double qx = bx + (1. - z) * rx;
+    double qy = by + (1. - z) * ry;
+    double qbarx = bx - z * rx;
+    double qbary = by - z * ry;
+
+    double x1[2] = {qx, qy};
+    double x2[2] = {qbarx, qbary};
+    double amp_real = dipole->Amplitude(xpom, x1, x2 );
+    double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
+    std::complex<double> amp(amp_real, amp_imag);
+    //amp = amp.real();   // Disable possible imag part for now
+
+    std::complex<double> result = 2.0*r; // r from Jacobians, 2 as we have written sigma_qq = 2 N
+    std::complex<double> imag(0,1);
+
+    if (FACTORIZE_ZINT) {
+        if (wavef->WaveFunctionType() == "NRQCD") {
+            double delta = 0.;
+            // Note 1/(4pi) is included in the z integral measure in PsiSqr_T_intz
+            if (pol == T)
+                result *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
+            else
+                result *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta,theta_r);
+        } else {
+            if (pol == T)
+                result *= wavef->PsiSqr_T_intz(Qsqr, r);
+            else
+                result *= wavef->PsiSqr_L_intz(Qsqr, r);
+        }
+        result *= amp;
+    } else {
+        if (pol == T)
+            result *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
+        else
+            result *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
+        result *= amp;
+    }
+
+    double res = 0;
+    // Note: As I'm using GSL to integrate and I use a routine that assumes a scalar function, this is quite inefficeint as 
+    // everything above is computed separately for the real and imaginary parts. Performance could be optimized by using an 
+    // integration routine supportin vector valued functions
+    if (real_part)
+        res = result.real();
+    else
+        res = result.imag();
     return res;
 }
 

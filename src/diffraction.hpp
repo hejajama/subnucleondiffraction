@@ -21,7 +21,10 @@ public:
     double ScatteringAmplitude(double xpom, double Qsqr, double t,Polarization pol=T, bool real_part=true);
     double ScatteringAmplitudeF(double xpom, double Qsqr, double b, Polarization pol=T, bool real_part=true);
     double ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol=T, bool real_part=true);
-    
+    double ScatteringAmplitudeIntegrand2(
+    double xpom, double Qsqr, double r, double theta_r,
+    double b, double theta_b, double z, Polarization pol, bool real_part); 
+
     // Calculate scattering amplitude in case of cylinderical cymmetry (e.g. ipsat with no constituent quarks)
     double ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t, Polarization pol=T);
     double ScatteringAmplitudeRotationalSymmetryIntegrand(double xpom, double Qsqr, double t, double r, double b, double z, Polarization pol=T);
