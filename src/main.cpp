@@ -628,12 +628,12 @@ int main(int argc, char* argv[])
         cout << "# b  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag" << endl;
 
         double bmin = 0.;
-        double bmax = 10.;
+        double bmax = 20.;
         double db = 0.5;
-        int nb = static_cast<int>(bmax - bmin)/db + 1;
+        int nb = static_cast<int>(bmax - bmin) / db;
         std::vector<double> blist(nb, 0.);
         for (int ib = 0; ib < nb; ib++) {
-            blist[ib] = bmin + ib*db;
+            blist[ib] = bmin + (ib + 0.5) * db;
         }
         for (auto b: blist) {
             double xpom;
