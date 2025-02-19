@@ -653,7 +653,9 @@ int main(int argc, char* argv[])
 
             cout.precision(5);
             double trans_r = diff.ScatteringAmplitudeF(xpom, Qsqr, b, T);
-            double trans_i = diff.ScatteringAmplitudeF(xpom, Qsqr, b, T, false);
+            double trans_i = 0.0;
+            // found the F is real in practice
+            //trans_i = diff.ScatteringAmplitudeF(xpom, Qsqr, b, T, false); 
 
             double lng_r = 0;
             double lng_i = 0;
@@ -664,7 +666,9 @@ int main(int argc, char* argv[])
 
             cout << b << " ";
             cout.precision(10);
-            cout << trans_r  << " " << trans_i << " " << lng_r << " " << lng_i << endl;
+            cout << std::scientific
+                 << trans_r  << " " << trans_i << " "
+                 << lng_r << " " << lng_i << endl;
 
         }
     }
