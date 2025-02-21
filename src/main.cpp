@@ -653,7 +653,10 @@ int main(int argc, char* argv[])
 
             cout.precision(5);
             double trans_r = diff.ScatteringAmplitudeF(xpom, Qsqr, b, T);
-            double trans_i = diff.ScatteringAmplitudeF(xpom, Qsqr, b, T, false);
+            double trans_i = 0.0;
+            // In practice, we found the imaginary part to be very small
+            // compared to the real part, no need to compute
+            //trans_i = diff.ScatteringAmplitudeF(xpom, Qsqr, b, T, false);
 
             double lng_r = 0;
             double lng_i = 0;
