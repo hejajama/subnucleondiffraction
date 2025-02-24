@@ -49,6 +49,10 @@ public:
     void SetSchwinger(bool s, double rc=0);
     void ApplyPeriodicBoundaryConditions(double q[2]); 
 
+    std::vector<int> LatticeCoordinates(double x, double y);
+    int WilsonLineCoordinate(int  xind, int yind);
+    WilsonLine& GetWilsonLine(int i) { return wilsonlines[i]; }
+
 private:
     
     
