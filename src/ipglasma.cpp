@@ -69,7 +69,7 @@ std::complex<double> IPGlasma::ComplexAmplitude(double xpom, double q1[2], doubl
     if (amp.real() < 0)
         amp = std::complex<double>(0, amp.imag());
 
-    if (isnan(amp.real()) or isnan(amp.imag()))
+    if (std::isnan(amp.real()) or std::isnan(amp.imag()))
     {
         cerr << "Wilson line trance NaN, quark coords " << q1[0] << ", " << q1[1] << " and " << q2[0] << ", " << q2[1] << endl;
 	    exit(1);
