@@ -260,7 +260,7 @@ void Ipsat_Proton::InitializeTarget()
             
             double sampled_width = -1;
             while (sampled_width < 0)
-                sampled_width = gsl_ran_gaussian(global_rng, std::sqrt(B_q)/4.) + B_q;
+                sampled_width = gsl_ran_gaussian(global_rng, std::sqrt(B_q)/2.) + B_q;
             
             quark_bp.push_back(sampled_width);
 
