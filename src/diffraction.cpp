@@ -191,6 +191,86 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
 }
 
 
+double Inthelperf_amplitudeF_mc(double *vec, size_t dim, void* par);
+
+double Diffraction::ScatteringAmplitudeF(
+    double xpom, double Qsqr, double b, Polarization pol, bool real_part) {
+
+    Inthelper_amplitude helper;
+    helper.diffraction = this;
+    helper.xpom = xpom;
+    helper.Qsqr = Qsqr;
+    helper.t = 0.0;
+    helper.b = b;
+    helper.polarization = pol;
+    helper.real_part = real_part;
+
+    // Do MC integral over impact parameters and dipole sizes
+    // Currently hardcoded parameters for jpsi and gold:
+    // Impact parameter up to 100 GeV^-1
+    // Dipole size up to 10 GeV^-1
+    // MC integration parameters: b, theta_b, r, theta_r, Z
+    double *lower, *upper;
+    if (FACTORIZE_ZINT)
+    {
+        lower = new double[3];
+        upper = new double[3];
+    }
+    else
+    {
+        lower = new double[4];
+        upper = new double[4];
+        lower[3] = zlimit; // Min z
+        upper[3]= 1. - lower[3];    // Max z
+    }
+    lower[0] = lower[1] = lower[2] = 0;
+    upper[0] = 2.0*M_PI;        // phi_b
+    upper[1] = MAXR; //MAXR;//20; //0.5*5.068;  // Max r
+    upper[2] = 2.0*M_PI;        // phi_r
+
+    gsl_monte_function F;
+    F.f = &Inthelperf_amplitudeF_mc;
+    F.dim = 3;
+    if (!FACTORIZE_ZINT)
+        F.dim = 4;
+    F.params = &helper;
+
+    double result = 0.;
+    double error = 0.;
+
+    if (MCINT == MISER) {
+        gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
+        gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS,
+                                  global_rng, s, &result, &error);
+        gsl_monte_miser_free(s);
+    } else if (MCINT == VEGAS) {
+        gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
+        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50,
+                                  global_rng, s, &result, &error);
+
+        if (ShowVegasIterations())
+            cout << "# vegas warmup " << result << " +/- " << error << endl;
+        int iter=0;
+        do {
+            iter++;
+            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5,
+                                      global_rng, s, &result, &error);
+            if (ShowVegasIterations())
+                cout << "# Vegas interation " << result << " +/- " << error
+                     << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+            if (iter>10)
+                break;
+        } while (iter < 2 or ( std::abs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 or std::abs(error/result) > MCINTACCURACY));
+        gsl_monte_vegas_free(s);
+    }
+
+    delete lower;
+    delete upper;
+
+    return result;
+}
+
+
 
 double Inthelperf_amplitude_z(double z, void* p);
 
@@ -228,6 +308,22 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
      */
 }
 
+double Inthelperf_amplitudeF_mc(double *vec, size_t dim, void* par) {
+    Inthelper_amplitude *helper = (Inthelper_amplitude*)par;
+    helper->theta_b = vec[0];
+    helper->r = vec[1];
+    helper->theta_r = vec[2];
+
+    double z = 0.5;// Put z=0.5 as it sets b to the geometric average of quarks
+
+    if (!FACTORIZE_ZINT)
+        z = vec[3];
+
+    return helper->diffraction->ScatteringAmplitudeIntegrand2(
+        helper->xpom, helper->Qsqr, helper->r, helper->theta_r,
+        helper->b, helper->theta_b, z, helper->polarization, helper->real_part);
+}
+
 double Inthelperf_amplitude_z(double z, void* p)
 {
     Inthelper_amplitude *helper = (Inthelper_amplitude*)p;
@@ -235,73 +331,69 @@ double Inthelperf_amplitude_z(double z, void* p)
     return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z);
 }
 
-double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol, bool real_part)
-{ 
-    
-        
+double Diffraction::ScatteringAmplitudeIntegrand(
+    double xpom, double Qsqr, double t, double r, double theta_r,
+    double b, double theta_b, double z, Polarization pol, bool real_part) {
+
     // Recall quark and gluon positions:
     // Quark: b + zr
     // Antiquark: b - (1-z) r
-    
     // If do like Lappi, Mantysaari: set z=1/2 here
-    
+
     double bx = b*cos(theta_b);
     double by = b*sin(theta_b);
     double rx = r*cos(theta_r);
     double ry = r*sin(theta_r);
-    
+
     // q and antiq positions
     // Note my convention is that b is the center of the dipole (geometric center), not center of mass (z weighted)
     // Consequently I get (0.5-z)r.Delta phase    
-    
     double qx = bx + 0.5*rx; double qy = by + 0.5*ry;
     double qbarx = bx - 0.5*rx; double qbary = by - 0.5*ry;
-    
+
     double delta = std::sqrt(t);
-    
+
     double x1[2] = {qx,qy};
     double x2[2] = {qbarx, qbary};
     std::complex<double> amp = dipole->ComplexAmplitude(xpom, x1, x2); //(amp_real, amp_imag);
-    
     std::complex<double> result = 2.0*r*b; // r and b from Jacobians, 2 as we have written sigma_qq = 2 N
     std::complex<double> imag(0,1);
-    
-    if (FACTORIZE_ZINT)
-    {
-        if (wavef->WaveFunctionType() == "NRQCD")
-        {
+
+    if (FACTORIZE_ZINT) {
+        if (wavef->WaveFunctionType() == "NRQCD") {
             // Note 1/(4pi) is included in the z integral measure in PsiSqr_T_intz
             if (pol == T)
                 result *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
             else
                 result *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta,theta_r);
-        }
-        else
-        {
+        } else {
             if (pol == T)
                 result *= wavef->PsiSqr_T_intz(Qsqr, r);
             else
                 result *= wavef->PsiSqr_L_intz(Qsqr, r);
         }
-            
-        result *= std::exp(-imag*(b*delta*std::cos(theta_b)))*amp;
-        
-    }
-    else
-    {
+        if (delta > 0) {
+            result *= std::exp(-imag*(b*delta*std::cos(theta_b)))*amp;
+        } else {
+            result *= amp;
+        }
+    } else {
         if (pol == T)
             result *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
         else
             result *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
-        
+
         // This integrand is now not integrated over z
-        std::complex<double> exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (0.5 - z)*r*delta*std::cos(theta_r)  )  );
-        
+        std::complex<double> exponent(1, 0);
+        if (delta > 0) {
+            exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (0.5 - z)*r*delta*std::cos(theta_r)  )  );
+        }
+
         result *= amp * exponent;
-        
+
     }
-    
-	double res=0;
+
+    double res = 0;
     // Note: As I'm using GSL to integrate and I use a routine that assumes a scalar function, this is quite inefficeint as 
     // everything above is computed separately for the real and imaginary parts. Performance could be optimized by using an 
     // integration routine supportin vector valued functions
@@ -309,16 +401,75 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
         res = result.real();
     else
         res = result.imag();
-    
-    if (std::isnan(res) or std::isinf(res))
-    {
+
+    if (std::isnan(res) or std::isinf(res)) {
         cerr << "Amplitude integral is " << res << " dipole " << amp << " xp=" << xpom << " Q^2=" << Qsqr << " t="<< t << " r=" << r << " theta_r="<<theta_r << " b="<< b << "theta_b="<< theta_b << " z=" << z << endl;
         exit(1);
     }
-    
-    return res;
-    
 
+    return res;
+}
+
+
+double Diffraction::ScatteringAmplitudeIntegrand2(
+    double xpom, double Qsqr, double r, double theta_r,
+    double b, double theta_b, double z, Polarization pol, bool real_part) { 
+
+    // Recall quark and gluon positions:
+    // Quark: b + zr
+    // Antiquark: b - (1-z) r
+    // If do like Lappi, Mantysaari: set z=1/2 here
+
+    double bx = b*cos(theta_b);
+    double by = b*sin(theta_b);
+    double rx = r*cos(theta_r);
+    double ry = r*sin(theta_r);
+
+    // q and antiq positions
+    double qx = bx + (1. - z) * rx;
+    double qy = by + (1. - z) * ry;
+    double qbarx = bx - z * rx;
+    double qbary = by - z * ry;
+
+    double x1[2] = {qx, qy};
+    double x2[2] = {qbarx, qbary};
+    std::complex<double> amp = dipole->ComplexAmplitude(xpom, x1, x2); //(amp_real, amp_imag);
+
+    std::complex<double> result = 2.0*r; // r from Jacobians, 2 as we have written sigma_qq = 2 N
+    std::complex<double> imag(0,1);
+
+    if (FACTORIZE_ZINT) {
+        if (wavef->WaveFunctionType() == "NRQCD") {
+            double delta = 0.;
+            // Note 1/(4pi) is included in the z integral measure in PsiSqr_T_intz
+            if (pol == T)
+                result *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
+            else
+                result *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta,theta_r);
+        } else {
+            if (pol == T)
+                result *= wavef->PsiSqr_T_intz(Qsqr, r);
+            else
+                result *= wavef->PsiSqr_L_intz(Qsqr, r);
+        }
+        result *= amp;
+    } else {
+        if (pol == T)
+            result *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
+        else
+            result *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
+        result *= amp;
+    }
+
+    double res = 0;
+    // Note: As I'm using GSL to integrate and I use a routine that assumes a scalar function, this is quite inefficeint as 
+    // everything above is computed separately for the real and imaginary parts. Performance could be optimized by using an 
+    // integration routine supportin vector valued functions
+    if (real_part)
+        res = result.real();
+    else
+        res = result.imag();
+    return res;
 }
 
 /*

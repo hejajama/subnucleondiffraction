@@ -7,6 +7,7 @@
 #include <gsl/gsl_rng.h>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 int MCINTPOINTS = 2e5;
 
@@ -64,3 +65,15 @@ int StrToInt(std::string str)
     buff >> tmp;
     return tmp;
 }
+
+std::vector<double> StrToList(std::string str)
+{
+    std::vector<double> tmp;
+    std::stringstream buff(str);
+    std::string cell;
+    while (std::getline(buff, cell, ',')) {
+        tmp.push_back(std::stod(cell));
+    }
+    return tmp;
+}
+
