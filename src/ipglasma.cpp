@@ -22,7 +22,7 @@ extern gsl_rng *global_rng;
 
 const int NC=3;
 
-int FindIndex(double val, std::vector<double> &vec);
+
 
 
 /*
@@ -230,22 +230,21 @@ WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
     ApplyPeriodicBoundaryConditions(q);
     x=q[0];
     y=q[1];
-    int xind = FindIndex(x, xcoords);
-    int yind = FindIndex(y, ycoords);
-    
-    // Handle edges
-    if (xind < 0)
-        xind = 0;
-    if (xind >= xcoords.size())
-        xind = xcoords.size()-1;
+    std::vector<int> coords = LatticeCoordinates(x,y);
 
-    if (yind < 0)
-        yind = 0;
-    if (yind >= ycoords.size())
-        yind = ycoords.size()-1;
+    // Handle edges
+    if (coords[0] < 0)
+        coords[0] = 0;
+    if (coords[0] >= xcoords.size())
+        coords[0] = xcoords.size()-1;
+
+    if (coords[1] < 0)
+        coords[1] = 0;
+    if (coords[1] >= ycoords.size())
+        coords[1] = ycoords.size()-1;
     //cout << "Coordinates " << x << ", "  << y << " indeces " << xind << ", " << yind << endl;
     
-    return wilsonlines[ xind*xcoords.size() + yind];
+    return GetWilsonLine( WilsonLineCoordinate(coords[0],coords[1]));
     
 }
 
@@ -384,6 +383,26 @@ int IPGlasma::LoadData(std::string fname, double step, WilsonLineDataFileType ty
     return 0;
 }
 
+std::vector<int> IPGlasma::LatticeCoordinates(double x, double y)
+{
+    std::vector<int> ret;
+
+    // Note: My lattice is from -L/2 to L/2, so I need to shift the coordinates
+    x = x + xcoords[xcoords.size()-1];
+    y = y + ycoords[ycoords.size()-1];
+    double lattice_spacing = xcoords[1]-xcoords[0];
+
+    int ix = x/lattice_spacing; 
+    int iy = y/lattice_spacing; 
+
+    return std::vector<int> {ix, iy}; 
+}
+
+int IPGlasma::WilsonLineCoordinate(int  xind, int yind)
+{
+    return xcoords.size()*xind + yind; 
+}
+
 
 /*
  * Load data from binary file
@@ -407,7 +426,14 @@ int IPGlasma::LoadBinaryData(std::string fname, double step)
         InStream.read(reinterpret_cast<char*>(&a), sizeof(double));
         InStream.read(reinterpret_cast<char*>(&temp), sizeof(double));
         
-        std::cout << "# BINARY Size is " << N << ", Nc " << Nc << ", length is [fm] " << L << ", a is [fm]" << a << "  (user specified " << step << ")" << std::endl;
+        std::cout << "# BINARY Size is " << N << ", Nc " << Nc << ", length is [fm] " << L << ", a is [fm]" << a  << std::endl;
+
+        // Check if parameters make sense
+        if (Nc != 3 or std::abs(L) < 1e-3)
+        {
+            cerr << "Likely corrupted binary file " << fname << " " << LINEINFO << endl;
+            exit(1);
+        }
         
         // Init Wilson lines - fill in later
         wilsonlines.clear();
@@ -534,38 +560,3 @@ void IPGlasma::SetSchwinger(bool s, double rc)
     schwinger_rc = rc;
 }
 
-/* Returns index i for which
- * vec[i]<=val
- * Assumes that vec[i]<vec[i+1]
- * If such index can't be found, returns -1
- */
-
-int FindIndex(double val, std::vector<double> &vec)
-{
-    if (val < vec[0]) return -1;
-   
-    int ind=-1;
-   
-    uint start=0; uint end=vec.size()-1;
-    while(end-start>5)
-    {
-        int tmp = static_cast<int>((start+end)/2.0);
-    
-        if (vec[tmp]>=val)
-            end=tmp;
-        else
-            start=tmp;
-    }
-   
-   
-    for (uint i=start; i<=end; i++)
-    {
-        if (vec[i]<=val and vec[i+1]>val)
-        {
-            ind=i;
-            break;
-        }
-    }
-    if (ind == -1) return vec.size()-1;
-    return ind;
-}
