@@ -85,8 +85,6 @@ int main(int argc, char* argv[])
     Fluctuation_shape fluctshape = FLUCTUATE_QUARKS;
     bool auto_mcintpoints = false;
     std::string wavef_file = "";
-    bool schwinger = false;
-    double schwinger_rc = 0;
     int rng_offset=0;
     double t_in_xpom=1.0;  // This multiplies t in the expression for xpom, if 0, then xpom is independent of t
 
@@ -123,7 +121,6 @@ int main(int argc, char* argv[])
         cout << "-wavef_file filename" << endl;
         cout << "-wavef gauslc/boostedgaussian/DVCS/NRQCD" << endl;
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
-        cout << "-schwinger r_c" << endl;
         cout << "-mint, -maxt, -tstep" << endl;
         cout << "-nrqcd_parameters A B" << endl;
         cout << "-nrqcd_parameters_from_file" << endl;
@@ -335,11 +332,6 @@ int main(int argc, char* argv[])
         }
         else if (string(argv[i])=="-He3")
             he3_id = StrToInt(argv[i+1]);
-        else if (string(argv[i])=="-schwinger")
-        {
-            schwinger = true; 
-            schwinger_rc = StrToReal(argv[i+1]);
-        }
         else if (string(argv[i])=="-rng_offset")
             rng_offset = StrToInt(argv[i+1]);
         else if (string(argv[i])=="-mint")
@@ -460,9 +452,6 @@ int main(int argc, char* argv[])
     {
         ((Nucleons*)amp)->SetHeId(he3_id);
     }
-    
-
-    if (schwinger) ((IPGlasma*)amp)->SetSchwinger(true, schwinger_rc);
 
     amp->InitializeTarget();
     
@@ -498,7 +487,7 @@ int main(int argc, char* argv[])
             {
                 double p[2] = {x,y};
                 
-                WilsonLine &wl =((IPGlasma*)amp)->GetWilsonLine(x,y);
+                WilsonLine wl =((IPGlasma*)amp)->GetWilsonLine(x,y);
                 double tr = wl.Trace().real();
              
                 cout << y/5.068 << " " << x/5.068 << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->AmplitudeImaginaryPart(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << " " << 1.0 - tr/3.0 <<endl;

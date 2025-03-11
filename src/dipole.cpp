@@ -12,10 +12,17 @@
 #include <gsl/gsl_roots.h>
 #include <gsl/gsl_linalg.h>
 #include <cmath>
+#include <complex>
 
-double DipoleAmplitude::Amplitude(double xpom, double q1[2], double q2[2] )
+double DipoleAmplitude::Amplitude(double xpom, double q1[2], double q2[2] ) 
 {
     return 0; // Not defined, shouldnt be here
+}
+
+std::complex<double> DipoleAmplitude::ComplexAmplitude(double xpom, double q1[2], double q2[2] ) 
+{
+
+    return std::complex<double>(Amplitude(xpom,q1,q2), AmplitudeImaginaryPart(xpom,q1,q2) );
 }
 
 void DipoleAmplitude::InitializeTarget()

@@ -261,10 +261,7 @@ double Diffraction::ScatteringAmplitudeIntegrand(double xpom, double Qsqr, doubl
     
     double x1[2] = {qx,qy};
     double x2[2] = {qbarx, qbary};
-    double amp_real = dipole->Amplitude(xpom, x1, x2 );
-    double amp_imag = dipole->AmplitudeImaginaryPart(xpom, x1, x2);
-    std::complex<double> amp(amp_real, amp_imag);
-    //amp = amp.real();   // Disable possible imag part for now
+    std::complex<double> amp = dipole->ComplexAmplitude(xpom, x1, x2); //(amp_real, amp_imag);
     
     std::complex<double> result = 2.0*r*b; // r and b from Jacobians, 2 as we have written sigma_qq = 2 N
     std::complex<double> imag(0,1);

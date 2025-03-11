@@ -227,7 +227,6 @@ void Ipsat_Proton::InitializeTarget()
     for (int i = 0; i < 3; i++)
     {
         // Radius from uniform distribution
-        double radius = 0;
         double maxr = 30;
 
         if (shape == GAUSSIAN)
