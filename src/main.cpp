@@ -41,6 +41,7 @@ gsl_rng* global_rng;
 enum MODE
 {
     AMPLITUDE_DT,   // Calculate amplitude as a function of t, real/imag part set by other cli argument
+    TOTALCROSSSECTION,  // calculate quantities for computing total cross section
     CORRECTIONS ,    // Caluclate corrections, require dipole amplitude with rotational symmetry
     PRINT_NUCLEUS,
     F2,             // Calculate F2
@@ -77,6 +78,8 @@ int main(int argc, char* argv[])
     double maxt=1.5;
     double tstep=0.1;
     std::vector<double> tlist;
+    double maxb = 10. / 0.19733;    // GeV^-1
+    int nbperp = 25;
     //double xpom=0.000959089;
     double w = 100;
     double xp = -1;
@@ -122,6 +125,7 @@ int main(int argc, char* argv[])
         cout << "-wavef gauslc/boostedgaussian/DVCS/NRQCD" << endl;
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
         cout << "-mint, -maxt, -tstep" << endl;
+        cout << "-maxb, -nbperp" << endl;
         cout << "-nrqcd_parameters A B" << endl;
         cout << "-nrqcd_parameters_from_file" << endl;
         cout << "-periodic_boundary_conditions: use periodic boundary conditions" << endl;
@@ -306,6 +310,8 @@ int main(int argc, char* argv[])
             skewedness = true;
         else if (string(argv[i])=="-corrections")
             mode = CORRECTIONS;
+        else if (string(argv[i])=="-totalcrosssections")
+            mode = TOTALCROSSSECTION;
         else if (string(argv[i])=="-qsfluct")
             qsfluct_sigma = StrToReal(argv[i+1]);
         else if (string(argv[i])=="-qsfluctshape")
@@ -342,6 +348,10 @@ int main(int argc, char* argv[])
             tstep=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-tlist")
             tlist = StrToList(argv[i+1]);
+        else if (string(argv[i])=="-maxb")
+            maxb=StrToReal(argv[i+1]);
+        else if (string(argv[i])=="-nbperp")
+            nbperp=StrToInt(argv[i+1]);
         else if (string(argv[i])=="-no_t_in_xpom")
             t_in_xpom = 0.0;
         else if (string(argv[i])=="-nrqcd_parameters")
@@ -603,6 +613,53 @@ int main(int argc, char* argv[])
 	    ///if (t>=0.15 )
             ///    tstep = 0.02;
                 
+        }
+    }
+    else if (mode == TOTALCROSSSECTION)
+    {
+        if (xp < 0)
+            cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
+        else
+            cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
+        cout << "# b (GeV^-1)  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag" << endl;
+
+        double db = maxb / nbperp;              // GeV^-1
+        std::vector<double> blist(nbperp, 0.);
+        for (int ib = 0; ib < nbperp; ib++) {
+            blist[ib] = (ib + 0.5) * db;        // GeV^-1
+        }
+        for (auto b: blist) {
+            double xpom;
+            if (xp < 0)
+                xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+            else
+                xpom = xp;
+            if (xpom > 0.04)
+            {
+                cerr << "xpom = " << xpom << ", can't do this!" << endl;
+                //continue;
+            }
+
+            cout.precision(5);
+            double trans_r = diff.ScatteringAmplitudeF(xpom, Qsqr, b, T);
+            double trans_i = 0.0;
+            // In practice, we found the imaginary part to be very small
+            // compared to the real part, no need to compute
+            //trans_i = diff.ScatteringAmplitudeF(xpom, Qsqr, b, T, false);
+
+            double lng_r = 0;
+            double lng_i = 0;
+            if (Qsqr > 0) {
+                lng_r = diff.ScatteringAmplitudeF(xpom, Qsqr, b, L);
+                lng_i = diff.ScatteringAmplitudeF(xpom, Qsqr, b, L, false);
+            }
+
+            cout << b << " ";
+            cout.precision(10);
+            cout << std::scientific
+                 << trans_r  << " " << trans_i << " "
+                 << lng_r << " " << lng_i << endl;
+
         }
     }
     else if (mode == CORRECTIONS)
