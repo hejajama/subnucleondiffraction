@@ -95,6 +95,7 @@ const WilsonLine& IPGlasma::GetWilsonLine(double x, double y) const
     ApplyPeriodicBoundaryConditions(q);
     x=q[0];
     y=q[1];
+
     std::vector<int> coords = LatticeCoordinates(x,y);
 
     // Handle edges
@@ -233,6 +234,26 @@ int IPGlasma::LoadData(std::string fname, double step, WilsonLineDataFileType ty
     }
         
     return 0;
+}
+
+std::vector<int> IPGlasma::LatticeCoordinates(double x, double y)
+{
+    std::vector<int> ret;
+
+    // Note: My lattice is from -L/2 to L/2, so I need to shift the coordinates
+    x = x + xcoords[xcoords.size()-1];
+    y = y + ycoords[ycoords.size()-1];
+    double lattice_spacing = xcoords[1]-xcoords[0];
+
+    int ix = x/lattice_spacing; 
+    int iy = y/lattice_spacing; 
+
+    return std::vector<int> {ix, iy}; 
+}
+
+int IPGlasma::WilsonLineCoordinate(int  xind, int yind)
+{
+    return xcoords.size()*xind + yind; 
 }
 
 

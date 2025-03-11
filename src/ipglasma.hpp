@@ -57,6 +57,10 @@ public:
     double X(int ix) { return xcoords[ix]; }
     double Y(int iy) { return ycoords[iy]; }
 
+    std::vector<int> LatticeCoordinates(double x, double y);
+    int WilsonLineCoordinate(int  xind, int yind);
+    WilsonLine& GetWilsonLine(int i) { return wilsonlines[i]; }
+
 private:
     
     
