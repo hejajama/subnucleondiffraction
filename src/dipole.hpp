@@ -8,6 +8,7 @@
 #define dipole_h_
 
 #include <string>
+#include <complex>
 #include "vector.hpp"
 
 class DipoleAmplitude {
@@ -19,6 +20,8 @@ public:
     virtual double Amplitude(double xpom, Vec q1, Vec q2);
     
     virtual double AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] );
+
+    virtual std::complex<double> ComplexAmplitude(double xpom, double q1[2], double q2[2] );
     
     double AmplitudeImaginaryPart(double xpom, Vec q1, Vec q2 );
     
