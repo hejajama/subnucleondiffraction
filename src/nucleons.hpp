@@ -20,6 +20,12 @@ enum DeuteronStructure
     TUBE    // Connect nucleons by a tube
 };
 
+enum Nucleon
+{
+    Proton,
+    Neutron
+};
+
 // Hulthen:
 // Extended Hulthen: Phys. Rev. 151, 772
 // WoodsSaxon is parameters from PHOBOS Glauber 1408.2549
@@ -27,7 +33,12 @@ enum DeuteronWaveFunctionType {
     Hulthen,
     ExtendedHulthen,
     WoodsSaxon,
-    VMC // https://www.phy.anl.gov/theory/research/density2/
+    VMC, // https://www.phy.anl.gov/theory/research/density2/
+};
+
+enum NuclearDensity {
+    NuclearDensity_WoodsSaxon,
+    P_N_Densities
 };
 
 
@@ -44,7 +55,7 @@ public:
     
     Nucleons(std::vector<DipoleAmplitude*> nucleons);
     ~Nucleons();
-    double WS_unnorm(double r );
+    double WS_unnorm(double r, Nucleon nucleon = Proton);
     
     std::string InfoStr();
     
@@ -59,9 +70,12 @@ public:
     void SetDeuteronStructure(DeuteronStructure d) { deuteron_structure = d; }
     void SetDeuteronWF(DeuteronWaveFunctionType wf) { DeuteronWF = wf; }
     DeuteronWaveFunctionType GetDeuteronWF() { return DeuteronWF; }
+
+    void SetNuclearDensity(NuclearDensity d);
     
 private:
     int A;
+    int Z; // Used if P_N_DENSITIES
     std::vector<DipoleAmplitude*> nucleons; // Todo: change to support general proton/nucleon class?
     std::vector<Vec> nucleon_positions;
     
@@ -72,6 +86,11 @@ private:
     DeuteronWaveFunctionType DeuteronWF;
     
     Interpolator VMC_interpolator;
+
+    Interpolator proton_density_interpolator = Interpolator();
+    Interpolator neutron_density_interpolator = Interpolator();
+
+    NuclearDensity nuclear_density = NuclearDensity_WoodsSaxon;
     
     int he3_id; // which He3 configuration we use
     

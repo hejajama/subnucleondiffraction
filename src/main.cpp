@@ -242,17 +242,19 @@ int main(int argc, char* argv[])
                     // Construct nucleus
                     std::vector<DipoleAmplitude* > nucleons;
 //                  NOTE: we need to initialize these separately (which is slow) if we want independent e-b-e fluct
-//                 DipoleAmplitude* nucleon;
-//                        nucleon = new Ipsat_Proton(MZSAT);
-//                       nucleon->SetSkewedness(skewedness);
+                 DipoleAmplitude* nucleon;
+                        nucleon = new Ipsat_Proton(MZSAT);
+                       nucleon->SetSkewedness(skewedness);
 
                     for (int j=0; j<A; j++)
                     {
-                      DipoleAmplitude *nucleon; 
+                      //DipoleAmplitude *nucleon; 
                         if (string(argv[i+2])=="ipsatproton" or string(argv[i+2])=="ipsatprotonparam")
                         {   
                             if (string(argv[i+2])=="ipsatproton")
-                                nucleon = new Ipsat_Proton(MZSAT);
+                            {
+                             //   nucleon = new Ipsat_Proton(MZSAT);
+                            }
                             else if (string(argv[i+2])=="ipsatprotonparam")
                             {   
                                 IPsat_fit_parameteters ipsatparam;
@@ -298,6 +300,8 @@ int main(int argc, char* argv[])
                     }
                     amp = new Nucleons(nucleons);
                     ((Nucleons*) amp)->SetDeuteronStructure(NUCLEONS);
+                    cout <<"# Note: changing to untested p and n interpolated Pb densities" << endl;
+                    ((Nucleons*) amp)->SetNuclearDensity(P_N_Densities);
                 } // End construct nucleus
             }
             
@@ -509,9 +513,9 @@ int main(int argc, char* argv[])
         { 
         
         double origin[2]={0,0};
-        double max = 25;
-        double min = -25;
-        double step = 0.1;
+        double max = 125;
+        double min = -125;
+        double step = 0.4;
         cout << "# x y N(0,(x,y)) T(b) " << endl;
         for (double y=min+step/2; y < max-step/2; y+=step)
         {

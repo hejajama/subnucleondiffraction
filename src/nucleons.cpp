@@ -167,6 +167,18 @@ void Nucleons::InitializeTarget()
                                 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr,
                                 2.0*(gsl_rng_uniform(global_rng)-0.5)*maxr);
                 tmp=tmpvec;
+
+                double dens;
+                if (nuclear_density == NuclearDensity_WoodsSaxon)
+                    dens = WS_unnorm(tmp.Len());
+                if (nuclear_density == P_N_Densities)
+                {
+                    if (i < Z)
+                        dens = WS_unnorm(tmp.Len(), Proton);
+                    else 
+                        dens = WS_unnorm(tmp.Len(), Neutron);
+                }
+
             } while (gsl_rng_uniform(global_rng) > WS_unnorm(tmp.Len())); // WS distribution!
             nucleon_positions.push_back(tmp);
         }
@@ -199,11 +211,98 @@ Nucleons::Nucleons(std::vector<DipoleAmplitude*> nucleons_) : VMC_interpolator(R
 }
 
 
-double Nucleons::WS_unnorm(double r )
+double Nucleons::WS_unnorm(double r, Nucleon nucleon)
 {
-    return 1.0 / (1+exp((r-ws_ra)/ws_delta));
+    if (nuclear_density == NuclearDensity_WoodsSaxon)
+        return 1.0 / (1+exp((r-ws_ra)/ws_delta));
+    
+    else if (nuclear_density == P_N_Densities)
+    {
+        if (nucleon == Proton)
+            return proton_density_interpolator.Evaluate(r);
+        else if (nucleon == Neutron)
+            return neutron_density_interpolator.Evaluate(r);
+        else
+        {
+            cerr << "Unknown nucleon " << nucleon << endl;
+            exit(1);
+        }
+    }
     
 }
+
+void Nucleons::SetNuclearDensity(NuclearDensity d)
+{
+    nuclear_density = d;
+
+    if (d == P_N_Densities)
+    {
+        string fname="pb-den/normalized_rho_values.txt";
+        std::ifstream f(fname);
+        if (!f.is_open())
+        {
+            std::cerr << "Could not open file "<< fname << std::endl;;
+            exit(1);
+        }
+
+        std::string line;
+
+        std::vector<double> rvals;
+        std::vector<double>  ndensity;
+        std::vector<double> pdensity;
+
+    
+        
+        while(!f.eof() )
+        {
+            std::getline(f, line);
+            
+            // This is the correct line
+            double r,neutron,proton;
+            stringstream ss(line);
+
+            if (line[0] == '#')
+                continue;
+
+            ss>>r; ss>>neutron; ss>>proton;
+
+            //cout << r << " " << neutron << " " << proton << endl;
+
+            rvals.push_back(r*FMGEV);
+            ndensity.push_back(neutron);
+            pdensity.push_back(proton);
+
+        }
+
+        Interpolator proton_density_interpolator_(rvals,pdensity);
+        Interpolator neutron_density_interpolator_(rvals,ndensity);
+
+        proton_density_interpolator_.SetOutOfRangeErrors(false);
+        neutron_density_interpolator_.SetOutOfRangeErrors(false);
+        
+
+        proton_density_interpolator_.Initialize();
+        neutron_density_interpolator_.Initialize();
+
+
+        proton_density_interpolator=proton_density_interpolator_;
+        neutron_density_interpolator=neutron_density_interpolator_;
+
+        proton_density_interpolator.SetOutOfRangeErrors(false);
+        neutron_density_interpolator.SetOutOfRangeErrors(false);
+        proton_density_interpolator.SetOverflow(0);
+        neutron_density_interpolator.SetOverflow(0);
+        proton_density_interpolator.SetUnderflow(0);
+        neutron_density_interpolator.SetUnderflow(0);
+
+
+        A=208;
+        Z=82;
+        cout <<"# NOTE: Using hardcoded A=208, Z=82 nuclear density" << LINEINFO << endl;
+    }
+
+}
+
 
 std::string Nucleons::InfoStr()
 {

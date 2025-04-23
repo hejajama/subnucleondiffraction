@@ -291,6 +291,39 @@ Interpolator::Interpolator(double *x, double *y, int p)
     Initialize();
 }
 
+Interpolator& Interpolator::operator=(const Interpolator& inter)
+{
+    if (this == &inter)
+        return *this;
+
+    Clear();
+
+    points = inter.GetNumOfPoints();
+    xdata = new double[points];
+    ydata = new double[points];
+    allocated_data = true;
+
+    gsl_spline* tmpspline = inter.GetGslSpline();
+    for (int i = 0; i < points; i++)
+    {
+        xdata[i] = tmpspline->x[i];
+        ydata[i] = tmpspline->y[i];
+    }
+
+    minx = xdata[0];
+    maxx = xdata[points - 1];
+    method = inter.GetMethod();
+    ready = false;
+    freeze = inter.Freeze();
+    freeze_underflow = inter.UnderFlow();
+    freeze_overflow = inter.OverFlow();
+    out_of_range_errors = inter.out_of_range_errors;
+
+    Initialize();
+
+    return *this;
+}
+
 Interpolator::Interpolator(std::vector<double> &x, std::vector<double> &y)
 {
     points = x.size();
@@ -413,6 +446,7 @@ Interpolator::Interpolator(const Interpolator& inter)
     method = inter.GetMethod();
     ready=false;
     Initialize();
+
 }
 
 gsl_spline* Interpolator::GetGslSpline() const
@@ -431,7 +465,7 @@ double Interpolator::MaxX()
 }
 
 
-bool Interpolator::Freeze()
+bool Interpolator::Freeze() const
 {
 	return freeze;
 }
@@ -447,11 +481,11 @@ void Interpolator::SetUnderflow(double min)
  {
 	 freeze_overflow=max;
  }
-double Interpolator::UnderFlow()
+double Interpolator::UnderFlow() const
 {
 	 return freeze_underflow;
 }
-double Interpolator::OverFlow()
+double Interpolator::OverFlow() const
 {
 	return freeze_overflow;
 }
