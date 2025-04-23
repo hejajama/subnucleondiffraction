@@ -71,7 +71,7 @@ int Interpolator::Initialize()
         case INTERPOLATE_SPLINE:
             acc = gsl_interp_accel_alloc();
             spline = gsl_spline_alloc(gsl_interp_cspline, points);
-            status = gsl_spline_init(spline, xdata, ydata, points);
+            status = gsl_spline_init(spline, xdata.data(), ydata.data(), points);
             break;
         case INTERPOLATE_BSPLINE:
 #ifdef ENABLE_BSPLINE
@@ -160,12 +160,12 @@ double Interpolator::Evaluate(double x)
 		}
 		if (x < 0.9999*minx or x > 1.00001*maxx)	// if not true, no need to display error
         {
-            if (out_of_range_errors)
-                cerr << "x=" << x << " is not within limits [" << minx << ", " << maxx << "], forcing "
-                    << "it in that interval! " << LINEINFO << endl;
+            //if (out_of_range_errors)
+            //    cerr << "x=" << x << " is not within limits [" << minx << ", " << maxx << "], forcing "
+            //        << "it in that interval! " << LINEINFO << endl;
         }
-        if (x<minx) x=minx*1.00001;
-        if (x>maxx) x=maxx*0.999999;
+        throw std::out_of_range("x=" + std::to_string(x) + " is not within limits [" + std::to_string(minx) + ", " + std::to_string(maxx) + "]");
+
     }
     
     double res, yerr; int status;
@@ -263,16 +263,16 @@ double Interpolator::Derivative2(double x)
 Interpolator::Interpolator(double *x, double *y, int p)
 {
     points=p;
-    xdata=x;
-    ydata=y;
-    minx=x[0];
-    maxx=x[p-1];
+    xdata.assign(x, x + p);
+    ydata.assign(y, y + p);
+    minx = xdata.front();
+    maxx = xdata.back();
     method = INTERPOLATE_SPLINE;
-    allocated_data=false;
+
     ready=false;
     freeze=false;
-    freeze_underflow = y[0];
-    freeze_overflow = y[p-1];
+    freeze_underflow = ydata.front();
+    freeze_overflow = ydata.back();
 
     for (int i=0; i<p; i++)
     {
@@ -284,6 +284,7 @@ Interpolator::Interpolator(double *x, double *y, int p)
                 cerr << "Grid points are not monotonically increasing! grid["
                     << i-1 <<"]=" << xdata[i-1] <<", grid["<<i<<"]="<< xdata[i]
                     << " " << LINEINFO << endl;
+                exit(1);
             }
         }
     }
@@ -295,41 +296,28 @@ Interpolator& Interpolator::operator=(const Interpolator& inter)
 {
     if (this == &inter)
         return *this;
-
     Clear();
-
-    points = inter.GetNumOfPoints();
-    xdata = new double[points];
-    ydata = new double[points];
-    allocated_data = true;
-
-    gsl_spline* tmpspline = inter.GetGslSpline();
-    for (int i = 0; i < points; i++)
-    {
-        xdata[i] = tmpspline->x[i];
-        ydata[i] = tmpspline->y[i];
-    }
-
-    minx = xdata[0];
-    maxx = xdata[points - 1];
-    method = inter.GetMethod();
-    ready = false;
-    freeze = inter.Freeze();
-    freeze_underflow = inter.UnderFlow();
-    freeze_overflow = inter.OverFlow();
+    points = inter.points;
+    xdata = inter.xdata;
+    ydata = inter.ydata;
+    minx = inter.minx;
+    maxx = inter.maxx;
+    method = inter.method;
+    freeze = inter.freeze;
+    freeze_underflow = inter.freeze_underflow;
+    freeze_overflow = inter.freeze_overflow;
     out_of_range_errors = inter.out_of_range_errors;
-
     Initialize();
-
     return *this;
 }
 
 Interpolator::Interpolator(std::vector<double> &x, std::vector<double> &y)
 {
     points = x.size();
-    xdata = new double[points];
-    ydata = new double[points];
-    allocated_data=true;
+    xdata = x;
+    ydata = y;
+    minx = xdata.front();
+    maxx = xdata.back();
 
     for (uint i=0; i<x.size(); i++)
     {
@@ -348,12 +336,11 @@ Interpolator::Interpolator(std::vector<double> &x, std::vector<double> &y)
             }
         }
     }
-    minx=xdata[0]; maxx=xdata[x.size()-1];
     method = INTERPOLATE_SPLINE;
     ready=false;
     freeze=false;
-    freeze_overflow = y[y.size()-1];
-    freeze_underflow = y[0];
+    freeze_underflow = ydata.front();
+    freeze_overflow = ydata.back();
 
     Initialize();
 }
@@ -394,13 +381,6 @@ void Interpolator::Clear()
 #endif
             break;
     }
-
-    if (allocated_data)
-    {
-        delete[] xdata;
-        delete[] ydata;
-        allocated_data=false;
-    }
 }
 
 Interpolator::~Interpolator()
@@ -409,11 +389,11 @@ Interpolator::~Interpolator()
 
 }
 
-double* Interpolator::GetXData()
+std::vector<double> Interpolator::GetXData()
 {
     return xdata;
 }
-double* Interpolator::GetYData()
+std::vector<double> Interpolator::GetYData()
 {
     return ydata;
 }
@@ -430,20 +410,17 @@ INTERPOLATION_METHOD Interpolator::GetMethod() const
 // the copy constructor
 Interpolator::Interpolator(const Interpolator& inter)
 {
-    points=inter.GetNumOfPoints();
-    xdata = new double[points];
-    ydata = new double[points];
-    allocated_data=true;
-
-
-    gsl_spline *tmpspline = inter.GetGslSpline();
-    for (int i=0; i<points; i++)
-    {
-        xdata[i] = tmpspline->x[i];
-        ydata[i] = tmpspline->y[i];
-    }
-    minx = xdata[0]; maxx=xdata[points-1];
-    method = inter.GetMethod();
+    points = inter.points;
+    xdata = inter.xdata;
+    ydata = inter.ydata;
+    minx = inter.minx;
+    maxx = inter.maxx;
+    method = inter.method;
+    freeze = inter.freeze;
+    freeze_underflow = inter.freeze_underflow;
+    freeze_overflow = inter.freeze_overflow;
+    out_of_range_errors = inter.out_of_range_errors;
+    
     ready=false;
     Initialize();
 
@@ -451,6 +428,11 @@ Interpolator::Interpolator(const Interpolator& inter)
 
 gsl_spline* Interpolator::GetGslSpline() const
 {
+    if (spline == NULL)
+    {
+        cerr << "GSL spline is not initialized! " << LINEINFO << endl;
+        exit(1);
+    }
     return spline;
 }
 
