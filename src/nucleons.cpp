@@ -288,8 +288,8 @@ void Nucleons::SetNuclearDensity(NuclearDensity d)
         proton_density_interpolator=proton_density_interpolator_;
         neutron_density_interpolator=neutron_density_interpolator_;
 
-        proton_density_interpolator.SetOutOfRangeErrors(false);
-        neutron_density_interpolator.SetOutOfRangeErrors(false);
+        proton_density_interpolator.SetFreeze(true);
+        neutron_density_interpolator.SetFreeze(true);
         proton_density_interpolator.SetOverflow(0);
         neutron_density_interpolator.SetOverflow(0);
         proton_density_interpolator.SetUnderflow(0);
