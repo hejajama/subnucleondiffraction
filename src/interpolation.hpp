@@ -59,8 +59,10 @@ class Interpolator
          */
         Interpolator(std::vector<double> &x, std::vector<double> &y);
         Interpolator(const Interpolator& inter);
+        Interpolator() { };
         ~Interpolator();
         void Clear();
+        Interpolator& operator=(const Interpolator& inter);
         /**
          * Evaluate interpolator f(x)
          */
@@ -153,8 +155,8 @@ class Interpolator
 		double freeze_overflow;	// outside the spesified range
         
         // spline
-        gsl_interp_accel *acc;
-        gsl_spline *spline;
+        gsl_interp_accel *acc=NULL;
+        gsl_spline *spline=NULL;
 #ifdef ENABLE_BSPLINE
         // bspline
         gsl_bspline_workspace *bw;

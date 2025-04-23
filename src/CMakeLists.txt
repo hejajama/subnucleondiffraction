@@ -40,6 +40,7 @@ add_executable(
 add_executable(
 	test
 	test.cpp
+	test_interpolation.cpp
 	diffraction.cpp
 	gauss_boost.cpp
 	gaus_lc.cpp
