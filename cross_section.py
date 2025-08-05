@@ -19,7 +19,7 @@ GEVSQRTOMB=GEVSQRTONB*1e-6
 
 
 def CoherentCrossSection(dirname:str,minconf:int=0,maxconf:int=250, amplitude:bool=False, file_format:str="new", 
-                         polarization:str="T") -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+                         polarization:str="T", show_warnings=True) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     '''Coherent cross section in mb, imaginary part neglected
     Returns tvals [GeV^2], dsigma/dt [mb/GeV^2], staterrr
 
@@ -50,18 +50,22 @@ def CoherentCrossSection(dirname:str,minconf:int=0,maxconf:int=250, amplitude:bo
         try:
             dat=np.loadtxt(fn)
         except IOError:
-            print("# File ",fn," does not exist, skip")
+            if show_warnings:
+                print("# File ",fn," does not exist, skip")
             continue
         except ValueError:
-            print("# Error with file ",fn)
+            if show_warnings:
+                print("# Error with file ",fn)
             continue
         except Exception as e:
-            print("# Error with file ",fn, " ",e)
+            if show_warnings:
+                print("# Error with file ",fn, " ",e)
             continue
             
         if len(dat)==0 or np.isnan(dat).any() or np.isinf(dat).any():
-            print("# Skip file with NaN or Inf entries " , i)
-            print("# Skip emtpy file " , i)
+            if show_warnings:
+                print("# Skip file with NaN or Inf entries " , i)
+                print("# Skip emtpy file " , i)
             continue
 
 
@@ -70,13 +74,16 @@ def CoherentCrossSection(dirname:str,minconf:int=0,maxconf:int=250, amplitude:bo
             tvals=dat[:,0]
         else:
             if dat.ndim != 2:
-                print("# Wrong shape ", dat.shape , " with file " , fn)
+                if show_warnings:
+                    print("# Wrong shape ", dat.shape , " with file " , fn)
                 continue
             if len(tvals) != len(dat[:,0]):
-                print("# Error with file - t values do not match " + fn)
+                if show_warnings:
+                    print("# Error with file - t values do not match " + fn)
                 continue
             if not np.allclose(tvals, dat[:,0], atol=1e-5):
-                print("# Error with file - t values do not match " + fn)
+                if show_warnings:
+                    print("# Error with file - t values do not match " + fn)
                 continue
                     
         # Potentially empty file?
@@ -99,7 +106,9 @@ def CoherentCrossSection(dirname:str,minconf:int=0,maxconf:int=250, amplitude:bo
     return tvals,xs,staterr
     
 
-def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400, file_format: str = "new", polarization: str = "T") -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400, 
+                           file_format: str = "new", polarization: str = "T",
+                           show_warnings=True) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     '''Coherent cross section in mb
     Returns tvals [GeV^2], dsigma/dt [mb/GeV^2], staterrr
     
@@ -129,12 +138,15 @@ def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400, f
         try:  
             tmpdata = np.loadtxt(fn)
         except IOError:
-            print("# File ", fn, " does not exist, skip")
+            if show_warnings:
+                print("# File ", fn, " does not exist, skip")
             continue
         if len(tmpdata) == 0 or np.isnan(tmpdata).any() or np.isinf(tmpdata).any():
-            print("# Skip file with NaN or Inf entries " + fn)
+            if show_warnings:
+                print("# Skip file with NaN or Inf entries " + fn)
         if len(tmpdata) == 0:
-            print("# Empty file " + fn)
+            if show_warnings:
+                print("# Empty file " + fn)
             continue
 
         tmptvals = tmpdata[:, 0]
@@ -143,18 +155,22 @@ def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400, f
             tvals = tmptvals
         else:
             if tmpdata.ndim != 2:
-                print("# Wrong shape ", tmpdata.shape , " with file " , fn)
+                if show_warnings:
+                    print("# Wrong shape ", tmpdata.shape , " with file " , fn)
                 continue
             if len(tmptvals) != len(tvals):
-                print("# Error with file - t values do not match " + fn)
+                if show_warnings:
+                    print("# Error with file - t values do not match " + fn)
                 continue
             if not np.allclose(tmptvals, tvals, atol=1e-5):
-                print("# Error with file - t values do not match " + fn)
+                if show_warnings:
+                    print("# Error with file - t values do not match " + fn)
                 continue
                     
         # Potentially empty file?
         if np.abs(scipy.integrate.simpson(tmpdata[:, column]**2, x=tmpdata[:, 0])) < 1e-25:
-            print("Inoch: zero cross section, dir ", dirname, " config ", i)
+            if show_warnings:
+                print("Inoch: zero cross section, dir ", dirname, " config ", i)
             continue
         
         if file_format == "old":
