@@ -59,8 +59,10 @@ class Interpolator
          */
         Interpolator(std::vector<double> &x, std::vector<double> &y);
         Interpolator(const Interpolator& inter);
+        Interpolator() { };
         ~Interpolator();
         void Clear();
+        Interpolator& operator=(const Interpolator& inter);
         /**
          * Evaluate interpolator f(x)
          */
@@ -96,8 +98,8 @@ class Interpolator
          */
         double MaxX();
 
-        double* GetXData();
-        double* GetYData();
+        std::vector<double> GetXData();
+        std::vector<double> GetYData();
         gsl_spline* GetGslSpline() const;
         int GetNumOfPoints() const;
         INTERPOLATION_METHOD GetMethod() const;
@@ -143,8 +145,7 @@ class Interpolator
 
     private:
         INTERPOLATION_METHOD method;
-        double* xdata, *ydata;
-        bool allocated_data;    // true if we allocated xdata,ydata
+        std::vector<double> xdata, ydata;
         double minx,maxx;
         int points;
         bool ready;
@@ -154,8 +155,8 @@ class Interpolator
 		double freeze_overflow;	// outside the spesified range
         
         // spline
-        gsl_interp_accel *acc;
-        gsl_spline *spline;
+        gsl_interp_accel *acc=NULL;
+        gsl_spline *spline=NULL;
 #ifdef ENABLE_BSPLINE
         // bspline
         gsl_bspline_workspace *bw;
