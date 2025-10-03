@@ -19,7 +19,12 @@ public:
     
     // Calculate amplitude A, this will later be averaged and squared
     double ScatteringAmplitude(double xpom, double Qsqr, double t,Polarization pol=T, bool real_part=true);
-    double ScatteringAmplitudeF(double xpom, double Qsqr, double b, Polarization pol=T, bool real_part=true);
+    double ScatteringAmplitudeF(double xpom, double Qsqr, double b, double theta_b, Polarization pol=T, bool real_part=true);
+    
+    // New integrated functions for theta_b integration
+    double ScatteringAmplitudeFIntegrated(double xpom, double Qsqr, double b, Polarization pol=T, bool real_part=true);
+    double ScatteringAmplitudeFSquaredIntegrated(double xpom, double Qsqr, double b, Polarization pol=T);
+    
     double ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, double r, double theta_r, double b, double theta_b, double z, Polarization pol=T, bool real_part=true);
     double ScatteringAmplitudeIntegrand2(
     double xpom, double Qsqr, double r, double theta_r,

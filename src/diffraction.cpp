@@ -11,6 +11,7 @@
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_errno.h>
 #include "subnucleon_config.hpp"
 #include "nrqcd_wf.hpp"
 
@@ -192,9 +193,10 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
 
 
 double Inthelperf_amplitudeF_mc(double *vec, size_t dim, void* par);
+double Inthelperf_amplitudeF_integrated_mc(double *vec, size_t dim, void* par);
 
 double Diffraction::ScatteringAmplitudeF(
-    double xpom, double Qsqr, double b, Polarization pol, bool real_part) {
+    double xpom, double Qsqr, double b, double theta_b, Polarization pol, bool real_part) {
 
     Inthelper_amplitude helper;
     helper.diffraction = this;
@@ -202,6 +204,7 @@ double Diffraction::ScatteringAmplitudeF(
     helper.Qsqr = Qsqr;
     helper.t = 0.0;
     helper.b = b;
+    helper.theta_b = theta_b;
     helper.polarization = pol;
     helper.real_part = real_part;
 
@@ -209,30 +212,29 @@ double Diffraction::ScatteringAmplitudeF(
     // Currently hardcoded parameters for jpsi and gold:
     // Impact parameter up to 100 GeV^-1
     // Dipole size up to 10 GeV^-1
-    // MC integration parameters: b, theta_b, r, theta_r, Z
+    // MC integration parameters: r, theta_r, Z
     double *lower, *upper;
     if (FACTORIZE_ZINT)
     {
-        lower = new double[3];
-        upper = new double[3];
+        lower = new double[2];
+        upper = new double[2];
     }
     else
     {
-        lower = new double[4];
-        upper = new double[4];
-        lower[3] = zlimit; // Min z
-        upper[3]= 1. - lower[3];    // Max z
+        lower = new double[3];
+        upper = new double[3];
+        lower[2] = zlimit; // Min z
+        upper[2]= 1. - lower[2];    // Max z
     }
-    lower[0] = lower[1] = lower[2] = 0;
-    upper[0] = 2.0*M_PI;        // phi_b
-    upper[1] = MAXR; //MAXR;//20; //0.5*5.068;  // Max r
-    upper[2] = 2.0*M_PI;        // phi_r
+    lower[0] = lower[1] = 0;
+    upper[0] = MAXR; //MAXR;//20; //0.5*5.068;  // Max r
+    upper[1] = 2.0*M_PI;        // phi_r
 
     gsl_monte_function F;
     F.f = &Inthelperf_amplitudeF_mc;
-    F.dim = 3;
+    F.dim = 2;
     if (!FACTORIZE_ZINT)
-        F.dim = 4;
+        F.dim = 3;
     F.params = &helper;
 
     double result = 0.;
@@ -262,15 +264,274 @@ double Diffraction::ScatteringAmplitudeF(
                 break;
         } while (iter < 2 or ( std::abs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 or std::abs(error/result) > MCINTACCURACY));
         gsl_monte_vegas_free(s);
-    }
+    } else if (MCINT == ADAPTIVE_QUAD) {
+        // Use trapezoidal rule with smart grid spacing
+        int nr_points = 64;   // Much fewer points than MC for speed
+        int ntheta_points = 32;  // Sufficient for angular integration
+        int nz_points = (!FACTORIZE_ZINT) ? 32 : 1;
 
+        result = 0.0;
+        
+        // r integration with logarithmic spacing
+        double r_min = 1e-6;  // Avoid r=0 exactly  
+        double r_max = upper[0];
+        double log_r_min = log(r_min);
+        double log_r_max = log(r_max);
+        double dlog_r = (log_r_max - log_r_min) / nr_points;
+
+        for (int i = 0; i < nr_points; i++) {
+            // Logarithmic spacing with midpoint rule
+            double log_r = log_r_min + (i + 0.5) * dlog_r;
+            double r = exp(log_r);
+            helper.r = r;
+            
+            // theta_r integration
+            double dtheta = 2.0 * M_PI / ntheta_points;
+            double theta_sum = 0.0;
+            
+            for (int j = 0; j < ntheta_points; j++) {
+                double theta_r = (j + 0.5) * dtheta;
+                helper.theta_r = theta_r;
+                
+                if (FACTORIZE_ZINT) {
+                    double z = 0.5;
+                    double integrand = helper.diffraction->ScatteringAmplitudeIntegrand2(
+                        helper.xpom, helper.Qsqr, helper.r, helper.theta_r,
+                        helper.b, helper.theta_b, z, helper.polarization, helper.real_part);
+                    theta_sum += integrand;
+                } else {
+                    double zlimit = lower[2];
+                    double z_min = zlimit;
+                    double z_max = upper[2];
+                    double dz = (z_max - z_min) / nz_points;
+                    double z_sum = 0.0;
+                    
+                    for (int k = 0; k < nz_points; k++) {
+                        double z = z_min + (k + 0.5) * dz;
+                        double integrand = helper.diffraction->ScatteringAmplitudeIntegrand2(
+                            helper.xpom, helper.Qsqr, helper.r, helper.theta_r,
+                            helper.b, helper.theta_b, z, helper.polarization, helper.real_part);
+                        z_sum += integrand;
+                    }
+                    theta_sum += z_sum * dz;
+                }
+            }
+            // Include correct Jacobians: only r from log integration (cylindrical r already in integrand)
+            result += theta_sum * r * dlog_r * dtheta;
+        }
+    }
     delete lower;
     delete upper;
-
     return result;
 }
 
+// Compute integral over theta_b of F(b,theta_b) 
+double Diffraction::ScatteringAmplitudeFIntegrated(
+    double xpom, double Qsqr, double b, Polarization pol, bool real_part) {
 
+    if (MCINT == ADAPTIVE_QUAD) {
+        int ntheta_b_points = 32;  // theta_b integration points
+        double dtheta_b = 2.0 * M_PI / ntheta_b_points;
+        double result = 0.0;
+
+        for (int ib = 0; ib < ntheta_b_points; ib++) {
+            double theta_b = (ib + 0.5) * dtheta_b;
+            
+            int nr_points = 64;
+            int ntheta_points = 32;
+            int nz_points = (!FACTORIZE_ZINT) ? 32 : 1;
+
+            double f_contribution = 0.0;
+
+            // r integration with logarithmic spacing
+            double r_min = 1e-10;  // Avoid r=0 exactly
+            double r_max = MAXR;
+            double log_r_min = log(r_min);
+            double log_r_max = log(r_max);
+            double dlog_r = (log_r_max - log_r_min) / nr_points;
+
+            for (int i = 0; i < nr_points; i++) {
+                // Logarithmic spacing with midpoint rule
+                double log_r = log_r_min + (i + 0.5) * dlog_r;
+                double r = exp(log_r);
+
+                // theta_r integration
+                double dtheta = 2.0 * M_PI / ntheta_points;
+                double theta_sum = 0.0;
+
+                for (int j = 0; j < ntheta_points; j++) {
+                    double theta_r = (j + 0.5) * dtheta;
+
+                    if (FACTORIZE_ZINT) {
+                        double z = 0.5;
+                        double integrand = ScatteringAmplitudeIntegrand2(
+                            xpom, Qsqr, r, theta_r, b, theta_b, z, pol, real_part);
+                        theta_sum += integrand;
+                    } else {
+                        double zlimit = 0.00000001;
+                        double z_min = zlimit;
+                        double z_max = 1.0 - zlimit;
+                        double dz = (z_max - z_min) / nz_points;
+                        double z_sum = 0.0;
+                        
+                        for (int k = 0; k < nz_points; k++) {
+                            double z = z_min + (k + 0.5) * dz;
+                            double integrand = ScatteringAmplitudeIntegrand2(
+                                xpom, Qsqr, r, theta_r, b, theta_b, z, pol, real_part);
+                            z_sum += integrand;
+                        }
+                        theta_sum += z_sum * dz;
+                    }
+                }
+                // Include correct Jacobians: only r from log integration (cylindrical r already in integrand)
+                f_contribution += theta_sum * r * dlog_r * dtheta;
+            }
+            result += f_contribution * dtheta_b;
+        }
+        return result;
+    } else {
+        // For Monte Carlo methods, integrate over theta_b, r, theta_r, (z) directly
+        Inthelper_amplitude helper;
+        helper.diffraction = this;
+        helper.xpom = xpom;
+        helper.Qsqr = Qsqr;
+        helper.t = 0.0;
+        helper.b = b;
+        helper.polarization = pol;
+        helper.real_part = real_part;
+
+        double *lower, *upper;
+        int dim;
+
+        if (FACTORIZE_ZINT) {
+            dim = 3;  // theta_b, r, theta_r
+            lower = new double[3];
+            upper = new double[3];
+        } else {
+            dim = 4;  // theta_b, r, theta_r, z
+            lower = new double[4];
+            upper = new double[4];
+            lower[3] = zlimit;
+            upper[3] = 1.0 - lower[3];
+        }
+
+        lower[0] = 0; upper[0] = 2.0*M_PI;  // theta_b
+        lower[1] = 0; upper[1] = MAXR;      // r  
+        lower[2] = 0; upper[2] = 2.0*M_PI;  // theta_r
+
+        gsl_monte_function F;
+        F.f = &Inthelperf_amplitudeF_integrated_mc;
+        F.dim = dim;
+        F.params = &helper;
+
+        double result, error;
+
+        if (MCINT == VEGAS) {
+            gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
+            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50,
+                                      global_rng, s, &result, &error);
+
+            int iter = 0;
+            do {
+                iter++;
+                gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5,
+                                          global_rng, s, &result, &error);
+                if (iter > 10) break;
+            } while (iter < 2 or (std::abs(gsl_monte_vegas_chisq(s) - 1.0) > 0.5 or std::abs(error/result) > MCINTACCURACY));
+
+            gsl_monte_vegas_free(s);
+        } else {
+            gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
+            gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS,
+                                      global_rng, s, &result, &error);
+            gsl_monte_miser_free(s);
+        }
+        delete[] lower;
+        delete[] upper;
+        return result;
+    }
+}
+
+// Compute integral over theta_b of |F(b,theta_b)|^2
+double Diffraction::ScatteringAmplitudeFSquaredIntegrated(
+    double xpom, double Qsqr, double b, Polarization pol) {
+
+    if (MCINT == ADAPTIVE_QUAD) {
+        // Compute |F|^2 by integrating |F(theta_b)|^2 over theta_b
+        // where F(theta_b) is computed using the same method as ScatteringAmplitudeF
+        int ntheta_b_points = 32;
+        double dtheta_b = 2.0 * M_PI / ntheta_b_points;
+        double result = 0.0;
+
+        for (int ib = 0; ib < ntheta_b_points; ib++) {
+            double theta_b = (ib + 0.5) * dtheta_b;
+
+            // Compute F_real and F_imag at this theta_b using the same grid as ScatteringAmplitudeF
+            int nr_points = 64;
+            int ntheta_points = 32;
+            int nz_points = (!FACTORIZE_ZINT) ? 32 : 1;
+
+            // Use logarithmic spacing for r
+            double r_min = 1e-10;
+            double r_max = MAXR;
+            double log_r_min = log(r_min);
+            double log_r_max = log(r_max);
+            double dlog_r = (log_r_max - log_r_min) / nr_points;
+            double dtheta = 2.0 * M_PI / ntheta_points;
+
+            double f_real = 0.0, f_imag = 0.0;
+
+            for (int i = 0; i < nr_points; i++) {
+                double log_r = log_r_min + (i + 0.5) * dlog_r;
+                double r = exp(log_r);
+
+                double theta_sum_real = 0.0, theta_sum_imag = 0.0;
+                for (int j = 0; j < ntheta_points; j++) {
+                    double theta_r = (j + 0.5) * dtheta;
+
+                    if (FACTORIZE_ZINT) {
+                        double z = 0.5;
+                        double integrand_real = ScatteringAmplitudeIntegrand2(
+                            xpom, Qsqr, r, theta_r, b, theta_b, z, pol, true);
+                        double integrand_imag = ScatteringAmplitudeIntegrand2(
+                            xpom, Qsqr, r, theta_r, b, theta_b, z, pol, false);
+                        theta_sum_real += integrand_real;
+                        theta_sum_imag += integrand_imag;
+                    } else {
+                        double zlimit = 0.00000001;
+                        double z_min = zlimit;
+                        double z_max = 1.0 - zlimit;
+                        double dz = (z_max - z_min) / nz_points;
+                        double z_sum_real = 0.0, z_sum_imag = 0.0;
+
+                        for (int k = 0; k < nz_points; k++) {
+                            double z = z_min + (k + 0.5) * dz;
+                            double integrand_real = ScatteringAmplitudeIntegrand2(
+                                xpom, Qsqr, r, theta_r, b, theta_b, z, pol, true);
+                            double integrand_imag = ScatteringAmplitudeIntegrand2(
+                                xpom, Qsqr, r, theta_r, b, theta_b, z, pol, false);
+                            z_sum_real += integrand_real;
+                            z_sum_imag += integrand_imag;
+                        }
+                        theta_sum_real += z_sum_real * dz;
+                        theta_sum_imag += z_sum_imag * dz;
+                    }
+                }
+                f_real += theta_sum_real * r * dlog_r * dtheta;
+                f_imag += theta_sum_imag * r * dlog_r * dtheta;
+            }
+            // Compute |F|^2 = F_real^2 + F_imag^2 at this theta_b
+            double f_squared = f_real * f_real + f_imag * f_imag;
+            result += f_squared * dtheta_b;
+        }
+        return result;
+    } else {
+        // For Monte Carlo, use the linear approach
+        double real_part = ScatteringAmplitudeFIntegrated(xpom, Qsqr, b, pol, true);
+        double imag_part = ScatteringAmplitudeFIntegrated(xpom, Qsqr, b, pol, false);
+        return real_part * real_part + imag_part * imag_part;
+    }
+}
 
 double Inthelperf_amplitude_z(double z, void* p);
 
@@ -309,6 +570,21 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
 }
 
 double Inthelperf_amplitudeF_mc(double *vec, size_t dim, void* par) {
+    Inthelper_amplitude *helper = (Inthelper_amplitude*)par;
+    helper->r = vec[0];
+    helper->theta_r = vec[1];
+
+    double z = 0.5;// Put z=0.5 as it sets b to the geometric average of quarks
+
+    if (!FACTORIZE_ZINT)
+        z = vec[2];
+
+    return helper->diffraction->ScatteringAmplitudeIntegrand2(
+        helper->xpom, helper->Qsqr, helper->r, helper->theta_r,
+        helper->b, helper->theta_b, z, helper->polarization, helper->real_part);
+}
+
+double Inthelperf_amplitudeF_integrated_mc(double *vec, size_t dim, void* par) {
     Inthelper_amplitude *helper = (Inthelper_amplitude*)par;
     helper->theta_b = vec[0];
     helper->r = vec[1];

@@ -27,7 +27,8 @@ extern int MCINTPOINTS ;
 enum MCINTEGRAL
 {
     VEGAS,
-    MISER
+    MISER,
+    ADAPTIVE_QUAD
 };
 
 //const MCINTEGRAL MCINT = MISER;

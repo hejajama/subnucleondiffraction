@@ -621,45 +621,52 @@ int main(int argc, char* argv[])
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         else
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
-        cout << "# b (GeV^-1)  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag" << endl;
+
+        //MCINT = ADAPTIVE_QUAD;
+        cout << "# Using MCINT algorithm " << MCINT << endl;
+        cout << "# b (GeV^-1)  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag, |F|^2" << endl;
 
         double db = maxb / nbperp;              // GeV^-1
         std::vector<double> blist(nbperp, 0.);
         for (int ib = 0; ib < nbperp; ib++) {
             blist[ib] = (ib + 0.5) * db;        // GeV^-1
         }
-        for (auto b: blist) {
-            double xpom;
-            if (xp < 0)
-                xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
-            else
-                xpom = xp;
-            if (xpom > 0.04)
-            {
-                cerr << "xpom = " << xpom << ", can't do this!" << endl;
-                //continue;
-            }
 
-            cout.precision(5);
-            double trans_r = diff.ScatteringAmplitudeF(xpom, Qsqr, b, T);
-            double trans_i = 0.0;
+        double xpom;
+        if (xp < 0)
+            xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+        else
+            xpom = xp;
+        if (xpom > 0.04)
+        {
+            cerr << "xpom = " << xpom << ", can't do this!" << endl;
+            //continue;
+        }
+        
+        double trans_r = 0.0;
+        double trans_i = 0.0;
+        double lng_r = 0.0;
+        double lng_i = 0.0;
+        double F2 = 0.0;
+        for (auto b: blist) {
+            trans_r = diff.ScatteringAmplitudeFIntegrated(xpom, Qsqr, b, T);
             // In practice, we found the imaginary part to be very small
             // compared to the real part, no need to compute
-            //trans_i = diff.ScatteringAmplitudeF(xpom, Qsqr, b, T, false);
+            //trans_i = diff.ScatteringAmplitudeFIntegrated(xpom, Qsqr, b, T, false);
 
-            double lng_r = 0;
-            double lng_i = 0;
             if (Qsqr > 0) {
-                lng_r = diff.ScatteringAmplitudeF(xpom, Qsqr, b, L);
-                lng_i = diff.ScatteringAmplitudeF(xpom, Qsqr, b, L, false);
+                lng_r = diff.ScatteringAmplitudeFIntegrated(xpom, Qsqr, b, L);
+                lng_i = diff.ScatteringAmplitudeFIntegrated(xpom, Qsqr, b, L, false);
             }
 
-            cout << b << " ";
+            F2 = diff.ScatteringAmplitudeFSquaredIntegrated(xpom, Qsqr, b, T);
+                
+            cout.precision(5);
+            cout << std::fixed << b << " ";
             cout.precision(10);
             cout << std::scientific
-                 << trans_r  << " " << trans_i << " "
-                 << lng_r << " " << lng_i << endl;
-
+                    << trans_r  << " " << trans_i << " "
+                    << lng_r << " " << lng_i << " " << F2 << endl;
         }
     }
     else if (mode == CORRECTIONS)
