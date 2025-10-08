@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
     if (string(argv[1])=="-help")
     {
         cout << "-Q2, -W, -xp: set kinematics" << endl;
-        cout << "-dipole A [ipglasma,ipglasma_binary,ipsatproton,smoothnuke] [ipglasmafile ipglasmastep (fm), ipsat_proton_width ipsat_proton_quark_width] [fluxtube tunbe_normalization] [com]    com: move origin to Center of Mass (with constituent quark ipsat)" << endl;
+        cout << "-dipole A [ipglasma,ipglasma_binary,ipsatproton,smoothnuke] [ipglasmafile ipglasmastep (fm), ipsat_proton_width ipsat_proton_quark_width] [fluxtube tube_normalization] [com]    com: move origin to Center of Mass (with constituent quark ipsat)" << endl;
         cout << "-only_real_part: do not compute the imaginary part (replaced by 0)" << endl;
         cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points/auto" << endl;
@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
         cout << "-nrqcd_parameters A B" << endl;
         cout << "-nrqcd_parameters_from_file" << endl;
         cout << "-periodic_boundary_conditions: use periodic boundary conditions" << endl;
-        cout << "-mcint [miser,vegas]: slect MC integral algorithm" << endl;
+        cout << "-mcint [miser,vegas,adaptive_quad]: select MC integral algorithm, adaptive_quad only for totalcrosssections mode" << endl;
 	cout << "-no_t_in_xpom: do not include t dependence in xpom" << endl;
         return 0;
     }
@@ -373,12 +373,13 @@ int main(int argc, char* argv[])
                 MCINT = MISER;
             else if (string(argv[i+1])=="vegas")
                 MCINT = VEGAS;
+            else if (string(argv[i+1])=="adaptive_quad")
+                MCINT = ADAPTIVE_QUAD;
             else
             {
                 cerr << "Unknown MC algorithm " << argv[i+1] << endl;
                 exit(1);
             }
-
         }
      else if (string(argv[i]).substr(0,1)=="-")
         {
@@ -393,7 +394,10 @@ int main(int argc, char* argv[])
             tlist.push_back(t);
     }
 
-
+    if (mode != TOTALCROSSSECTION && MCINT == ADAPTIVE_QUAD) {
+        cerr << "Adaptive quadrature only supported in totalcrosssections mode!" << endl;
+        exit(1);
+    }
 
     // Initialize global random number generator
     const gsl_rng_type * rngtype;
@@ -569,8 +573,6 @@ int main(int argc, char* argv[])
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
         cout << "# t  amplitude [GeV^-2] columns: transverse real, transverse imag, longitudinal real, longitudinal imag" << endl;
 
-
-        //for (t=mint; t<=maxt; t+=tstep)
         for (auto t: tlist)
         {
             double xpom;
@@ -581,7 +583,6 @@ int main(int argc, char* argv[])
             if (xpom > 0.04)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
-                //continue;
             }
             
             if(auto_mcintpoints)
@@ -589,30 +590,20 @@ int main(int argc, char* argv[])
             
             cout.precision(5);
             double trans_r = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
-            double trans_i = 0;
+            double trans_i = 0.0;
             if (!only_real_part)
                 trans_i = diff.ScatteringAmplitude(xpom, Qsqr, t, T, false); // note: last argument is real_part, false=imag part
 
-            double lng_r = 0;
+            double lng_r = 0.0;
             if (Qsqr > 0)
                 lng_r = diff.ScatteringAmplitude(xpom, Qsqr, t, L);
-            double lng_i = 0;
+            double lng_i = 0.0;
             if (Qsqr > 0 and !only_real_part)
                 lng_i = diff.ScatteringAmplitude(xpom, Qsqr, t, L, false);
 
             cout << t << " ";
             cout.precision(10);
             cout << trans_r  << " " << trans_i << " " << lng_r << " " << lng_i << endl;
-            
-
-            // Larger t step probably useful at large t
-            /*
-            if (t>0.08)
-                tstep = 0.015;
-            */
-	    ///if (t>=0.15 )
-            ///    tstep = 0.02;
-                
         }
     }
     else if (mode == TOTALCROSSSECTION)
@@ -621,9 +612,6 @@ int main(int argc, char* argv[])
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         else
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
-
-        //MCINT = ADAPTIVE_QUAD;
-        cout << "# Using MCINT algorithm " << MCINT << endl;
         cout << "# b (GeV^-1)  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag, |F|^2" << endl;
 
         double db = maxb / nbperp;              // GeV^-1
@@ -640,7 +628,6 @@ int main(int argc, char* argv[])
         if (xpom > 0.04)
         {
             cerr << "xpom = " << xpom << ", can't do this!" << endl;
-            //continue;
         }
         
         double trans_r = 0.0;
@@ -779,6 +766,8 @@ string InfoStr()
         info << "MISER";
     else if (MCINT == VEGAS)
         info << "VEGAS";
+    else if (MCINT == ADAPTIVE_QUAD)
+        info << "ADAPTIVE_QUAD";
     else
         info << "unknown!";
     

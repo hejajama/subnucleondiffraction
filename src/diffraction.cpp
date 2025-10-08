@@ -113,13 +113,10 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     helper.xpom = xpom;
     helper.Qsqr = Qsqr;
     helper.t = t;
-    helper.polarization=pol;
+    helper.polarization = pol;
     helper.real_part = real_part;
 
-    
-    
-    // Do MC integral over impact parameters and dipole sizes
-    
+    // Do MC integral over impact parameters and dipole sizes    
     // Currently hardcoded parameters for jpsi and gold:
     // Impact parameter up to 100 GeV^-1
     // Dipole size up to 10 GeV^-1
@@ -134,61 +131,55 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
     {
         lower = new double[5];
         upper = new double[5];
-        lower[4]=zlimit; // Min z
-        upper[4]=1.0 - lower[4];    // Max z
+        lower[4] = zlimit; // Min z
+        upper[4] = 1.0 - lower[4];    // Max z
     }
-    
-    lower[0]=lower[1]=lower[2]=lower[3]=0;
-    upper[0] = 10*5.068 ; // Max b
-    upper[1] = 2.0*M_PI;
+
+    lower[0] = lower[1] = lower[2] = lower[3] = 0;
+    upper[0] = 10 * 5.068; // Max b
+    upper[1] = 2.0 * M_PI;
     upper[2] = MAXR; //MAXR;//20; //0.5*5.068;  // Max r
-    upper[3] = 2.0*M_PI;
-    
+    upper[3] = 2.0 * M_PI;
+
     gsl_monte_function F;
     F.f = &Inthelperf_amplitude_mc;
     F.dim = 4;
     if (!FACTORIZE_ZINT)
         F.dim = 5;
     F.params = &helper;
-    
-    double result,error;
 
-    
+    double result = 0.;
+    double error = 0.;
+
     if (MCINT == MISER)
     {
         gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
-        gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS, global_rng, s, &result, &error);
-        //cout << "# Miser result " << result << " err " << error << " relerr " << std::abs(error/result) << endl;
+        gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS,
+                                  global_rng, s, &result, &error);
         gsl_monte_miser_free(s);
-    }
-    else if (MCINT == VEGAS)
-    {
+    } else if (MCINT == VEGAS) {
         gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
-        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50, global_rng, s, &result, &error);
+        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50,
+                                  global_rng, s, &result, &error);
 
         if (ShowVegasIterations())
             cout << "# vegas warmup " << result << " +/- " << error << endl;
         int iter=0;
-        do
-        {
+        do {
             iter++;
-            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5, global_rng, s, &result, &error);
+            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5,
+                                      global_rng, s, &result, &error);
             if (ShowVegasIterations())
-                cout << "# Vegas interation " << result << " +/- " << error << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
+                cout << "# Vegas interation " << result << " +/- " << error
+                     << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
             if (iter>10)
                 break;
         } while (iter < 2 or ( std::abs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 or std::abs(error/result) > MCINTACCURACY));
         gsl_monte_vegas_free(s);
     }
-    
-    //if (std::abs(error/result) > MCINTACCURACY)
-    //    cerr << "#MC integral failed, result " << result << " error " << error << endl;
-    
     delete lower;
     delete upper;
-    
     return result;
-    
 }
 
 
@@ -224,7 +215,7 @@ double Diffraction::ScatteringAmplitudeF(
         lower = new double[3];
         upper = new double[3];
         lower[2] = zlimit; // Min z
-        upper[2]= 1. - lower[2];    // Max z
+        upper[2] = 1. - lower[2];    // Max z
     }
     lower[0] = lower[1] = 0;
     upper[0] = MAXR; //MAXR;//20; //0.5*5.068;  // Max r
