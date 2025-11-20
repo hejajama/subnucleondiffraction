@@ -28,7 +28,7 @@ enum MCINTEGRAL
 {
     VEGAS,
     MISER,
-    ADAPTIVE_QUAD
+    GSL
 };
 
 //const MCINTEGRAL MCINT = MISER;

@@ -129,8 +129,8 @@ int main(int argc, char* argv[])
         cout << "-nrqcd_parameters A B" << endl;
         cout << "-nrqcd_parameters_from_file" << endl;
         cout << "-periodic_boundary_conditions: use periodic boundary conditions" << endl;
-        cout << "-mcint [miser,vegas,adaptive_quad]: select MC integral algorithm, adaptive_quad only for totalcrosssections mode" << endl;
-	cout << "-no_t_in_xpom: do not include t dependence in xpom" << endl;
+        cout << "-mcint [miser,vegas,gsl]: select integration algorithm (gsl = deterministic)" << endl;
+        cout << "-no_t_in_xpom: do not include t dependence in xpom" << endl;
         return 0;
     }
     
@@ -373,8 +373,8 @@ int main(int argc, char* argv[])
                 MCINT = MISER;
             else if (string(argv[i+1])=="vegas")
                 MCINT = VEGAS;
-            else if (string(argv[i+1])=="adaptive_quad")
-                MCINT = ADAPTIVE_QUAD;
+            else if (string(argv[i+1])=="gsl")
+                MCINT = GSL;
             else
             {
                 cerr << "Unknown MC algorithm " << argv[i+1] << endl;
@@ -389,14 +389,15 @@ int main(int argc, char* argv[])
 
     }
 
+    if (MCINT == GSL && mode != TOTALCROSSSECTION)
+    {
+        cerr << "GSL deterministic integrator not supported for total cross section mode!" << endl;
+        exit(1);
+    }
+
     if (tlist.size() == 0) {
         for (double t = mint; t < maxt; t += tstep)
             tlist.push_back(t);
-    }
-
-    if (mode != TOTALCROSSSECTION && MCINT == ADAPTIVE_QUAD) {
-        cerr << "Adaptive quadrature only supported in totalcrosssections mode!" << endl;
-        exit(1);
     }
 
     // Initialize global random number generator
@@ -606,56 +607,48 @@ int main(int argc, char* argv[])
             cout << trans_r  << " " << trans_i << " " << lng_r << " " << lng_i << endl;
         }
     }
+
     else if (mode == TOTALCROSSSECTION)
     {
         if (xp < 0)
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
         else
             cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
-        cout << "# b (GeV^-1)  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag, |F|^2" << endl;
-
-        double db = maxb / nbperp;              // GeV^-1
-        std::vector<double> blist(nbperp, 0.);
-        for (int ib = 0; ib < nbperp; ib++) {
-            blist[ib] = (ib + 0.5) * db;        // GeV^-1
-        }
-
-        double xpom;
-        if (xp < 0)
+            
+            double xpom;
+            if (xp < 0)
             xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
-        else
+            else
             xpom = xp;
-        if (xpom > 0.04)
-        {
-            cerr << "xpom = " << xpom << ", can't do this!" << endl;
-        }
-        
-        double trans_r = 0.0;
-        double trans_i = 0.0;
-        double lng_r = 0.0;
-        double lng_i = 0.0;
-        double F2 = 0.0;
-        for (auto b: blist) {
-            trans_r = diff.ScatteringAmplitudeFIntegrated(xpom, Qsqr, b, T);
-            // In practice, we found the imaginary part to be very small
-            // compared to the real part, no need to compute
-            //trans_i = diff.ScatteringAmplitudeFIntegrated(xpom, Qsqr, b, T, false);
-
-            if (Qsqr > 0) {
-                lng_r = diff.ScatteringAmplitudeFIntegrated(xpom, Qsqr, b, L);
-                lng_i = diff.ScatteringAmplitudeFIntegrated(xpom, Qsqr, b, L, false);
+            if (xpom > 0.04)
+            {
+                cerr << "xpom = " << xpom << ", can't do this!" << endl;
             }
-
-            F2 = diff.ScatteringAmplitudeFSquaredIntegrated(xpom, Qsqr, b, T);
-                
+            
+        auto data = diff.ComputeTotalCrossSection(xpom, Qsqr, nbperp, maxb);
+        cout << "# Total cross section (transverse): " << data.sigma_T << " nb" << endl;
+        cout << "# Total cross section (longitudinal): " << data.sigma_L << " nb" << endl;
+        cout << "# b (GeV^-1)  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag, transverse |F|^2, longitudinal |F|^2" << endl;
+        for (int ib=0; ib<nbperp; ++ib) {
+            const double bval = data.b[ib];
+            const std::complex<double>& FT = data.F_T[ib];
+            std::complex<double> FL(0.,0.);
+            double FT_sqr = data.F_T_sqr[ib];
+            double FL_sqr = 0.0;
+            if (Qsqr > 0) {
+                FL = data.F_L[ib];
+                FL_sqr = data.F_L_sqr[ib];
+            }
             cout.precision(5);
-            cout << std::fixed << b << " ";
+            cout << std::fixed << bval << " ";
             cout.precision(10);
             cout << std::scientific
-                    << trans_r  << " " << trans_i << " "
-                    << lng_r << " " << lng_i << " " << F2 << endl;
+                 << FT.real() << " " << FT.imag() << " "
+                 << FL.real() << " " << FL.imag() << " "
+                 << FT_sqr << " " << FL_sqr << endl;
         }
     }
+
     else if (mode == CORRECTIONS)
     {
         cout << "# Real part correction" << endl;
@@ -683,10 +676,10 @@ int main(int argc, char* argv[])
             //    tstep=0.1;
         }
     }
-    
+
     else if (mode == F2)
     {
-	    FACTORIZE_ZINT=true;
+        FACTORIZE_ZINT=true;
         cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm tot F_L(light) F_L(charm) F_L(tot)" << endl;
         double orig_x = xbj;
         WaveFunction * photon = new VirtualPhoton();;
@@ -744,15 +737,10 @@ int main(int argc, char* argv[])
     
     
     gsl_rng_free(global_rng);
-
-
-    
     delete amp;
     delete wavef;
-    
 //    if (gd != 0)
 //        delete gd;
-    
 }
 
 
@@ -760,14 +748,14 @@ string InfoStr()
 {
     stringstream info;
     
-    info << "Parameters: MCINTPOINTS: " << MCINTPOINTS << " ZINT_INTERVALS " << ZINT_INTERVALS << " MCINTACCURACY " << MCINTACCURACY << " ZINT _RELACCURACY " << ZINT_RELACCURACY;
+    info << "Parameters: MCINTPOINTS: " << MCINTPOINTS << " ZINT_INTERVALS " << ZINT_INTERVALS << " MCINTACCURACY " << MCINTACCURACY << " ZINT_RELACCURACY " << ZINT_RELACCURACY;
     info << ". Integration method ";
     if (MCINT == MISER)
         info << "MISER";
     else if (MCINT == VEGAS)
         info << "VEGAS";
-    else if (MCINT == ADAPTIVE_QUAD)
-        info << "ADAPTIVE_QUAD";
+    else if (MCINT == GSL)
+        info << "GSL deterministic";
     else
         info << "unknown!";
     

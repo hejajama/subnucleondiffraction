@@ -18,6 +18,9 @@
 using namespace std;
 
 #include <complex>
+#include <omp.h>
+#include <functional>
+#include <iomanip>
 
 
 Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
@@ -162,29 +165,100 @@ double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Pola
         gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50,
                                   global_rng, s, &result, &error);
 
-        if (ShowVegasIterations())
-            cout << "# vegas warmup " << result << " +/- " << error << endl;
+        if (ShowVegasIterations() == false)
+            cerr << "# vegas warmup " << result << " +/- " << error << endl;
         int iter=0;
         do {
             iter++;
             gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5,
                                       global_rng, s, &result, &error);
-            if (ShowVegasIterations())
-                cout << "# Vegas interation " << result << " +/- " << error
+            if (ShowVegasIterations() == false)
+                cerr << "# Vegas integration " << result << " +/- " << error
                      << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
             if (iter>10)
                 break;
         } while (iter < 2 or ( std::abs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 or std::abs(error/result) > MCINTACCURACY));
         gsl_monte_vegas_free(s);
     }
-    delete lower;
-    delete upper;
+    delete[] lower;
+    delete[] upper;
     return result;
 }
 
 
 double Inthelperf_amplitudeF_mc(double *vec, size_t dim, void* par);
-double Inthelperf_amplitudeF_integrated_mc(double *vec, size_t dim, void* par);
+
+// Deterministic (GSL) helpers for ScatteringAmplitudeF
+struct FDetParams {
+    Diffraction* diff;
+    double xpom;
+    double Q2;
+    double b;
+    double theta_b;
+    double theta_r;
+    Polarization pol;
+    bool real_part;
+    double zmin;
+    gsl_integration_workspace* wz;
+};
+
+struct ZIntParams { FDetParams* base; double r; };
+
+static double FDetZHelper(double z, void* p)
+{
+    ZIntParams* prm = static_cast<ZIntParams*>(p);
+    FDetParams* b = prm->base;
+    return b->diff->ScatteringAmplitudeIntegrand2(
+        b->xpom, b->Q2, prm->r, b->theta_r, b->b, b->theta_b, z, b->pol, b->real_part);
+}
+
+static double FDetRLogHelper(double u, void* p)
+{
+    FDetParams* prm = static_cast<FDetParams*>(p);
+    const double r = std::exp(u);
+    if (FACTORIZE_ZINT) {
+        double f = prm->diff->ScatteringAmplitudeIntegrand2(
+            prm->xpom, prm->Q2, r, prm->theta_r, prm->b, prm->theta_b, 0.5, prm->pol, prm->real_part);
+        return r * f; // dr/du = r
+    } else {
+        ZIntParams zp; zp.base = prm; zp.r = r;
+        double zl = std::max(0.0, prm->zmin);
+        double zh = std::min(1.0, 1.0 - prm->zmin);
+
+        // First try fast fixed Gauss–Legendre with 16 points (and 8 for error estimate)
+        static thread_local gsl_integration_glfixed_table* gl_z_16 = nullptr;
+        static thread_local gsl_integration_glfixed_table* gl_z_8 = nullptr;
+        if (!gl_z_16) gl_z_16 = gsl_integration_glfixed_table_alloc(16);
+        if (!gl_z_8) gl_z_8 = gsl_integration_glfixed_table_alloc(8);
+        auto gl_eval = [&](gsl_integration_glfixed_table* tab)->double {
+            double acc = 0.0;
+            for (int i=0; i<tab->n; ++i) {
+                double zi, wi;
+                gsl_integration_glfixed_point(zl, zh, i, &zi, &wi, tab);
+                acc += wi * FDetZHelper(zi, &zp);
+            }
+            return acc;
+        };
+        double z16 = gl_eval(gl_z_16);
+        double z8  = gl_eval(gl_z_8);
+        double denom = std::max(1.0, std::abs(z16));
+        if (std::abs(z16 - z8) / denom <= ZINT_RELACCURACY) {
+            return r * z16;
+        }
+
+        // If GL not sufficient, try qng then fallback to qag
+        gsl_function Fz; Fz.function = FDetZHelper; Fz.params = &zp;
+        double zres=0.0, zerr=0.0; size_t neval = 0;
+        int st = gsl_integration_qng(&Fz, zl, zh, 0.0, ZINT_RELACCURACY, &zres, &zerr, &neval);
+        if (st != GSL_SUCCESS) {
+            st = gsl_integration_qag(&Fz, zl, zh, 0.0, ZINT_RELACCURACY, ZINT_INTERVALS, GSL_INTEG_GAUSS51, prm->wz, &zres, &zerr);
+            if (st) {
+                if (std::isnan(zres) || std::isinf(zres)) return 0.0;
+            }
+        }
+        return r * zres;
+    }
+}
 
 double Diffraction::ScatteringAmplitudeF(
     double xpom, double Qsqr, double b, double theta_b, Polarization pol, bool real_part) {
@@ -203,7 +277,7 @@ double Diffraction::ScatteringAmplitudeF(
     // Currently hardcoded parameters for jpsi and gold:
     // Impact parameter up to 100 GeV^-1
     // Dipole size up to 10 GeV^-1
-    // MC integration parameters: r, theta_r, Z
+    // MC integration parameters: r, theta_r, z
     double *lower, *upper;
     if (FACTORIZE_ZINT)
     {
@@ -249,282 +323,152 @@ double Diffraction::ScatteringAmplitudeF(
             gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5,
                                       global_rng, s, &result, &error);
             if (ShowVegasIterations())
-                cout << "# Vegas interation " << result << " +/- " << error
+                cout << "# Vegas integration " << result << " +/- " << error
                      << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
             if (iter>10)
                 break;
         } while (iter < 2 or ( std::abs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 or std::abs(error/result) > MCINTACCURACY));
         gsl_monte_vegas_free(s);
-    } else if (MCINT == ADAPTIVE_QUAD) {
-        // Use trapezoidal rule with smart grid spacing
-        int nr_points = 64;   // Much fewer points than MC for speed
-        int ntheta_points = 32;  // Sufficient for angular integration
-        int nz_points = (!FACTORIZE_ZINT) ? 32 : 1;
+    } else if (MCINT == GSL) {
+        // Deterministic integration with adaptive composite Simpson in theta_r:
+        // 1. Start with 32 base intervals (uniform partition).
+        // 2. For each interval compute quarter-point refinement only once; cache error and refined Simpson estimate.
+        // 3. Apply Richardson correction ( (S_refined - S_base)/15 ) when accepting interval.
+        // 4. Refine (split) only intervals whose relative error > MCINTACCURACY, until cap of theta evaluations.
+        static thread_local gsl_integration_cquad_workspace* wrcq = gsl_integration_cquad_workspace_alloc(1024);
 
-        result = 0.0;
-        
-        // r integration with logarithmic spacing
-        double r_min = 1e-6;  // Avoid r=0 exactly  
-        double r_max = upper[0];
-        double log_r_min = log(r_min);
-        double log_r_max = log(r_max);
-        double dlog_r = (log_r_max - log_r_min) / nr_points;
+        FDetParams prm; prm.diff = this; prm.xpom = xpom; prm.Q2 = Qsqr; prm.b = b; prm.theta_b = theta_b;
+        prm.pol = pol; prm.real_part = real_part; prm.zmin = zlimit; prm.wz = gsl_integration_workspace_alloc(ZINT_INTERVALS);
 
-        for (int i = 0; i < nr_points; i++) {
-            // Logarithmic spacing with midpoint rule
-            double log_r = log_r_min + (i + 0.5) * dlog_r;
-            double r = exp(log_r);
-            helper.r = r;
-            
-            // theta_r integration
-            double dtheta = 2.0 * M_PI / ntheta_points;
-            double theta_sum = 0.0;
-            
-            for (int j = 0; j < ntheta_points; j++) {
-                double theta_r = (j + 0.5) * dtheta;
-                helper.theta_r = theta_r;
-                
-                if (FACTORIZE_ZINT) {
-                    double z = 0.5;
-                    double integrand = helper.diffraction->ScatteringAmplitudeIntegrand2(
-                        helper.xpom, helper.Qsqr, helper.r, helper.theta_r,
-                        helper.b, helper.theta_b, z, helper.polarization, helper.real_part);
-                    theta_sum += integrand;
-                } else {
-                    double zlimit = lower[2];
-                    double z_min = zlimit;
-                    double z_max = upper[2];
-                    double dz = (z_max - z_min) / nz_points;
-                    double z_sum = 0.0;
-                    
-                    for (int k = 0; k < nz_points; k++) {
-                        double z = z_min + (k + 0.5) * dz;
-                        double integrand = helper.diffraction->ScatteringAmplitudeIntegrand2(
-                            helper.xpom, helper.Qsqr, helper.r, helper.theta_r,
-                            helper.b, helper.theta_b, z, helper.polarization, helper.real_part);
-                        z_sum += integrand;
-                    }
-                    theta_sum += z_sum * dz;
-                }
+        auto r_integrated = [&](double theta_r)->double {
+            prm.theta_r = theta_r;
+            gsl_function Fr; Fr.function = FDetRLogHelper; Fr.params = &prm;
+            const double rmin = 1e-6; const double a = std::log(rmin); const double bb = std::log(MaxR());
+            double rres = 0.0, rerr = 0.0; size_t neval = 0;
+            int st = gsl_integration_qng(&Fr, a, bb, 0.0, MCINTACCURACY, &rres, &rerr, &neval);
+            if (st != GSL_SUCCESS || !(std::abs(rres) > 0 && std::abs(rerr/rres) <= MCINTACCURACY)) {
+                st = gsl_integration_cquad(&Fr, a, bb, 0.0, MCINTACCURACY, wrcq, &rres, &rerr, &neval);
+                if (st && (std::isnan(rres) || std::isinf(rres))) rres = 0.0;
             }
-            // Include correct Jacobians: only r from log integration (cylindrical r already in integrand)
-            result += theta_sum * r * dlog_r * dtheta;
+            return rres;
+        };
+
+        struct ThetaInterval {
+            double a, b; // bounds
+            double fa, fm, fb; // values at a, midpoint, b
+            double Sbase;      // base Simpson over [a,b]
+            // Cached refinement data
+            bool error_computed;
+            double fql, fqr;   // quarter points
+            double Srefined;   // refined Simpson (sum of two halves)
+            double relerr;     // relative error estimate
+        };
+
+        const double A = 0.0, B = 2.0*M_PI;
+        const int baseIntervals = 16;
+        const int maxThetaEvalsCap = 256;
+        std::vector<ThetaInterval> intervals; intervals.reserve(baseIntervals*2);
+        const double h = (B - A) / baseIntervals;
+
+        int evals = 0;
+        // Precompute f(0) exploiting periodicity later
+        double f0 = r_integrated(A); evals++;
+        for (int i=0; i<baseIntervals; ++i) {
+            double a_i = A + i*h;
+            double b_i = a_i + h;
+            double fa = (i==0 ? f0 : r_integrated(a_i)); if (i>0) evals++;
+            double fb = (i==baseIntervals-1 ? f0 : r_integrated(b_i)); if (i!=baseIntervals-1) evals++;
+            double m  = 0.5*(a_i + b_i);
+            double fm = r_integrated(m); evals++;
+            double Sbase = (h/6.0)*(fa + 4.0*fm + fb);
+            intervals.push_back({a_i,b_i,fa,fm,fb,Sbase,false,0.0,0.0,0.0,0.0});
         }
+
+        auto compute_error = [&](ThetaInterval& I){
+            if (I.error_computed) return; // already done
+            if (evals >= maxThetaEvalsCap) return; // cannot refine further
+            double m = 0.5*(I.a + I.b);
+            double leftMid  = 0.5*(I.a + m);
+            double rightMid = 0.5*(m + I.b);
+            I.fql = r_integrated(leftMid); evals++;
+            if (evals < maxThetaEvalsCap) { I.fqr = r_integrated(rightMid); evals++; }
+            else I.fqr = I.fql; // fallback if cap reached (degenerate refinement)
+            double Sl = ( (m - I.a)/6.0 ) * ( I.fa + 4.0*I.fql + I.fm );
+            double Sr = ( (I.b - m)/6.0 ) * ( I.fm + 4.0*I.fqr + I.fb );
+            I.Srefined = Sl + Sr;
+            double denom = std::max(1.0, std::abs(I.Srefined));
+            double absErr = std::abs(I.Srefined - I.Sbase) / 15.0; // classical Simpson error numerator
+            I.relerr = absErr / denom;
+            I.error_computed = true;
+        };
+
+        // Initial one-pass error computation for all intervals; then assess GLOBAL errors
+        for (auto& I : intervals) compute_error(I);
+        double sum_base = 0.0, sum_refined = 0.0, sum_abs_diff = 0.0;
+        double worstRelErr = 0.0;
+        for (auto& I : intervals) {
+            sum_base += I.Sbase;
+            sum_refined += I.Srefined;
+            sum_abs_diff += std::abs(I.Srefined - I.Sbase);
+            if (I.relerr > worstRelErr) worstRelErr = I.relerr;
+        }
+        double denom_global = std::max(1.0, std::abs(sum_refined));
+        double global_abs_err = (sum_abs_diff / denom_global) / 15.0; // absolute-sum composite Simpson error
+
+        int splitsPerformed = 0;
+        // Hybrid refinement: continue while either worst per-interval or global abs error exceed tolerance
+        while (evals < maxThetaEvalsCap && (worstRelErr > MCINTACCURACY || global_abs_err > MCINTACCURACY)) {
+            // Pick worst interval by relerr
+            double worstErrLocal = -1.0; size_t worstIdx = intervals.size();
+            for (size_t i=0; i<intervals.size(); ++i) {
+                if (intervals[i].relerr > worstErrLocal) { worstErrLocal = intervals[i].relerr; worstIdx = i; }
+            }
+            if (worstIdx == intervals.size()) break; // no candidate
+            ThetaInterval Iold = intervals[worstIdx];
+            if (evals >= maxThetaEvalsCap) break;
+            double m = 0.5*(Iold.a + Iold.b);
+            // Children (use cached quarter points as midpoints)
+            ThetaInterval left{Iold.a, m, Iold.fa, Iold.fql, Iold.fm,
+                               ( (m - Iold.a)/6.0 ) * ( Iold.fa + 4.0*Iold.fql + Iold.fm ), false,0,0,0,0};
+            ThetaInterval right{m, Iold.b, Iold.fm, Iold.fqr, Iold.fb,
+                                ( (Iold.b - m)/6.0 ) * ( Iold.fm + 4.0*Iold.fqr + Iold.fb ), false,0,0,0,0};
+            intervals[worstIdx] = left;
+            intervals.insert(intervals.begin() + worstIdx + 1, right);
+            // Compute errors for new children
+            compute_error(intervals[worstIdx]);
+            compute_error(intervals[worstIdx+1]);
+            // Recompute global metrics
+            sum_base = 0.0; sum_refined = 0.0; sum_abs_diff = 0.0; worstRelErr = 0.0;
+            for (auto& I : intervals) {
+                sum_base += I.Sbase; sum_refined += I.Srefined;
+                sum_abs_diff += std::abs(I.Srefined - I.Sbase);
+                if (I.relerr > worstRelErr) worstRelErr = I.relerr;
+            }
+            denom_global = std::max(1.0, std::abs(sum_refined));
+            global_abs_err = (sum_abs_diff / denom_global) / 15.0;
+            splitsPerformed++;
+        }
+
+        // Final accumulation with Richardson correction on refined intervals
+        double sum = 0.0; int acceptedRefined = 0; int totalIntervals = (int)intervals.size();
+        for (auto& I : intervals) {
+            double contrib = I.Sbase; // default base Simpson
+            if (I.error_computed) { contrib = I.Srefined + (I.Srefined - I.Sbase)/15.0; acceptedRefined++; }
+            sum += contrib;
+        }
+        result = sum;
+        /*cerr << "# GSL theta_r evals " << evals << " intervals " << totalIntervals
+             << " refined_passes " << acceptedRefined
+             << " splits " << splitsPerformed
+             << " worst_relerr " << worstRelErr
+             << " global_abs_err " << global_abs_err
+             << " (cap " << maxThetaEvalsCap << ") for b=" << b << endl;*/
+        gsl_integration_workspace_free(prm.wz);
     }
-    delete lower;
-    delete upper;
+    delete[] lower;
+    delete[] upper;
     return result;
 }
-
-// Compute integral over theta_b of F(b,theta_b) 
-double Diffraction::ScatteringAmplitudeFIntegrated(
-    double xpom, double Qsqr, double b, Polarization pol, bool real_part) {
-
-    if (MCINT == ADAPTIVE_QUAD) {
-        int ntheta_b_points = 32;  // theta_b integration points
-        double dtheta_b = 2.0 * M_PI / ntheta_b_points;
-        double result = 0.0;
-
-        for (int ib = 0; ib < ntheta_b_points; ib++) {
-            double theta_b = (ib + 0.5) * dtheta_b;
-            
-            int nr_points = 64;
-            int ntheta_points = 32;
-            int nz_points = (!FACTORIZE_ZINT) ? 32 : 1;
-
-            double f_contribution = 0.0;
-
-            // r integration with logarithmic spacing
-            double r_min = 1e-10;  // Avoid r=0 exactly
-            double r_max = MAXR;
-            double log_r_min = log(r_min);
-            double log_r_max = log(r_max);
-            double dlog_r = (log_r_max - log_r_min) / nr_points;
-
-            for (int i = 0; i < nr_points; i++) {
-                // Logarithmic spacing with midpoint rule
-                double log_r = log_r_min + (i + 0.5) * dlog_r;
-                double r = exp(log_r);
-
-                // theta_r integration
-                double dtheta = 2.0 * M_PI / ntheta_points;
-                double theta_sum = 0.0;
-
-                for (int j = 0; j < ntheta_points; j++) {
-                    double theta_r = (j + 0.5) * dtheta;
-
-                    if (FACTORIZE_ZINT) {
-                        double z = 0.5;
-                        double integrand = ScatteringAmplitudeIntegrand2(
-                            xpom, Qsqr, r, theta_r, b, theta_b, z, pol, real_part);
-                        theta_sum += integrand;
-                    } else {
-                        double zlimit = 0.00000001;
-                        double z_min = zlimit;
-                        double z_max = 1.0 - zlimit;
-                        double dz = (z_max - z_min) / nz_points;
-                        double z_sum = 0.0;
-                        
-                        for (int k = 0; k < nz_points; k++) {
-                            double z = z_min + (k + 0.5) * dz;
-                            double integrand = ScatteringAmplitudeIntegrand2(
-                                xpom, Qsqr, r, theta_r, b, theta_b, z, pol, real_part);
-                            z_sum += integrand;
-                        }
-                        theta_sum += z_sum * dz;
-                    }
-                }
-                // Include correct Jacobians: only r from log integration (cylindrical r already in integrand)
-                f_contribution += theta_sum * r * dlog_r * dtheta;
-            }
-            result += f_contribution * dtheta_b;
-        }
-        return result;
-    } else {
-        // For Monte Carlo methods, integrate over theta_b, r, theta_r, (z) directly
-        Inthelper_amplitude helper;
-        helper.diffraction = this;
-        helper.xpom = xpom;
-        helper.Qsqr = Qsqr;
-        helper.t = 0.0;
-        helper.b = b;
-        helper.polarization = pol;
-        helper.real_part = real_part;
-
-        double *lower, *upper;
-        int dim;
-
-        if (FACTORIZE_ZINT) {
-            dim = 3;  // theta_b, r, theta_r
-            lower = new double[3];
-            upper = new double[3];
-        } else {
-            dim = 4;  // theta_b, r, theta_r, z
-            lower = new double[4];
-            upper = new double[4];
-            lower[3] = zlimit;
-            upper[3] = 1.0 - lower[3];
-        }
-
-        lower[0] = 0; upper[0] = 2.0*M_PI;  // theta_b
-        lower[1] = 0; upper[1] = MAXR;      // r  
-        lower[2] = 0; upper[2] = 2.0*M_PI;  // theta_r
-
-        gsl_monte_function F;
-        F.f = &Inthelperf_amplitudeF_integrated_mc;
-        F.dim = dim;
-        F.params = &helper;
-
-        double result, error;
-
-        if (MCINT == VEGAS) {
-            gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
-            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50,
-                                      global_rng, s, &result, &error);
-
-            int iter = 0;
-            do {
-                iter++;
-                gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5,
-                                          global_rng, s, &result, &error);
-                if (iter > 10) break;
-            } while (iter < 2 or (std::abs(gsl_monte_vegas_chisq(s) - 1.0) > 0.5 or std::abs(error/result) > MCINTACCURACY));
-
-            gsl_monte_vegas_free(s);
-        } else {
-            gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
-            gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS,
-                                      global_rng, s, &result, &error);
-            gsl_monte_miser_free(s);
-        }
-        delete[] lower;
-        delete[] upper;
-        return result;
-    }
-}
-
-// Compute integral over theta_b of |F(b,theta_b)|^2
-double Diffraction::ScatteringAmplitudeFSquaredIntegrated(
-    double xpom, double Qsqr, double b, Polarization pol) {
-
-    if (MCINT == ADAPTIVE_QUAD) {
-        // Compute |F|^2 by integrating |F(theta_b)|^2 over theta_b
-        // where F(theta_b) is computed using the same method as ScatteringAmplitudeF
-        int ntheta_b_points = 32;
-        double dtheta_b = 2.0 * M_PI / ntheta_b_points;
-        double result = 0.0;
-
-        for (int ib = 0; ib < ntheta_b_points; ib++) {
-            double theta_b = (ib + 0.5) * dtheta_b;
-
-            // Compute F_real and F_imag at this theta_b using the same grid as ScatteringAmplitudeF
-            int nr_points = 64;
-            int ntheta_points = 32;
-            int nz_points = (!FACTORIZE_ZINT) ? 32 : 1;
-
-            // Use logarithmic spacing for r
-            double r_min = 1e-10;
-            double r_max = MAXR;
-            double log_r_min = log(r_min);
-            double log_r_max = log(r_max);
-            double dlog_r = (log_r_max - log_r_min) / nr_points;
-            double dtheta = 2.0 * M_PI / ntheta_points;
-
-            double f_real = 0.0, f_imag = 0.0;
-
-            for (int i = 0; i < nr_points; i++) {
-                double log_r = log_r_min + (i + 0.5) * dlog_r;
-                double r = exp(log_r);
-
-                double theta_sum_real = 0.0, theta_sum_imag = 0.0;
-                for (int j = 0; j < ntheta_points; j++) {
-                    double theta_r = (j + 0.5) * dtheta;
-
-                    if (FACTORIZE_ZINT) {
-                        double z = 0.5;
-                        double integrand_real = ScatteringAmplitudeIntegrand2(
-                            xpom, Qsqr, r, theta_r, b, theta_b, z, pol, true);
-                        double integrand_imag = ScatteringAmplitudeIntegrand2(
-                            xpom, Qsqr, r, theta_r, b, theta_b, z, pol, false);
-                        theta_sum_real += integrand_real;
-                        theta_sum_imag += integrand_imag;
-                    } else {
-                        double zlimit = 0.00000001;
-                        double z_min = zlimit;
-                        double z_max = 1.0 - zlimit;
-                        double dz = (z_max - z_min) / nz_points;
-                        double z_sum_real = 0.0, z_sum_imag = 0.0;
-
-                        for (int k = 0; k < nz_points; k++) {
-                            double z = z_min + (k + 0.5) * dz;
-                            double integrand_real = ScatteringAmplitudeIntegrand2(
-                                xpom, Qsqr, r, theta_r, b, theta_b, z, pol, true);
-                            double integrand_imag = ScatteringAmplitudeIntegrand2(
-                                xpom, Qsqr, r, theta_r, b, theta_b, z, pol, false);
-                            z_sum_real += integrand_real;
-                            z_sum_imag += integrand_imag;
-                        }
-                        theta_sum_real += z_sum_real * dz;
-                        theta_sum_imag += z_sum_imag * dz;
-                    }
-                }
-                f_real += theta_sum_real * r * dlog_r * dtheta;
-                f_imag += theta_sum_imag * r * dlog_r * dtheta;
-            }
-            // Compute |F|^2 = F_real^2 + F_imag^2 at this theta_b
-            double f_squared = f_real * f_real + f_imag * f_imag;
-            result += f_squared * dtheta_b;
-        }
-        return result;
-    } else {
-        // For Monte Carlo, use the linear approach
-        double real_part = ScatteringAmplitudeFIntegrated(xpom, Qsqr, b, pol, true);
-        double imag_part = ScatteringAmplitudeFIntegrated(xpom, Qsqr, b, pol, false);
-        return real_part * real_part + imag_part * imag_part;
-    }
-}
-
-double Inthelperf_amplitude_z(double z, void* p);
 
 double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
 {
@@ -539,25 +483,9 @@ double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
     if (!FACTORIZE_ZINT)
         z = vec[4];
         
-    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z, helper->polarization, helper->real_part);
-    
-    /*
-    gsl_integration_workspace *w = gsl_integration_workspace_alloc(ZINT_INTERVALS);
-    
-    gsl_function F;
-    F.function =
-    &Inthelperf_amplitude_z;
-    F.params = par;
-    double result,error;
-    int status = gsl_integration_qags(&F, 0, 1, 0, ZINT_RELACCURACY, ZINT_INTERVALS, w, &result, &error);
-    
-    if (status)
-        cerr << "#ZINT failed, result " << result << " relerror " << error << " r " << helper->r << " b " << helper->b << endl;
-    
-    gsl_integration_workspace_free(w);
-    
-    return result;
-     */
+    return helper->diffraction->ScatteringAmplitudeIntegrand(
+        helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, 
+        helper->b, helper->theta_b, z, helper->polarization, helper->real_part);
 }
 
 double Inthelperf_amplitudeF_mc(double *vec, size_t dim, void* par) {
@@ -575,29 +503,6 @@ double Inthelperf_amplitudeF_mc(double *vec, size_t dim, void* par) {
         helper->b, helper->theta_b, z, helper->polarization, helper->real_part);
 }
 
-double Inthelperf_amplitudeF_integrated_mc(double *vec, size_t dim, void* par) {
-    Inthelper_amplitude *helper = (Inthelper_amplitude*)par;
-    helper->theta_b = vec[0];
-    helper->r = vec[1];
-    helper->theta_r = vec[2];
-
-    double z = 0.5;// Put z=0.5 as it sets b to the geometric average of quarks
-
-    if (!FACTORIZE_ZINT)
-        z = vec[3];
-
-    return helper->diffraction->ScatteringAmplitudeIntegrand2(
-        helper->xpom, helper->Qsqr, helper->r, helper->theta_r,
-        helper->b, helper->theta_b, z, helper->polarization, helper->real_part);
-}
-
-double Inthelperf_amplitude_z(double z, void* p)
-{
-    Inthelper_amplitude *helper = (Inthelper_amplitude*)p;
-    
-    return helper->diffraction->ScatteringAmplitudeIntegrand(helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, helper->b, helper->theta_b, z);
-}
-
 double Diffraction::ScatteringAmplitudeIntegrand(
     double xpom, double Qsqr, double t, double r, double theta_r,
     double b, double theta_b, double z, Polarization pol, bool real_part) {
@@ -607,10 +512,15 @@ double Diffraction::ScatteringAmplitudeIntegrand(
     // Antiquark: b - (1-z) r
     // If do like Lappi, Mantysaari: set z=1/2 here
 
-    double bx = b*cos(theta_b);
-    double by = b*sin(theta_b);
-    double rx = r*cos(theta_r);
-    double ry = r*sin(theta_r);
+    const double cos_theta_b = std::cos(theta_b);
+    const double sin_theta_b = std::sin(theta_b);
+    const double cos_theta_r = std::cos(theta_r);
+    const double sin_theta_r = std::sin(theta_r);
+
+    double bx = b*cos_theta_b;
+    double by = b*sin_theta_b;
+    double rx = r*cos_theta_r;
+    double ry = r*sin_theta_r;
 
     // q and antiq positions
     // Note my convention is that b is the center of the dipole (geometric center), not center of mass (z weighted)
@@ -622,59 +532,67 @@ double Diffraction::ScatteringAmplitudeIntegrand(
 
     double x1[2] = {qx,qy};
     double x2[2] = {qbarx, qbary};
-    std::complex<double> amp = dipole->ComplexAmplitude(xpom, x1, x2); //(amp_real, amp_imag);
-    std::complex<double> result = 2.0*r*b; // r and b from Jacobians, 2 as we have written sigma_qq = 2 N
-    std::complex<double> imag(0,1);
+    std::complex<double> amp = dipole->ComplexAmplitude(xpom, x1, x2);
+    const double amp_r = amp.real();
+    const double amp_i = amp.imag();
+    double scalar = 2.0*r*b; // r and b from Jacobians, 2 as we have written sigma_qq = 2 N
 
+    double overlap = 0.0;
     if (FACTORIZE_ZINT) {
         if (wavef->WaveFunctionType() == "NRQCD") {
-            // Note 1/(4pi) is included in the z integral measure in PsiSqr_T_intz
             if (pol == T)
-                result *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
+                overlap = ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
             else
-                result *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta,theta_r);
+                overlap = ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta, theta_r);
         } else {
             if (pol == T)
-                result *= wavef->PsiSqr_T_intz(Qsqr, r);
+                overlap = wavef->PsiSqr_T_intz(Qsqr, r);
             else
-                result *= wavef->PsiSqr_L_intz(Qsqr, r);
+                overlap = wavef->PsiSqr_L_intz(Qsqr, r);
         }
+        scalar *= overlap;
+        double res;
         if (delta > 0) {
-            result *= std::exp(-imag*(b*delta*std::cos(theta_b)))*amp;
+            const double phi = - b*delta*cos_theta_b;
+            const double c = std::cos(phi);
+            const double s = std::sin(phi);
+            if (real_part)
+                res = scalar * (amp_r*c - amp_i*s);
+            else
+                res = scalar * (amp_r*s + amp_i*c);
         } else {
-            result *= amp;
+            res = real_part ? scalar * amp_r : scalar * amp_i;
         }
+        if (std::isnan(res) || std::isinf(res)) {
+            cerr << "Amplitude integral is " << res << " dipole " << amp << " xp=" << xpom << " Q^2=" << Qsqr << " t="<< t << " r=" << r << " theta_r="<<theta_r << " b="<< b << "theta_b="<< theta_b << " z=" << z << endl;
+            exit(1);
+        }
+        return res;
     } else {
+        const double inv4pi = 1.0/(4.0*M_PI);
         if (pol == T)
-            result *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
+            overlap = wavef->PsiSqr_T(Qsqr, r, z) * inv4pi;
         else
-            result *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
-
-        // This integrand is now not integrated over z
-        std::complex<double> exponent(1, 0);
+            overlap = wavef->PsiSqr_L(Qsqr, r, z) * inv4pi;
+        scalar *= overlap;
+        double res;
         if (delta > 0) {
-            exponent = std::exp( -imag* ( b*delta*std::cos(theta_b) - (0.5 - z)*r*delta*std::cos(theta_r)  )  );
+            const double phi = - ( b*delta*cos_theta_b - (0.5 - z)*r*delta*cos_theta_r );
+            const double c = std::cos(phi);
+            const double s = std::sin(phi);
+            if (real_part)
+                res = scalar * (amp_r*c - amp_i*s);
+            else
+                res = scalar * (amp_r*s + amp_i*c);
+        } else {
+            res = real_part ? scalar * amp_r : scalar * amp_i;
         }
-
-        result *= amp * exponent;
-
+        if (std::isnan(res) || std::isinf(res)) {
+            cerr << "Amplitude integral is " << res << " dipole " << amp << " xp=" << xpom << " Q^2=" << Qsqr << " t="<< t << " r=" << r << " theta_r="<<theta_r << " b="<< b << "theta_b="<< theta_b << " z=" << z << endl;
+            exit(1);
+        }
+        return res;
     }
-
-    double res = 0;
-    // Note: As I'm using GSL to integrate and I use a routine that assumes a scalar function, this is quite inefficeint as 
-    // everything above is computed separately for the real and imaginary parts. Performance could be optimized by using an 
-    // integration routine supportin vector valued functions
-    if (real_part)
-        res = result.real();
-    else
-        res = result.imag();
-
-    if (std::isnan(res) or std::isinf(res)) {
-        cerr << "Amplitude integral is " << res << " dipole " << amp << " xp=" << xpom << " Q^2=" << Qsqr << " t="<< t << " r=" << r << " theta_r="<<theta_r << " b="<< b << "theta_b="<< theta_b << " z=" << z << endl;
-        exit(1);
-    }
-
-    return res;
 }
 
 
@@ -687,10 +605,15 @@ double Diffraction::ScatteringAmplitudeIntegrand2(
     // Antiquark: b - (1-z) r
     // If do like Lappi, Mantysaari: set z=1/2 here
 
-    double bx = b*cos(theta_b);
-    double by = b*sin(theta_b);
-    double rx = r*cos(theta_r);
-    double ry = r*sin(theta_r);
+    const double cos_theta_b = std::cos(theta_b);
+    const double sin_theta_b = std::sin(theta_b);
+    const double cos_theta_r = std::cos(theta_r);
+    const double sin_theta_r = std::sin(theta_r);
+
+    double bx = b*cos_theta_b;
+    double by = b*sin_theta_b;
+    double rx = r*cos_theta_r;
+    double ry = r*sin_theta_r;
 
     // q and antiq positions
     double qx = bx + (1. - z) * rx;
@@ -700,43 +623,33 @@ double Diffraction::ScatteringAmplitudeIntegrand2(
 
     double x1[2] = {qx, qy};
     double x2[2] = {qbarx, qbary};
-    std::complex<double> amp = dipole->ComplexAmplitude(xpom, x1, x2); //(amp_real, amp_imag);
-
-    std::complex<double> result = 2.0*r; // r from Jacobians, 2 as we have written sigma_qq = 2 N
-    std::complex<double> imag(0,1);
+    std::complex<double> amp = dipole->ComplexAmplitude(xpom, x1, x2);
+    const double amp_r = amp.real();
+    const double amp_i = amp.imag();
+    double scalar = 2.0*r; // r from Jacobians, 2 as we have written sigma_qq = 2 N
 
     if (FACTORIZE_ZINT) {
         if (wavef->WaveFunctionType() == "NRQCD") {
-            double delta = 0.;
-            // Note 1/(4pi) is included in the z integral measure in PsiSqr_T_intz
+            double delta = 0.0;
             if (pol == T)
-                result *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
+                scalar *= ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
             else
-                result *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta,theta_r);
+                scalar *= ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta, theta_r);
         } else {
             if (pol == T)
-                result *= wavef->PsiSqr_T_intz(Qsqr, r);
+                scalar *= wavef->PsiSqr_T_intz(Qsqr, r);
             else
-                result *= wavef->PsiSqr_L_intz(Qsqr, r);
+                scalar *= wavef->PsiSqr_L_intz(Qsqr, r);
         }
-        result *= amp;
     } else {
+        const double inv4pi = 1.0/(4.0*M_PI);
         if (pol == T)
-            result *= wavef->PsiSqr_T(Qsqr, r, z)/(4.0*M_PI); // Wavef
+            scalar *= wavef->PsiSqr_T(Qsqr, r, z) * inv4pi;
         else
-            result *= wavef->PsiSqr_L(Qsqr, r, z)/(4.0*M_PI);
-        result *= amp;
+            scalar *= wavef->PsiSqr_L(Qsqr, r, z) * inv4pi;
     }
 
-    double res = 0;
-    // Note: As I'm using GSL to integrate and I use a routine that assumes a scalar function, this is quite inefficeint as 
-    // everything above is computed separately for the real and imaginary parts. Performance could be optimized by using an 
-    // integration routine supportin vector valued functions
-    if (real_part)
-        res = result.real();
-    else
-        res = result.imag();
-    return res;
+    return real_part ? scalar * amp_r : scalar * amp_i;
 }
 
 /*
@@ -827,7 +740,6 @@ double inthelperf_amplitude_rotationalsym_b(double b, void* p)
     return result;
 }
 
-
 double inthelperf_amplitude_rotationalsym_r(double lnr, void* p)
 {
     double r = exp(lnr);
@@ -885,4 +797,198 @@ DipoleAmplitude
 }
 WaveFunction* Diffraction::GetWaveFunction(){
     return wavef;
+}
+
+Diffraction::TotalCrossSectionData Diffraction::ComputeTotalCrossSection(
+    double xpom, double Qsqr, int nbperp, double maxb) {
+    TotalCrossSectionData out;
+    out.b.resize(nbperp);
+    out.F_T.assign(nbperp, std::complex<double>(0.,0.));
+    if (Qsqr > 0) out.F_L.assign(nbperp, std::complex<double>(0.,0.));
+    out.F_T_sqr.assign(nbperp, 0.0);
+    if (Qsqr > 0) out.F_L_sqr.assign(nbperp, 0.0);
+
+    const double db = maxb / nbperp;
+    for (int ib=0; ib<nbperp; ++ib)
+        out.b[ib] = (ib + 0.5) * db;
+
+    // Locally adaptive theta_b integration: start from a uniform base grid before refinement.
+    const int maxEvalsCap = 256;          // hard cap on theta evaluations per b
+    const int baseIntervalsThetaB = 16;   // minimum starting intervals (>= 3)
+
+    #pragma omp parallel for schedule(dynamic)
+    for (int ib=0; ib<nbperp; ++ib) {
+        const double bval = out.b[ib];
+        #pragma omp critical
+        {
+            cerr << "# Computing total cross section at b=" << bval << endl;
+        }
+
+        struct ThetaEval { std::complex<double> aT; std::complex<double> aL; double t2; double l2; };
+        auto eval = [&](double th)->ThetaEval {
+            double rT = ScatteringAmplitudeF(xpom, Qsqr, bval, th, T, true);
+            double iT = ScatteringAmplitudeF(xpom, Qsqr, bval, th, T, false);
+            std::complex<double> aT(rT, iT);
+            double rL=0.0,iL=0.0; std::complex<double> aL(0.,0.);
+            if (Qsqr > 0) {
+                rL = ScatteringAmplitudeF(xpom, Qsqr, bval, th, L, true);
+                iL = ScatteringAmplitudeF(xpom, Qsqr, bval, th, L, false);
+                aL = std::complex<double>(rL, iL);
+            }
+            return ThetaEval{aT, aL, std::norm(aT), (Qsqr>0? std::norm(aL): 0.0)};
+        };
+
+        struct Interval {
+            double a, b;          // bounds
+            ThetaEval fa, fm, fb; // samples at a, mid, b
+            // Base Simpson contributions
+            std::complex<double> S_T; double S_T2; std::complex<double> S_L; double S_L2;
+            // Refinement cache
+            bool refined; ThetaEval fql, fqr; // quarter points
+            std::complex<double> Sref_T; double Sref_T2; std::complex<double> Sref_L; double Sref_L2; double relerr;
+        };
+        struct SimpsonRes { std::complex<double> ST; double ST2; std::complex<double> SL; double SL2; };
+        auto simpson = [&](const ThetaEval& fa, const ThetaEval& fm, const ThetaEval& fb, double h)->SimpsonRes {
+            SimpsonRes R; R.ST = (h/6.0) * (fa.aT + 4.0*fm.aT + fb.aT);
+            R.ST2 = (h/6.0) * (fa.t2 + 4.0*fm.t2 + fb.t2);
+            R.SL = std::complex<double>(0.,0.); R.SL2 = 0.0;
+            if (Qsqr > 0) {
+                R.SL  = (h/6.0) * (fa.aL + 4.0*fm.aL + fb.aL);
+                R.SL2 = (h/6.0) * (fa.l2 + 4.0*fm.l2 + fb.l2);
+            }
+            return R;
+        };
+
+        std::vector<Interval> intervals; intervals.reserve(baseIntervalsThetaB*2);
+        const double A = 0.0, B = 2.0*M_PI;
+        const double h0 = (B - A) / baseIntervalsThetaB;
+        int evals = 0;
+        // periodic value at 0 and 2pi
+        ThetaEval f0 = eval(A); evals++;
+        for (int i=0; i<baseIntervalsThetaB; ++i) {
+            double a_i = A + i*h0;
+            double b_i = a_i + h0;
+            ThetaEval fa = (i==0? f0 : eval(a_i)); if (i>0) evals++;
+            ThetaEval fb = (i==baseIntervalsThetaB-1? f0 : eval(b_i)); if (i!=baseIntervalsThetaB-1) evals++;
+            double m = 0.5*(a_i + b_i);
+            ThetaEval fm = eval(m); evals++;
+            SimpsonRes SR = simpson(fa,fm,fb,h0);
+            intervals.push_back(Interval{a_i,b_i,fa,fm,fb,SR.ST,SR.ST2,SR.SL,SR.SL2,false,ThetaEval(),ThetaEval(),std::complex<double>(0.,0.),0.0,std::complex<double>(0.,0.),0.0,0.0});
+        }
+
+        auto compute_error = [&](Interval& I){
+            if (I.refined || evals >= maxEvalsCap) return;
+            double m = 0.5*(I.a + I.b);
+            double leftMid  = 0.5*(I.a + m);
+            double rightMid = 0.5*(m + I.b);
+            I.fql = eval(leftMid); evals++;
+            if (evals < maxEvalsCap) { I.fqr = eval(rightMid); evals++; }
+            else I.fqr = I.fql; // degenerate if cap reached
+            // left Simpson
+            SimpsonRes SRl = simpson(I.fa, I.fql, I.fm, m - I.a);
+            SimpsonRes SRr = simpson(I.fm, I.fqr, I.fb, I.b - m);
+            I.Sref_T  = SRl.ST + SRr.ST;
+            I.Sref_T2 = SRl.ST2 + SRr.ST2;
+            I.Sref_L  = SRl.SL + SRr.SL;
+            I.Sref_L2 = SRl.SL2 + SRr.SL2;
+            double denom = std::max(1.0, std::abs(I.Sref_T));
+            double absErr = std::abs(I.Sref_T - I.S_T) / 15.0;
+            I.relerr = absErr / denom;
+            I.refined = true;
+        };
+
+        // Compute initial errors for all base intervals
+        for (auto& I : intervals) if (!I.refined) compute_error(I);
+
+        // Assess GLOBAL errors (absolute-sum to avoid cancellation) and worst interval error
+        std::complex<double> sum_base_T(0.,0.), sum_refined_T(0.,0.);
+        double sum_abs_diff_T = 0.0; double worst_relerr_T = 0.0;
+        for (auto& I : intervals) {
+            sum_base_T += I.S_T; sum_refined_T += I.Sref_T;
+            sum_abs_diff_T += std::abs(I.Sref_T - I.S_T);
+            if (I.relerr > worst_relerr_T) worst_relerr_T = I.relerr;
+        }
+        double denom_global_T = std::max(1.0, std::abs(sum_refined_T));
+        double global_abs_err_T = (sum_abs_diff_T / denom_global_T) / 15.0;
+
+        int splitsPerformedThetaB = 0;
+        // Hybrid refinement: split while either worst per-interval or global absolute error exceed tolerance
+        while (evals < maxEvalsCap && (worst_relerr_T > MCINTACCURACY || global_abs_err_T > MCINTACCURACY)) {
+            double worstErrLocal = -1.0; size_t worstIdx = intervals.size();
+            for (size_t i=0; i<intervals.size(); ++i) {
+                if (intervals[i].relerr > worstErrLocal) { worstErrLocal = intervals[i].relerr; worstIdx = i; }
+            }
+            if (worstIdx == intervals.size()) break; // nothing to split
+            if (evals >= maxEvalsCap) break;
+
+            Interval Iold = intervals[worstIdx];
+            double m = 0.5*(Iold.a + Iold.b);
+            SimpsonRes SRl = simpson(Iold.fa, Iold.fql, Iold.fm, m - Iold.a);
+            Interval left{Iold.a, m, Iold.fa, Iold.fql, Iold.fm, SRl.ST, SRl.ST2, SRl.SL, SRl.SL2, false,ThetaEval(),ThetaEval(),std::complex<double>(0.,0.),0.0,std::complex<double>(0.,0.),0.0,0.0};
+            SimpsonRes SRr = simpson(Iold.fm, Iold.fqr, Iold.fb, Iold.b - m);
+            Interval right{m, Iold.b, Iold.fm, Iold.fqr, Iold.fb, SRr.ST, SRr.ST2, SRr.SL, SRr.SL2, false,ThetaEval(),ThetaEval(),std::complex<double>(0.,0.),0.0,std::complex<double>(0.,0.),0.0,0.0};
+
+            intervals[worstIdx] = left;
+            intervals.insert(intervals.begin() + worstIdx + 1, right);
+
+            compute_error(intervals[worstIdx]);
+            compute_error(intervals[worstIdx+1]);
+
+            // Recompute global metrics
+            sum_base_T = std::complex<double>(0.,0.); sum_refined_T = std::complex<double>(0.,0.);
+            sum_abs_diff_T = 0.0; worst_relerr_T = 0.0;
+            for (auto& I : intervals) {
+                sum_base_T += I.S_T; sum_refined_T += I.Sref_T;
+                sum_abs_diff_T += std::abs(I.Sref_T - I.S_T);
+                if (I.relerr > worst_relerr_T) worst_relerr_T = I.relerr;
+            }
+            denom_global_T = std::max(1.0, std::abs(sum_refined_T));
+            global_abs_err_T = (sum_abs_diff_T / denom_global_T) / 15.0;
+            splitsPerformedThetaB++;
+        }
+
+        // Accumulate with Richardson correction where refinement occurred
+        std::complex<double> sumT(0.,0.), sumL(0.,0.); double sumT2=0.0, sumL2=0.0; int refinedAccepted=0;
+        for (auto& I : intervals) {
+            if (I.refined) {
+                sumT  += I.Sref_T + (I.Sref_T - I.S_T)/15.0;
+                sumT2 += I.Sref_T2 + (I.Sref_T2 - I.S_T2)/15.0;
+                if (Qsqr > 0) {
+                    sumL  += I.Sref_L + (I.Sref_L - I.S_L)/15.0;
+                    sumL2 += I.Sref_L2 + (I.Sref_L2 - I.S_L2)/15.0;
+                }
+                refinedAccepted++;
+            } else {
+                sumT  += I.S_T; sumT2 += I.S_T2;
+                if (Qsqr > 0) { sumL += I.S_L; sumL2 += I.S_L2; }
+            }
+        }
+        out.F_T[ib] = sumT; out.F_T_sqr[ib] = sumT2;
+        if (Qsqr > 0) { out.F_L[ib] = sumL; out.F_L_sqr[ib] = sumL2; }
+
+        /*#pragma omp critical
+        {
+            std::cerr << "# theta_b evals for b=" << std::setprecision(6) << std::fixed << bval
+                      << ": " << evals << " base " << baseIntervalsThetaB
+                      << " intervals " << intervals.size() << " refined " << refinedAccepted
+                      << " splits " << splitsPerformedThetaB
+                      << " worst_relerr " << worst_relerr_T
+                      << " global_abs_err " << global_abs_err_T
+                      << " (cap " << maxEvalsCap << ")" << (evals >= maxEvalsCap ? " [CAP REACHED]" : "") << std::endl;
+        }*/
+    }
+
+    // Integrate over b for total cross sections
+    double sigma_T = 0.0, sigma_L = 0.0;
+    for (int ib=0; ib<nbperp; ++ib) {
+        double bval = out.b[ib];
+        sigma_T += out.F_T_sqr[ib] * bval * db;
+        if (Qsqr > 0) sigma_L += out.F_L_sqr[ib] * bval * db;
+    }
+    const double HBARC = 0.197327053; // GeV*fm
+    sigma_T *= 1e7 * HBARC * HBARC / (8. * M_PI);
+    sigma_L *= 1e7 * HBARC * HBARC / (8. * M_PI);
+    out.sigma_T = sigma_T;
+    out.sigma_L = sigma_L;
+    return out;
 }

@@ -51,6 +51,7 @@ add_executable(
 include_directories(.)
 
 find_package(GSL REQUIRED)    #
+find_package(OpenMP)
 target_link_libraries(
 	subnucleondiffraction
 	PRIVATE
@@ -61,6 +62,9 @@ target_link_libraries(
 	GSL::gsl
 	GSL::gslcblas
 )
+if(OpenMP_CXX_FOUND)
+	target_link_libraries(subnucleondiffraction PRIVATE OpenMP::OpenMP_CXX)
+endif()
 target_link_libraries(
 	test
 	PRIVATE
@@ -71,6 +75,9 @@ target_link_libraries(
 	GSL::gsl
 	GSL::gslcblas
 )
+if(OpenMP_CXX_FOUND)
+	target_link_libraries(test PRIVATE OpenMP::OpenMP_CXX)
+endif()
 
 
 
