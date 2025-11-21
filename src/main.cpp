@@ -31,9 +31,6 @@
 
 using namespace std;
 
-string InfoStr();
-
-
 DipoleAmplitude *amp;
 
 gsl_rng* global_rng;
@@ -55,6 +52,8 @@ enum WAVEF
     DVCS,
     NRQCD
 };
+
+std::string InfoStr(MODE mode);
 
 vector<double> NRQCD_parameters_from_file(int id);
 
@@ -129,7 +128,7 @@ int main(int argc, char* argv[])
         cout << "-nrqcd_parameters A B" << endl;
         cout << "-nrqcd_parameters_from_file" << endl;
         cout << "-periodic_boundary_conditions: use periodic boundary conditions" << endl;
-        cout << "-mcint [miser,vegas,gsl]: select integration algorithm (gsl = deterministic)" << endl;
+        cout << "-mcint [miser,vegas]: select integration algorithm" << endl;
         cout << "-no_t_in_xpom: do not include t dependence in xpom" << endl;
         return 0;
     }
@@ -373,8 +372,6 @@ int main(int argc, char* argv[])
                 MCINT = MISER;
             else if (string(argv[i+1])=="vegas")
                 MCINT = VEGAS;
-            else if (string(argv[i+1])=="gsl")
-                MCINT = GSL;
             else
             {
                 cerr << "Unknown MC algorithm " << argv[i+1] << endl;
@@ -387,12 +384,6 @@ int main(int argc, char* argv[])
             exit(1);
         }
 
-    }
-
-    if (MCINT == GSL && mode != TOTALCROSSSECTION)
-    {
-        cerr << "GSL deterministic integrator not supported for total cross section mode!" << endl;
-        exit(1);
     }
 
     if (tlist.size() == 0) {
@@ -478,7 +469,7 @@ int main(int argc, char* argv[])
     diff.ShowVegasIterations(false);
 
     
-    cout << "# " << InfoStr() << endl;
+    cout << "# " << InfoStr(mode) << endl;
     //cout << "# " << *wavef << endl;
     
     double mp = 0.938;
@@ -744,30 +735,30 @@ int main(int argc, char* argv[])
 }
 
 
-string InfoStr()
+string InfoStr(MODE mode)
 {
     stringstream info;
-    
+
     info << "Parameters: MCINTPOINTS: " << MCINTPOINTS << " ZINT_INTERVALS " << ZINT_INTERVALS << " MCINTACCURACY " << MCINTACCURACY << " ZINT_RELACCURACY " << ZINT_RELACCURACY;
     info << ". Integration method ";
-    if (MCINT == MISER)
-        info << "MISER";
-    else if (MCINT == VEGAS)
-        info << "VEGAS";
-    else if (MCINT == GSL)
-        info << "GSL deterministic";
-    else
-        info << "unknown!";
-    
+    if (mode == TOTALCROSSSECTION) {
+        info << "Suave";
+    } else {
+        if (MCINT == MISER)
+            info << "MISER";
+        else if (MCINT == VEGAS)
+            info << "VEGAS";
+        else
+            info << "unknown!";
+    }
+
     info << endl << amp->InfoStr();
-    
+
     if (FACTORIZE_ZINT)
         info <<"# z integral factorized";
     else info << "# z integral not factorized";
-    
-    
-    return info.str();
 
+    return info.str();
 }
 
 int MCpoints(double t)
