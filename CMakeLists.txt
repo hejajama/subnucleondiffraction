@@ -8,9 +8,6 @@ set (CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_BUILD_TYPE Release)
 
-# Option: enable Cuba integration by default
-option(ENABLE_CUBA "Build with Cuba (Suave/Divonne/Cuhre/Vegas) integration" ON)
-
 # Git module
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 include(GetGitRevisionDescription)

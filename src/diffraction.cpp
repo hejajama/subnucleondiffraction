@@ -23,9 +23,7 @@ using namespace std;
 #include <iomanip>
 #include <cstdlib>
 
-#ifdef ENABLE_CUBA
 #include "Cuba-4.2.2/cuba.h"
-#endif
 
 
 Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
@@ -96,217 +94,148 @@ double Diffraction::Correction(double xpom, double Qsqr, double t, Polarization 
  *
  * Calculated by integrating over the transverse positions of b and r (2d vecs, use monte carlo) and momentum fraction z
  */
-
-struct Inthelper_amplitude
-{
-    Diffraction* diffraction;
-    double xpom;
-    double Qsqr;
-    double t;
-    double r;
-    double theta_r;
-    double b;
-    double theta_b;
-    double z;
-    bool real_part;
-    Polarization polarization;
-};
-
-double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par);
-
-double Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Polarization pol, bool real_part)
-{
-    Inthelper_amplitude helper;
-    helper.diffraction = this;
-    helper.xpom = xpom;
-    helper.Qsqr = Qsqr;
-    helper.t = t;
-    helper.polarization = pol;
-    helper.real_part = real_part;
-
-    // Do MC integral over impact parameters and dipole sizes    
-    // Currently hardcoded parameters for jpsi and gold:
-    // Impact parameter up to 100 GeV^-1
-    // Dipole size up to 10 GeV^-1
-    // MC integration parameters: b, theta_b, r, theta_r, Z
-    double *lower, *upper;
-    if (FACTORIZE_ZINT)
-    {
-        lower = new double[4];
-        upper = new double[4];
-    }
-    else
-    {
-        lower = new double[5];
-        upper = new double[5];
-        lower[4] = zlimit; // Min z
-        upper[4] = 1.0 - lower[4];    // Max z
-    }
-
-    lower[0] = lower[1] = lower[2] = lower[3] = 0;
-    upper[0] = 10 * 5.068; // Max b
-    upper[1] = 2.0 * M_PI;
-    upper[2] = MAXR; //MAXR;//20; //0.5*5.068;  // Max r
-    upper[3] = 2.0 * M_PI;
-
-    gsl_monte_function F;
-    F.f = &Inthelperf_amplitude_mc;
-    F.dim = 4;
-    if (!FACTORIZE_ZINT)
-        F.dim = 5;
-    F.params = &helper;
-
-    double result = 0.;
-    double error = 0.;
-
-    if (MCINT == MISER)
-    {
-        gsl_monte_miser_state *s = gsl_monte_miser_alloc(F.dim);
-        gsl_monte_miser_integrate(&F, lower, upper, F.dim, MCINTPOINTS,
-                                  global_rng, s, &result, &error);
-        gsl_monte_miser_free(s);
-    } else if (MCINT == VEGAS) {
-        gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(F.dim);
-        gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/50,
-                                  global_rng, s, &result, &error);
-
-        if (ShowVegasIterations() == false)
-            cerr << "# vegas warmup " << result << " +/- " << error << endl;
-        int iter=0;
-        do {
-            iter++;
-            gsl_monte_vegas_integrate(&F, lower, upper, F.dim, MCINTPOINTS/5,
-                                      global_rng, s, &result, &error);
-            if (ShowVegasIterations() == false)
-                cerr << "# Vegas integration " << result << " +/- " << error
-                     << " chisqr " << gsl_monte_vegas_chisq(s) << endl;
-            if (iter>10)
-                break;
-        } while (iter < 2 or ( std::abs( gsl_monte_vegas_chisq(s) - 1.0) > 0.5 or std::abs(error/result) > MCINTACCURACY));
-        gsl_monte_vegas_free(s);
-    }
-    delete[] lower;
-    delete[] upper;
-    return result;
-}
-
-double Inthelperf_amplitude_mc( double *vec, size_t dim, void* par)
-{
-    Inthelper_amplitude *helper = (Inthelper_amplitude*)par;
-    helper->b = vec[0];
-    helper->theta_b=vec[1];
-    helper->r = vec[2];
-    helper->theta_r = vec[3];
-    
-    double z = 0.5;// Put z=0.5 as it sets b to the geometric average of quarks
-    
-    if (!FACTORIZE_ZINT)
-        z = vec[4];
-        
-    return helper->diffraction->ScatteringAmplitudeIntegrand(
-        helper->xpom, helper->Qsqr, helper->t, helper->r, helper->theta_r, 
-        helper->b, helper->theta_b, z, helper->polarization, helper->real_part);
-}
-
-double Diffraction::ScatteringAmplitudeIntegrand(
-    double xpom, double Qsqr, double t, double r, double theta_r,
-    double b, double theta_b, double z, Polarization pol, bool real_part) {
-
-    // Recall quark and gluon positions:
-    // Quark: b + zr
-    // Antiquark: b - (1-z) r
-    // If do like Lappi, Mantysaari: set z=1/2 here
-
-    const double cos_theta_b = std::cos(theta_b);
-    const double sin_theta_b = std::sin(theta_b);
-    const double cos_theta_r = std::cos(theta_r);
-    const double sin_theta_r = std::sin(theta_r);
-
-    double bx = b*cos_theta_b;
-    double by = b*sin_theta_b;
-    double rx = r*cos_theta_r;
-    double ry = r*sin_theta_r;
-
-    // q and antiq positions
-    // Note my convention is that b is the center of the dipole (geometric center), not center of mass (z weighted)
-    // Consequently I get (0.5-z)r.Delta phase    
-    double qx = bx + 0.5*rx; double qy = by + 0.5*ry;
-    double qbarx = bx - 0.5*rx; double qbary = by - 0.5*ry;
-
-    double delta = std::sqrt(t);
-
-    double x1[2] = {qx,qy};
-    double x2[2] = {qbarx, qbary};
-    std::complex<double> amp = dipole->ComplexAmplitude(xpom, x1, x2);
-    const double amp_r = amp.real();
-    const double amp_i = amp.imag();
-    double scalar = 2.0*r*b; // r and b from Jacobians, 2 as we have written sigma_qq = 2 N
-
-    double overlap = 0.0;
-    if (FACTORIZE_ZINT) {
-        if (wavef->WaveFunctionType() == "NRQCD") {
-            if (pol == T)
-                overlap = ((NRQCD_WF*)wavef)->PsiSqr_T_intz(Qsqr, r, delta, theta_r);
-            else
-                overlap = ((NRQCD_WF*)wavef)->PsiSqr_L_intz(Qsqr, r, delta, theta_r);
+// Full t-dependent scattering amplitude using Suave over (b, r, theta_b, theta_r [, z])
+std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, double t, Polarization pol) {
+    struct SAParams {
+        Diffraction* diff;
+        double xp;
+        double Q2;
+        double t;
+        double bmax;
+        double rmin;
+        double rmax;
+        double zmin;
+        bool fact;
+        Polarization pol;
+    };
+    SAParams p{
+        this,
+        xpom,
+        Qsqr, 
+        t,
+        10*5.068,
+        1e-10,
+        MAXR,
+        zlimit,
+        FACTORIZE_ZINT,
+        pol
+    };
+    auto integrand = [](const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* ud)->int {
+        SAParams* prm = static_cast<SAParams*>(ud);
+        const double twoPi = 2.0*M_PI;
+        const bool fact = prm->fact;
+        // Unpack Cuba randoms
+        const double xb = x[0];                // b in [0,1]
+        const double xu = x[1];                // u=ln r in [0,1]
+        const double xtb = x[2];               // theta_b in [0,1]
+        const double xtr = x[3];               // theta_r in [0,1]
+        const double xz = fact ? 0.5 : x[4];   // z in [0,1]
+        // Map to physical
+        const double b = prm->bmax * xb;
+        const double umin = std::log(prm->rmin), umax = std::log(prm->rmax);
+        const double u = umin + (umax-umin) * xu;
+        const double r = std::exp(u);
+        const double theta_b = twoPi * xtb;
+        const double theta_r = twoPi * xtr;
+        const double z = fact ? 0.5 : (prm->zmin + (1.0 - 2.0*prm->zmin) * xz);
+        // Overlap and scalar prefactor (2 r b * overlap)
+        double scalar = 2.0 * r * b;
+        if (fact) {
+            if (prm->diff->wavef->WaveFunctionType() == "NRQCD") {
+                double delta_local = std::sqrt(prm->t);
+                if (prm->pol == T)
+                    scalar *= ((NRQCD_WF*)prm->diff->wavef)->PsiSqr_T_intz(prm->Q2, r, delta_local, theta_r);
+                else
+                    scalar *= ((NRQCD_WF*)prm->diff->wavef)->PsiSqr_L_intz(prm->Q2, r, delta_local, theta_r);
+            } else {
+                if (prm->pol == T)
+                    scalar *= prm->diff->wavef->PsiSqr_T_intz(prm->Q2, r);
+                else
+                    scalar *= prm->diff->wavef->PsiSqr_L_intz(prm->Q2, r);
+            }
         } else {
-            if (pol == T)
-                overlap = wavef->PsiSqr_T_intz(Qsqr, r);
+            const double inv4pi = 1.0/(4.0*M_PI);
+            if (prm->pol == T)
+                scalar *= prm->diff->wavef->PsiSqr_T(prm->Q2, r, z) * inv4pi;
             else
-                overlap = wavef->PsiSqr_L_intz(Qsqr, r);
+                scalar *= prm->diff->wavef->PsiSqr_L(prm->Q2, r, z) * inv4pi;
         }
-        scalar *= overlap;
-        double res;
+        // Quark positions: factorized => z=1/2, non-factorized use (1-z) and z
+        const double cos_tb = std::cos(theta_b);
+        const double sin_tb = std::sin(theta_b);
+        const double cos_tr = std::cos(theta_r);
+        const double sin_tr = std::sin(theta_r);
+        double bx = b * cos_tb;
+        double by = b * sin_tb;
+        double rx = r * cos_tr;
+        double ry = r * sin_tr;
+        double qx, qy, qbarx, qbary;
+        if (fact) {
+            qx = bx + 0.5*rx; qy = by + 0.5*ry;
+            qbarx = bx - 0.5*rx; qbary = by - 0.5*ry;
+        } else {
+            qx = bx + (1.0 - z)*rx; qy = by + (1.0 - z)*ry;
+            qbarx = bx - z*rx; qbary = by - z*ry;
+        }
+        double x1[2] = {qx,qy}; double x2[2] = {qbarx,qbary};
+        std::complex<double> amp = prm->diff->dipole->ComplexAmplitude(prm->xp, x1, x2);
+        // Phase factor with momentum transfer delta
+        const double delta = std::sqrt(prm->t);
         if (delta > 0) {
-            const double phi = - b*delta*cos_theta_b;
-            const double c = std::cos(phi);
-            const double s = std::sin(phi);
-            if (real_part)
-                res = scalar * (amp_r*c - amp_i*s);
-            else
-                res = scalar * (amp_r*s + amp_i*c);
-        } else {
-            res = real_part ? scalar * amp_r : scalar * amp_i;
+            double phi;
+            if (fact) {
+                phi = b*delta*cos_tb;
+            } else {
+                phi = b*delta*cos_tb - (0.5 - z)*r*delta*cos_tr;
+            }
+            const std::complex<double> exponent = std::exp(std::complex<double>(0.0, -phi));
+            amp *= exponent;
         }
-        if (std::isnan(res) || std::isinf(res)) {
-            cerr << "Amplitude integral is " << res << " dipole " << amp << " xp=" << xpom << " Q^2=" << Qsqr << " t="<< t << " r=" << r << " theta_r="<<theta_r << " b="<< b << "theta_b="<< theta_b << " z=" << z << endl;
-            exit(1);
-        }
-        return res;
-    } else {
-        const double inv4pi = 1.0/(4.0*M_PI);
-        if (pol == T)
-            overlap = wavef->PsiSqr_T(Qsqr, r, z) * inv4pi;
-        else
-            overlap = wavef->PsiSqr_L(Qsqr, r, z) * inv4pi;
-        scalar *= overlap;
-        double res;
-        if (delta > 0) {
-            const double phi = - ( b*delta*cos_theta_b - (0.5 - z)*r*delta*cos_theta_r );
-            const double c = std::cos(phi);
-            const double s = std::sin(phi);
-            if (real_part)
-                res = scalar * (amp_r*c - amp_i*s);
-            else
-                res = scalar * (amp_r*s + amp_i*c);
-        } else {
-            res = real_part ? scalar * amp_r : scalar * amp_i;
-        }
-        if (std::isnan(res) || std::isinf(res)) {
-            cerr << "Amplitude integral is " << res << " dipole " << amp << " xp=" << xpom << " Q^2=" << Qsqr << " t="<< t << " r=" << r << " theta_r="<<theta_r << " b="<< b << "theta_b="<< theta_b << " z=" << z << endl;
-            exit(1);
-        }
-        return res;
-    }
+        std::complex<double> val = scalar * amp;
+        // Jacobian: bmax * (umax-umin) * (2pi)^2 * z-width (if unfactorized)
+        const double J = prm->bmax * (umax-umin) * (twoPi*twoPi) * (fact ? 1.0 : (1.0 - 2.0*prm->zmin));
+        const double measure_r = r; // from dr = r du
+        f[0] = J * measure_r * static_cast<cubareal>(val.real());
+        f[1] = J * measure_r * static_cast<cubareal>(val.imag());
+        return 0;
+    };
+    const int ndim = FACTORIZE_ZINT ? 4 : 5;
+    const int ncomp = 2;
+    int nregions=0, neval=0, fail=0; double integral[2], error[2], prob[2];
+    const int nvec = 1; const double epsrel = MCINTACCURACY, epsabs = 0.0;
+    const int flags = 0, seed = 0;
+    const int mineval = MCINTPOINTS/10; const int maxeval = 10*MCINTPOINTS;
+    const int nnew = 100000, nmin = 1000; const double flatness = 1.0;
+    Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed,
+        mineval, maxeval, nnew, nmin, flatness,
+        NULL, NULL, &nregions, &neval, &fail, integral, error, prob);
+    return std::complex<double>(integral[0], integral[1]);
 }
 
 std::complex<double> Diffraction::ScatteringAmplitudeF(
     double xpom, double Qsqr, double b, Polarization pol, double* integrand_mod_sqr) {
-#ifdef ENABLE_CUBA
     struct SuaveParams {
-        Diffraction* diff; double xpom; double Q2; double b; double zmin; double rmin; double rmax; bool factorize; Polarization pol;
-    } p{this, xpom, Qsqr, b, zlimit, 1e-6, MAXR, FACTORIZE_ZINT, pol};
-
+        Diffraction* diff;
+        double xpom;
+        double Q2;
+        double b;
+        double zmin;
+        double rmin;
+        double rmax;
+        bool factorize;
+        Polarization pol;
+    };
+    SuaveParams p{
+        this,
+        xpom,
+        Qsqr,
+        b,
+        zlimit,
+        1e-10,
+        MAXR,
+        FACTORIZE_ZINT,
+        pol
+    };
     auto integrand = [](const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *ud)->int{
         SuaveParams* prm = static_cast<SuaveParams*>(ud);
         const double twoPi = 2.0*M_PI;
@@ -322,7 +251,7 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         const double r = std::exp(u);
         const double z = fact ? 0.5 : (prm->zmin + (1.0 - 2.0*prm->zmin) * xz);
         // Common factors
-         // r from Jacobians, 2 as we have written sigma_qq = 2 N
+        // r from Jacobians, 2 as we have written sigma_qq = 2 N
         double scalar = 2.0 * r; // r from Jacobian (du->dr adds r)
         if (fact) {
             if (prm->diff->wavef->WaveFunctionType() == "NRQCD") {
@@ -372,12 +301,12 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         // Overall Jacobian (theta_b, theta_r, u, z (if not factorized))
         const double J = (twoPi * twoPi) * (umax-umin) * (fact ? 1.0 : (1.0 - 2.0*prm->zmin));
         // Jacobian pieces:
-        //  theta_b: 2π, theta_r: 2π  (in J)
+        //  theta_b: 2pi, theta_r: 2pi  (in J)
         //  u = ln r mapping: u = umin + (umax-umin)*xu gives width (umax-umin) in J and dr = r du adds extra r
         //  optional z: width (1 - 2 zmin) in J
         // scalar currently includes factor 2*r * overlap; needs extra r from dr=r du
         const double measure_r = r; // from dr = r du
-        // Components: real, imag, |integrand|^2 integral element (∫ |A|^2 dvars)
+        // Components: real, imag, |integrand|^2 integral element (int |A|^2 dvars)
         f[0] = J * measure_r * scalar * amp_r; // real part
         f[1] = J * measure_r * scalar * amp_i; // imag part
         f[2] = J * measure_r * scalar * scalar * (amp_r*amp_r + amp_i*amp_i);
@@ -393,20 +322,13 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
     const int flags = 0, seed = 0;
     const int mineval = MCINTPOINTS/10;
     const int maxeval = 10*MCINTPOINTS;
-    const int nnew = 1000, nmin = 4; const double flatness = 1.0;
-    Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed, mineval, maxeval, nnew, nmin, flatness,
-          NULL, NULL, &nregions, &neval, &fail, integral, error, prob);
-    // Optional diagnostic (comment out to silence):
-    // cerr << "# Suave F amplitude neval " << neval << " fail " << fail
-    //      << " Re " << integral[0] << " +/- " << error[0]
-    //      << " Im " << integral[1] << " +/- " << error[1] << endl;
+    const int nnew = 100000, nmin = 1000; const double flatness = 1.0;
+    Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed,
+        mineval, maxeval, nnew, nmin, flatness,
+        NULL, NULL, &nregions, &neval, &fail, integral, error, prob);
     if (integrand_mod_sqr)
         *integrand_mod_sqr = integral[2];
     return std::complex<double>(integral[0], integral[1]);
-#else
-    cerr << "ScatteringAmplitudeF requires ENABLE_CUBA (Suave)." << endl;
-    return std::complex<double>(0.0,0.0);
-#endif
 }
 
 Diffraction::TotalCrossSectionData Diffraction::ComputeTotalCrossSection(
@@ -424,15 +346,9 @@ Diffraction::TotalCrossSectionData Diffraction::ComputeTotalCrossSection(
     for (int ib=0; ib<nbperp; ++ib)
         out.b[ib] = (ib + 0.5) * db;
 
-    // theta_b is integrated inside ScatteringAmplitudeF (Suave). Just evaluate once per polarization.
     #pragma omp parallel for schedule(dynamic)
     for (int ib=0; ib<nbperp; ++ib) {
         const double bval = out.b[ib];
-
-        #pragma omp critical
-        {
-            cerr << "# Computing total cross section amplitude at b=" << std::fixed << std::setprecision(3) << bval << " GeV^-1\r" << std::flush;
-        }
         // T polarization (vector integration returns real & imag)
         double int_modsq_T = 0.0;
         out.F_T[ib] = ScatteringAmplitudeF(xpom, Qsqr, bval, T, &int_modsq_T);
@@ -453,7 +369,6 @@ Diffraction::TotalCrossSectionData Diffraction::ComputeTotalCrossSection(
         sigma_T += out.F_T_sqr[ib] * bval * db;
         if (Qsqr > 0) sigma_L += out.F_L_sqr[ib] * bval * db;
     }
-    const double HBARC = 0.197327053; // GeV*fm
     sigma_T *= 1e7 * HBARC * HBARC / (8. * M_PI);
     sigma_L *= 1e7 * HBARC * HBARC / (8. * M_PI);
     out.sigma_T = sigma_T;
@@ -470,6 +385,20 @@ const int INTPOINTS_ROTSYM=2000;
 double inthelperf_amplitude_rotationalsym_b(double b, void* p);
 double inthelperf_amplitude_rotationalsym_r(double r, void* p);
 double inthelperf_amplitude_rotationalsym_z(double z, void* p);
+
+struct Inthelper_amplitude
+{
+    Diffraction* diffraction;
+    double xpom;
+    double Qsqr;
+    double t;
+    double r;
+    double theta_r;
+    double b;
+    double theta_b;
+    double z;
+    Polarization polarization;
+};
 
 double Diffraction::ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, double t, Polarization pol)
 {

@@ -57,12 +57,10 @@ TEST(forward_jpsi_amplitude_ipsat_mzwf)
     proton.InitializeTarget();
 
     Diffraction diff(proton, wf);
-    diff.ShowVegasIterations(false);
-    
-    double xp=1e-3; double Qsqr=10; double t=0.1;
-    MCINTPOINTS=1e6;
-    ASSERT_ALMOST_EQUAL(diff.ScatteringAmplitude(xp, Qsqr, t, T),0.04884376518,1e-4); 
 
+    double xp=1e-3; double Qsqr=10; double t=0.1;
+    MCINTPOINTS=3e6;
+    ASSERT_ALMOST_EQUAL(diff.ScatteringAmplitude(xp, Qsqr, t, T).real(),0.04884376518,1e-3); 
 }
 
 TEST(structure_function_ipsat)
@@ -75,20 +73,18 @@ TEST(structure_function_ipsat)
     proton.SetQuarkWidth(4);
     proton.InitializeTarget();
     Diffraction f2(proton, photon);
-    f2.ShowVegasIterations(false);
-
 
     FACTORIZE_ZINT=true;
     double xbj=1e-3, Qsqr=2;
-        
+
     photon.SetQuark(LIGHT, 0.03);
-    MCINTPOINTS=1e4;
-       
+    MCINTPOINTS=5e4;
+
     // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
-    double xs_t = f2.ScatteringAmplitude(xbj, Qsqr, 0, T);
-    double xs_l = f2.ScatteringAmplitude(xbj, Qsqr, 0, L);
+    double xs_t = f2.ScatteringAmplitude(xbj, Qsqr, 0, T).real();
+    double xs_l = f2.ScatteringAmplitude(xbj, Qsqr, 0, L).real();
     double structurefun = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l+xs_t);
-        
+
     double mc=1.3528;
     // heavy quark contribution
     photon.SetQuark(C, mc);
@@ -97,17 +93,13 @@ TEST(structure_function_ipsat)
     double xs_l_c = 0;
     double fl_c = 0;
     double structurefun_c = 0;
-    xs_t_c = f2.ScatteringAmplitude(xbj_c, Qsqr, 0, T);
-    xs_l_c = f2.ScatteringAmplitude(xbj_c, Qsqr, 0, L);
+    xs_t_c = f2.ScatteringAmplitude(xbj_c, Qsqr, 0, T).real();
+    xs_l_c = f2.ScatteringAmplitude(xbj_c, Qsqr, 0, L).real();
     structurefun_c = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c+xs_t_c);
-    
-        
-    // note: precisio (last argument) is absolute precision, not relative
-    ASSERT_ALMOST_EQUAL(structurefun+structurefun_c, 0.530119, 0.001);
-   
+
+    // note: precision (last argument) is absolute precision, not relative
+    ASSERT_ALMOST_EQUAL(structurefun+structurefun_c, 0.530119, 1e-3);
 }
-
-
 
 // Wave function normalizations
 struct inthelperf_boosted_gauss

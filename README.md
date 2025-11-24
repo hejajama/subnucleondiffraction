@@ -46,7 +46,7 @@ Examples
 
     GSL_RNG_SEED=1 ./build/bin/subnucleondiffraction -dipole 1 ipsatproton 3.3 0.7 -Q2 0 -W 75 -mcintpoints 1e5
     
-Calculates diffractive scattering amplitude. Q2  is the photon virtuality in GeV<sup>2</sup> and W is the center-of-mass energy (again in GeV). This woud use 10<sup>5</sup> MC integration points in Monte Carlo integration. The MonteCarlo method (Vegas [default] or MISER) can be selected using the `-mcint` flag (see `src/main.cpp`)
+Calculates diffractive scattering amplitude. Q2  is the photon virtuality in GeV<sup>2</sup> and W is the center-of-mass energy (again in GeV). This woud use 10<sup>5</sup> MC integration points in Monte Carlo integration. The MonteCarlo integration is done using the Suave routine from the Cuba package.
 
 Using a heavy nucleus instead of proton, replace `1 -> 197` (Au) or any other A. For A>3 Woods-Saxon is used. Deuteron and 3He are handled separately.
 

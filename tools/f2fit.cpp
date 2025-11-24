@@ -256,13 +256,13 @@ int main(int argc, char* argv[])
             	Diffraction f2upper(dipole_upper, light);
             	Diffraction f2lower(dipole_lower, light);
  
-              	double t_up = f2upper.ScatteringAmplitude(x, qsqrvals[i], 0, T);
-            	double l_up = f2upper.ScatteringAmplitude(x, qsqrvals[i], 0, L);
+               	double t_up = f2upper.ScatteringAmplitude(x, qsqrvals[i], 0, T).real();
+            	double l_up = f2upper.ScatteringAmplitude(x, qsqrvals[i], 0, L).real();
             	xs_t_upper.push_back(t_up);
             	xs_l_upper.push_back(l_up);
             
-            	double t_low = f2lower.ScatteringAmplitude(x, qsqrvals[i], 0, T);
-            	double l_low = f2lower.ScatteringAmplitude(x, qsqrvals[i], 0, L);
+                double t_low = f2lower.ScatteringAmplitude(x, qsqrvals[i], 0, T).real();
+                double l_low = f2lower.ScatteringAmplitude(x, qsqrvals[i], 0, L).real();
             	xs_t_lower.push_back(t_low);
             	xs_l_lower.push_back(l_low);
             }
@@ -286,14 +286,14 @@ int main(int argc, char* argv[])
             Diffraction f2lower_c(dipole_lower_c, charm);
             
 
-            double t_up_c = f2upper_c.ScatteringAmplitude(xcharm, qsqrvals[i], 0, T);
-            double l_up_c = f2upper_c.ScatteringAmplitude(xcharm, qsqrvals[i], 0, L);
+            double t_up_c = f2upper_c.ScatteringAmplitude(xcharm, qsqrvals[i], 0, T).real();
+            double l_up_c = f2upper_c.ScatteringAmplitude(xcharm, qsqrvals[i], 0, L).real();
             xs_t_upper_c.push_back(t_up_c);
             xs_l_upper_c.push_back(l_up_c);
 
             
-            double t_low_c = f2lower_c.ScatteringAmplitude(xcharm, qsqrvals[i], 0, T);
-            double l_low_c = f2lower_c.ScatteringAmplitude(xcharm, qsqrvals[i], 0, L);
+            double t_low_c = f2lower_c.ScatteringAmplitude(xcharm, qsqrvals[i], 0, T).real();
+            double l_low_c = f2lower_c.ScatteringAmplitude(xcharm, qsqrvals[i], 0, L).real();
             xs_t_lower_c.push_back(t_low_c);
             xs_l_lower_c.push_back(l_low_c);
 

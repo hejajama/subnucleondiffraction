@@ -20,15 +20,15 @@ public:
     Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_);
     
     // Calculate amplitude A, this will later be averaged and squared
-    double ScatteringAmplitude(double xpom, double Qsqr, double t, 
-        Polarization pol=T, bool real_part=true);
+    std::complex<double> ScatteringAmplitude(double xpom, double Qsqr, double t,
+        Polarization pol=T);
     // Forward amplitude at t=0 integrating over theta_b internally (Suave vector integration)
     std::complex<double> ScatteringAmplitudeF(double xpom, double Qsqr, double b,
         Polarization pol=T, double* integrand_mod_sqr=nullptr);
 
-    double ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t, 
-        double r, double theta_r, double b, double theta_b, double z, 
-        Polarization pol=T, bool real_part=true);
+    std::complex<double> ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t,
+        double r, double theta_r, double b, double theta_b, double z,
+        Polarization pol=T);
 
     // Calculate scattering amplitude in case of cylinderical cymmetry (e.g. ipsat with no constituent quarks)
     double ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, 
@@ -44,9 +44,6 @@ public:
     
     void SetZLimit(double zl) { zlimit = zl; }
 
-    bool ShowVegasIterations() { return show_vegas_iterations; }
-    void ShowVegasIterations(bool s) { show_vegas_iterations = s; }
-    
     DipoleAmplitude* GetDipole();
     WaveFunction* GetWaveFunction();
     

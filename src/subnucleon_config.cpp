@@ -9,11 +9,9 @@
 #include <sstream>
 #include <vector>
 
-int MCINTPOINTS = 2e5;
+int MCINTPOINTS = 1e6;
 
 bool CORRECTIONS = false;
-
-MCINTEGRAL MCINT = VEGAS;
 
 bool FACTORIZE_ZINT = false;
 // Note: There are probably factors of 4pi wrong from the
