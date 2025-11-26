@@ -8,6 +8,9 @@ set (CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_BUILD_TYPE Release)
 
+# Required to compile on MacOS with homebrew installed OpenMP
+cmake_policy(SET CMP0074 NEW)
+
 # Git module
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 include(GetGitRevisionDescription)
