@@ -390,7 +390,6 @@ std::string IPGlasma::InfoStr()
     std::stringstream ss;
     ss << "# IPGlasma loaded from file " << datafile << " lattice " << xcoords.size() << "^2 range [" << xcoords[0]/5.068 << ", " << xcoords[xcoords.size()-1]/5.068 << "] fm" << endl ;
     if (periodic_boundary_conditions) ss << "# Periodic boundary conditions" << endl;
-    if (schwinger) ss << "# schwinger mechanism included, rc=" << schwinger_rc << " GeV^-1" << endl;
     return ss.str();
 }
 

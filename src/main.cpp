@@ -97,9 +97,8 @@ int main(int argc, char* argv[])
     double NRQCD_A=0.213;
     double NRQCD_B=-0.0157;
     int NRQCD_param_id = -1; // if >0, use specific parameters from datafile
+    cout << "# SubNucleon Diffraction by H. Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2025" << endl;
 
-
-    cout << "# SubNucleon Diffraction by H. Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2024" << endl;
     cout << "# Git version " << g_GIT_SHA1 << " local repo " << g_GIT_LOCAL_CHANGES << " main build " << __DATE__  << " " << __TIME__ << endl; 
     cout << "# Command: ";
     for (int i=1; i<argc; i++)
@@ -564,20 +563,22 @@ int main(int argc, char* argv[])
 
     else if (mode == TOTALCROSSSECTION)
     {
+        double xpom;
         if (xp < 0)
-            cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", W=" << w << endl;
-        else
-            cout << "# Amplitude as a function of t, Q^2=" << Qsqr << ", xp=" << xp << endl;
-            
-            double xpom;
-            if (xp < 0)
+        {
+            cout << "#  Q^2=" << Qsqr << ", W=" << w << endl;
             xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
-            else
+        }
+        else
+        {
+            cout << "#  Q^2=" << Qsqr << ", xp=" << xp << endl;
             xpom = xp;
-            if (xpom > 0.04)
-            {
-                cerr << "xpom = " << xpom << ", can't do this!" << endl;
-            }
+        }
+            
+        if (xpom > 0.04)
+        {
+            cerr << "xpom = " << xpom << ", can't do this!" << endl;
+        }
             
         auto data = diff.ComputeTotalCrossSection(xpom, Qsqr, nbperp, maxb);
         cout << "# Total cross section (transverse): " << data.sigma_T << " nb" << endl;

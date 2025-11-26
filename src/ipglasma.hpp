@@ -67,10 +67,7 @@ private:
     std::vector< double > xcoords;
     std::vector< double > ycoords;
     std::vector< WilsonLine  > wilsonlines;
-
-    bool schwinger; // true if we use schwinger mechanism
-    double schwinger_rc; // Use Schwinger for dipoles larger than schwinger_rc
-
+    
     bool periodic_boundary_conditions;
     
     std::string datafile;
