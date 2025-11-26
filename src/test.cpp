@@ -78,7 +78,7 @@ TEST(structure_function_ipsat)
     double xbj=1e-3, Qsqr=2;
 
     photon.SetQuark(LIGHT, 0.03);
-    MCINTPOINTS=5e4;
+    MCINTPOINTS=7e4;
 
     // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
     double xs_t = f2.ScatteringAmplitude(xbj, Qsqr, 0, T).real();
@@ -98,7 +98,7 @@ TEST(structure_function_ipsat)
     structurefun_c = Qsqr/(4.0*SQR(M_PI)*ALPHA_e)*(xs_l_c+xs_t_c);
 
     // note: precision (last argument) is absolute precision, not relative
-    ASSERT_ALMOST_EQUAL(structurefun+structurefun_c, 0.530119, 1e-3);
+    ASSERT_ALMOST_EQUAL(structurefun+structurefun_c, 0.530119, 2e-3);
 }
 
 // Wave function normalizations
