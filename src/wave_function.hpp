@@ -17,6 +17,8 @@
 class WaveFunction{
     public:
         WaveFunction();
+        virtual ~WaveFunction() = default;
+        
         /**
          * Transverse overlap
          *

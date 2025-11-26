@@ -71,7 +71,6 @@ int main(int argc, char* argv[])
     double xbj=0; // x for F2
     double t=0.1;
     int A=1;
-//    DGLAPDist *gd=0;  // Initialized and used if we have nucleus consisting of ipsatnucleons
     int he3_id=-1;   // Used to set He3 configuration
     double mint=0;
     double maxt=1.5;
@@ -79,7 +78,6 @@ int main(int argc, char* argv[])
     std::vector<double> tlist;
     double maxb = 10. / 0.19733;    // GeV^-1
     int nbperp = 25;
-    //double xpom=0.000959089;
     double w = 100;
     double xp = -1;
     bool skewedness = false;
@@ -446,62 +444,61 @@ int main(int argc, char* argv[])
     //cout << "# " << *wavef << endl;
 
     double mp = 0.938;
-    double mjpsi = wavef->MesonMass();
+    double meson_mass = wavef->MesonMass();
 
     if (mode == PRINT_NUCLEUS)
     {
         if (ipglasma)
         {
-        double origin[2]={0,0};
-        double max = ((IPGlasma*)amp)->MaxX();
-        double min = ((IPGlasma*)amp)->MinX();
-        double step =((IPGlasma*)amp)->XStep();
-        cout << "# Grid min " << min << " 1/GeV, max " << max << " 1/GeV, step " << step << " 1/GeV" << endl;
-        cout << "# 1/Nc(1-Tr[V(0)V(x,y)]) (re im)  1/Nc(1-Tr[V(x,y)V(x,y)])  1/Nc(Tr[1-V(x,y)])  " << endl;
-        for (double y=min+step/2; y < max-step/2; y+=step)
-        {
-             for (double x=min+step/2; x < max-step/2; x+=step)
+            double origin[2]={0,0};
+            double max = ((IPGlasma*)amp)->MaxX();
+            double min = ((IPGlasma*)amp)->MinX();
+            double step =((IPGlasma*)amp)->XStep();
+            cout << "# Grid min " << min << " 1/GeV, max " << max << " 1/GeV, step " << step << " 1/GeV" << endl;
+            cout << "# 1/Nc(1-Tr[V(0)V(x,y)]) (re im)  1/Nc(1-Tr[V(x,y)V(x,y)])  1/Nc(Tr[1-V(x,y)])  " << endl;
+            for (double y=min+step/2; y < max-step/2; y+=step)
             {
-                double p[2] = {x,y};
+                for (double x=min+step/2; x < max-step/2; x+=step)
+                {
+                    double p[2] = {x,y};
+                    
+                    WilsonLine wl =((IPGlasma*)amp)->GetWilsonLine(x,y);
+                    double tr = wl.Trace().real();
                 
-                WilsonLine wl =((IPGlasma*)amp)->GetWilsonLine(x,y);
-                double tr = wl.Trace().real();
-             
-                cout << y/5.068 << " " << x/5.068 << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->AmplitudeImaginaryPart(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << " " << 1.0 - tr/3.0 <<endl;
+                    cout << y/5.068 << " " << x/5.068 << " " << ((IPGlasma*)amp)->Amplitude(0.01, origin, p) << " " << ((IPGlasma*)amp)->AmplitudeImaginaryPart(0.01, origin, p) << " " << ((IPGlasma*)amp)->Amplitude(0.01, p, p) << " " << 1.0 - tr/3.0 <<endl;
+                }
+            cout << endl;
             }
-         cout << endl;
-        }
         }
         else
         { 
-        
-        double origin[2]={0,0};
-        double max = 25;
-        double min = -25;
-        double step = 0.1;
-        cout << "# x y N(0,(x,y)) T(b) " << endl;
-        for (double y=min+step/2; y < max-step/2; y+=step)
-        {
-            for (double x=min+step/2; x < max-step/2; x+=step)
+            double origin[2]={0,0};
+            double max = 25;
+            double min = -25;
+            double step = 0.1;
+            cout << "# x y N(0,(x,y)) T(b) " << endl;
+            for (double y=min+step/2; y < max-step/2; y+=step)
             {
-                double p[2] = {x,y};
-                
-                double density = 0;
-                if (A == 1)
-                    density =((Ipsat_Proton*)amp)->Density(Vec(x,y));
-                else
+                for (double x=min+step/2; x < max-step/2; x+=step)
                 {
-                    std::vector<DipoleAmplitude*> nucleons = ((Nucleons*)amp)->GetNucleons();
-                    std::vector<Vec> positions =((Nucleons*)amp)->GetNucleonPositions();
-                    for (unsigned int i=0; i<nucleons.size(); i++)
+                    double p[2] = {x,y};
+                    
+                    double density = 0;
+                    if (A == 1)
+                        density =((Ipsat_Proton*)amp)->Density(Vec(x,y));
+                    else
                     {
-                        density += nucleons[i]->Density(Vec(x,y)-positions[i]);
+                        std::vector<DipoleAmplitude*> nucleons = ((Nucleons*)amp)->GetNucleons();
+                        std::vector<Vec> positions =((Nucleons*)amp)->GetNucleonPositions();
+                        for (unsigned int i=0; i<nucleons.size(); i++)
+                        {
+                            density += nucleons[i]->Density(Vec(x,y)-positions[i]);
+                        }
                     }
+                    cout << y/5.068 << " " << x/5.068 << " " << amp->Amplitude(0.001, origin, p) << " " << density << endl;
                 }
-                cout << y/5.068 << " " << x/5.068 << " " << amp->Amplitude(0.001, origin, p) << " " << density << endl;
+                cout << endl;
             }
-            cout << endl;
-        }
         }
         
          
@@ -517,8 +514,7 @@ int main(int argc, char* argv[])
         {
             for (double x=-max; x<=max; x+=2.0*max/(points-1.0))
             {
-                //if (x*x + y*y < 0.5*0.5*5.068*5.068) // Limit maxr
-                    cout << y << " " << x << "  " << amp->SaturationScale(0.001, Vec(x,y)) << endl;
+                cout << y << " " << x << "  " << amp->SaturationScale(0.001, Vec(x,y)) << endl;
             }
             cout << endl;
         }
@@ -538,7 +534,7 @@ int main(int argc, char* argv[])
         {
             double xpom;
             if (xp < 0)
-                xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+                xpom = (meson_mass*meson_mass+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
             else
                 xpom = xp;
             if (xpom > 0.04)
@@ -567,7 +563,7 @@ int main(int argc, char* argv[])
         if (xp < 0)
         {
             cout << "#  Q^2=" << Qsqr << ", W=" << w << endl;
-            xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+            xpom = (meson_mass*meson_mass+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
         }
         else
         {
@@ -609,10 +605,9 @@ int main(int argc, char* argv[])
         cout << "# Real part correction" << endl;
         cout << "# t  transverse  longitudinal" << endl;
         double tstep=0.02;
-        //for (t=mint; t<=maxt; t+=tstep)
         for (auto t: tlist)
         {
-            double xpom = (mjpsi*mjpsi+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+            double xpom = (meson_mass*meson_mass+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
             if (xpom > 0.04)
             {
                 cerr << "xpom = " << xpom << ", can't do this!" << endl;
@@ -627,8 +622,6 @@ int main(int argc, char* argv[])
             cout << t << " ";
             cout.precision(10);
             cout << res_t << " " << res_l   << endl;
-            //if (t>0.5)
-            //    tstep=0.1;
         }
     }
 
@@ -694,8 +687,8 @@ int main(int argc, char* argv[])
     gsl_rng_free(global_rng);
     delete amp;
     delete wavef;
-//    if (gd != 0)
-//        delete gd;
+    return 0;
+
 }
 
 

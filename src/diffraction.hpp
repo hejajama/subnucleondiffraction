@@ -39,9 +39,7 @@ public:
     
     double LogDerivative(double xpom, double Qsqr, double t, Polarization pol=T);   // der ln A / der y
     double Correction(double xpom, double Qsqr, double t, Polarization pol=T);
-    
-    void SetNumOfAverages(int n);
-    
+       
     void SetZLimit(double zl) { zlimit = zl; }
 
     DipoleAmplitude* GetDipole();
@@ -72,7 +70,6 @@ private:
     double MAXR;
     DipoleAmplitude* dipole;
     WaveFunction* wavef;
-    int num_of_averages;
     
     double zlimit;
     

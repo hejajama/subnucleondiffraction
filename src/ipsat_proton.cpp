@@ -554,6 +554,7 @@ double Ipsat_Proton::xg(double x, double r)
     else
     {
         cerr << "Ipsat version not implemented ffor Ipsat_Proton::xg" << endl;
+        return 0;
     }
     
 }
