@@ -204,8 +204,8 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
     int nregions=0, neval=0, fail=0; double integral[2], error[2], prob[2];
     const int nvec = 1; const double epsrel = MCINTACCURACY, epsabs = 0.0;
     const int flags = 0, seed = 0;
-    const int mineval = MCINTPOINTS/10; const int maxeval = 10*MCINTPOINTS;
-    const int nnew = 100000, nmin = 1000; const double flatness = 1.0;
+    const int mineval = MCINTPOINTS/10; const int maxeval = MCINTPOINTS;
+    const int nnew = mineval/20, nmin = 500; const double flatness = 1.0;
     Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed,
         mineval, maxeval, nnew, nmin, flatness,
         NULL, NULL, &nregions, &neval, &fail, integral, error, prob);
