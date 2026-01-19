@@ -24,7 +24,7 @@ public:
         Polarization pol=T);
     // Forward amplitude at t=0 integrating over theta_b internally (Suave vector integration)
     std::complex<double> ScatteringAmplitudeF(double xpom, double Qsqr, double b,
-        Polarization pol=T, double* integrand_mod_sqr=nullptr);
+        double theta_b, Polarization pol=T, double* integrand_mod_sqr=nullptr);
 
     std::complex<double> ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t,
         double r, double theta_r, double b, double theta_b, double z,
@@ -50,20 +50,21 @@ public:
     double MaxR() { return MAXR; }
 
     struct TotalCrossSectionData {
-        std::vector<double> b; // GeV^-1 centers
-        std::vector<std::complex<double>> F_T;
-        std::vector<std::complex<double>> F_L; // empty if Q^2=0
-        std::vector<double> F_T_sqr;
-        std::vector<double> F_L_sqr; // empty if Q^2=0
-        // Integral over variables of |integrand|^2 (i.e. ∫ |A(theta_b,theta_r,u,z)|^2 dvars)
-        std::vector<double> F_T_integrand_sqr;
-        std::vector<double> F_L_integrand_sqr; // empty if Q^2=0
-        double sigma_T; // scaled total cross section
-        double sigma_L; // scaled total cross section (0 if Q^2=0)
+        std::vector<double> b;      // GeV^-1 centers, size nbperp
+        std::vector<double> theta;  // angles, size ntheta
+        // The following vectors are stored on a flattened (b,theta) grid
+        // with index i = ib*ntheta + itheta.
+        std::vector<std::complex<double>> F_T;            // size nbperp*ntheta
+        std::vector<std::complex<double>> F_L;            // empty if Q^2=0
+        std::vector<double> F_T_sqr;                      // |F_T|^2 per (b,theta)
+        std::vector<double> F_L_sqr;                      // |F_L|^2 per (b,theta), empty if Q^2=0
+        // Integral over internal variables of |integrand|^2 at fixed (b,theta)
+        std::vector<double> F_T_integrand_sqr;            // size nbperp*ntheta
+        std::vector<double> F_L_integrand_sqr;            // empty if Q^2=0
     };
 
     TotalCrossSectionData ComputeTotalCrossSection(double xpom, double Qsqr,
-        int nbperp, double maxb);
+        int nbperp, double maxb, int ntheta);
 	
 
 private:
