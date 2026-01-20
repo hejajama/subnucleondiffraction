@@ -581,7 +581,7 @@ int main(int argc, char* argv[])
         }
             
         auto data = diff.ComputeTotalCrossSection(xpom, Qsqr, nbperp, maxb, ntheta);
-        cout << "# b (GeV^-1) theta  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag, transverse |F|^2, longitudinal |F|^2" << endl;
+        cout << "# b (GeV^-1) theta  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag" << endl;
         for (int ib=0; ib<nbperp; ++ib) {
             const double bval = data.b[ib];
             for (int itheta=0; itheta<ntheta; ++itheta) {
@@ -589,19 +589,15 @@ int main(int argc, char* argv[])
                 const int idx = ib*ntheta + itheta;
                 const std::complex<double>& FT = data.F_T[idx];
                 std::complex<double> FL(0.,0.);
-                double FT_sqr = data.F_T_sqr[idx];
-                double FL_sqr = 0.0;
                 if (Qsqr > 0) {
                     FL = data.F_L[idx];
-                    FL_sqr = data.F_L_sqr[idx];
                 }
                 cout.precision(5);
                 cout << std::fixed << bval << " " << theta << " ";
                 cout.precision(10);
                 cout << std::scientific
                      << FT.real() << " " << FT.imag() << " "
-                     << FL.real() << " " << FL.imag() << " "
-                     << FT_sqr << " " << FL_sqr << endl;
+                     << FL.real() << " " << FL.imag() << endl;
             }
         }
     }

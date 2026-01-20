@@ -212,7 +212,7 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
 }
 
 std::complex<double> Diffraction::ScatteringAmplitudeF(
-    double xpom, double Qsqr, double b, double theta_b, Polarization pol, double* integrand_mod_sqr) {
+    double xpom, double Qsqr, double b, double theta_b, Polarization pol) {
     struct SuaveParams {
         Diffraction* diff;
         double xpom;
@@ -306,17 +306,16 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         //  optional z: width (1 - 2 zmin) in J
         // scalar currently includes factor 2*r * overlap; needs extra r from dr=r du
         const double measure_r = r; // from dr = r du
-        // Components: real, imag, |integrand|^2 integral element (int |A|^2 dvars)
+        // Components: real, imag
         f[0] = J * measure_r * scalar * amp_r; // real part
         f[1] = J * measure_r * scalar * amp_i; // imag part
-        f[2] = J * measure_r * scalar * scalar * (amp_r*amp_r + amp_i*amp_i);
         return 0;
     };
 
     const int ndim = FACTORIZE_ZINT ? 2 : 3;
-    const int ncomp = 3; // real, imag, |integrand|^2
+    const int ncomp = 2; // real, imag
     int nregions=0, neval=0, fail=0;
-    double integral[3], error[3], prob[3];
+    double integral[2], error[2], prob[2];
     const int nvec = 1;
     const double epsrel = MCINTACCURACY, epsabs = 0.0;
     const int flags = 0, seed = 0;
@@ -325,8 +324,6 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
     Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed,
         mineval, maxeval, nnew, nmin, flatness,
         NULL, NULL, &nregions, &neval, &fail, integral, error, prob);
-    if (integrand_mod_sqr)
-        *integrand_mod_sqr = integral[2];
     return std::complex<double>(integral[0], integral[1]);
 }
 
@@ -338,10 +335,6 @@ Diffraction::TotalCrossSectionData Diffraction::ComputeTotalCrossSection(
     const int ntot = nbperp * ntheta;
     out.F_T.assign(ntot, std::complex<double>(0.,0.));
     if (Qsqr > 0) out.F_L.assign(ntot, std::complex<double>(0.,0.));
-    out.F_T_sqr.assign(ntot, 0.0);
-    if (Qsqr > 0) out.F_L_sqr.assign(ntot, 0.0);
-    out.F_T_integrand_sqr.assign(ntot, 0.0);
-    if (Qsqr > 0) out.F_L_integrand_sqr.assign(ntot, 0.0);
 
     const double db = maxb / nbperp;
     for (int ib=0; ib<nbperp; ++ib)
@@ -359,18 +352,12 @@ Diffraction::TotalCrossSectionData Diffraction::ComputeTotalCrossSection(
             const double thetaval = out.theta[it];
             // T polarization (vector integration returns real & imag)
             double int_modsq_T = 0.0;
-            out.F_T[idx] = ScatteringAmplitudeF(xpom, Qsqr, bval, thetaval, T, &int_modsq_T);
-            out.F_T_sqr[idx] = std::norm(out.F_T[idx]);
-            out.F_T_integrand_sqr[idx] = int_modsq_T;
+            out.F_T[idx] = ScatteringAmplitudeF(xpom, Qsqr, bval, thetaval, T);
             if (Qsqr > 0) {
                 double int_modsq_L = 0.0;
-                out.F_L[idx] = ScatteringAmplitudeF(xpom, Qsqr, bval, thetaval, L, &int_modsq_L);
-                out.F_L_sqr[idx] = std::norm(out.F_L[idx]);
-                out.F_L_integrand_sqr[idx] = int_modsq_L;
+                out.F_L[idx] = ScatteringAmplitudeF(xpom, Qsqr, bval, thetaval, L);
             }
         }
-
-
     }
 
     return out;
