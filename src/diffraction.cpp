@@ -212,12 +212,13 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
 }
 
 std::complex<double> Diffraction::ScatteringAmplitudeF(
-    double xpom, double Qsqr, double b, Polarization pol, double* integrand_mod_sqr) {
+    double xpom, double Qsqr, double b, double theta_b, Polarization pol) {
     struct SuaveParams {
         Diffraction* diff;
         double xpom;
         double Q2;
         double b;
+        double theta_b;
         double zmin;
         double rmin;
         double rmax;
@@ -229,6 +230,7 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         xpom,
         Qsqr,
         b,
+        theta_b,
         zlimit,
         1e-10,
         MAXR,
@@ -240,11 +242,10 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         const double twoPi = 2.0*M_PI;
         const bool fact = prm->factorize;
         const double umin = std::log(prm->rmin), umax = std::log(prm->rmax);
-        const double xb = x[0];
-        const double xr = x[1];
-        const double xu = x[2];
-        const double xz = fact ? 0.5 : x[3];
-        const double theta_b_int = twoPi * xb;
+        const double xr = x[0];
+        const double xu = x[1];
+        const double xz = fact ? 0.5 : x[2];
+        const double theta_b_int = prm->theta_b;
         const double theta_r = twoPi * xr;
         const double u = umin + (umax-umin) * xu;
         const double r = std::exp(u);
@@ -297,25 +298,24 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         std::complex<double> amp = prm->diff->dipole->ComplexAmplitude(prm->xpom, x1, x2);
         const double amp_r = amp.real();
         const double amp_i = amp.imag();
-        // Overall Jacobian (theta_b, theta_r, u, z (if not factorized))
-        const double J = (twoPi * twoPi) * (umax-umin) * (fact ? 1.0 : (1.0 - 2.0*prm->zmin));
+        // Overall Jacobian (theta_r, u, z (if not factorized))
+        const double J = twoPi * (umax-umin) * (fact ? 1.0 : (1.0 - 2.0*prm->zmin));
         // Jacobian pieces:
-        //  theta_b: 2pi, theta_r: 2pi  (in J)
+        //  theta_r: 2pi  (in J)
         //  u = ln r mapping: u = umin + (umax-umin)*xu gives width (umax-umin) in J and dr = r du adds extra r
         //  optional z: width (1 - 2 zmin) in J
         // scalar currently includes factor 2*r * overlap; needs extra r from dr=r du
         const double measure_r = r; // from dr = r du
-        // Components: real, imag, |integrand|^2 integral element (int |A|^2 dvars)
+        // Components: real, imag
         f[0] = J * measure_r * scalar * amp_r; // real part
         f[1] = J * measure_r * scalar * amp_i; // imag part
-        f[2] = J * measure_r * scalar * scalar * (amp_r*amp_r + amp_i*amp_i);
         return 0;
     };
 
-    const int ndim = FACTORIZE_ZINT ? 3 : 4;
-    const int ncomp = 3; // real, imag, |integrand|^2
+    const int ndim = FACTORIZE_ZINT ? 2 : 3;
+    const int ncomp = 2; // real, imag
     int nregions=0, neval=0, fail=0;
-    double integral[3], error[3], prob[3];
+    double integral[2], error[2], prob[2];
     const int nvec = 1;
     const double epsrel = MCINTACCURACY, epsabs = 0.0;
     const int flags = 0, seed = 0;
@@ -324,53 +324,42 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
     Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed,
         mineval, maxeval, nnew, nmin, flatness,
         NULL, NULL, &nregions, &neval, &fail, integral, error, prob);
-    if (integrand_mod_sqr)
-        *integrand_mod_sqr = integral[2];
     return std::complex<double>(integral[0], integral[1]);
 }
 
 Diffraction::TotalCrossSectionData Diffraction::ComputeTotalCrossSection(
-    double xpom, double Qsqr, int nbperp, double maxb) {
+    double xpom, double Qsqr, int nbperp, double maxb, int ntheta) {
     TotalCrossSectionData out;
     out.b.resize(nbperp);
-    out.F_T.assign(nbperp, std::complex<double>(0.,0.));
-    if (Qsqr > 0) out.F_L.assign(nbperp, std::complex<double>(0.,0.));
-    out.F_T_sqr.assign(nbperp, 0.0);
-    if (Qsqr > 0) out.F_L_sqr.assign(nbperp, 0.0);
-    out.F_T_integrand_sqr.assign(nbperp, 0.0);
-    if (Qsqr > 0) out.F_L_integrand_sqr.assign(nbperp, 0.0);
+    out.theta.resize(ntheta);
+    const int ntot = nbperp * ntheta;
+    out.F_T.assign(ntot, std::complex<double>(0.,0.));
+    if (Qsqr > 0) out.F_L.assign(ntot, std::complex<double>(0.,0.));
 
     const double db = maxb / nbperp;
     for (int ib=0; ib<nbperp; ++ib)
         out.b[ib] = (ib + 0.5) * db;
 
-    #pragma omp parallel for schedule(dynamic)
+    const double dtheta = 2.0 * M_PI / ntheta;
+    for (int it=0; it<ntheta; ++it)
+        out.theta[it] = it * dtheta;
+
+    #pragma omp parallel for schedule(dynamic) collapse(2)
     for (int ib=0; ib<nbperp; ++ib) {
-        const double bval = out.b[ib];
-        // T polarization (vector integration returns real & imag)
-        double int_modsq_T = 0.0;
-        out.F_T[ib] = ScatteringAmplitudeF(xpom, Qsqr, bval, T, &int_modsq_T);
-        out.F_T_sqr[ib] = std::norm(out.F_T[ib]);
-        out.F_T_integrand_sqr[ib] = int_modsq_T;
-        if (Qsqr > 0) {
-            double int_modsq_L = 0.0;
-            out.F_L[ib] = ScatteringAmplitudeF(xpom, Qsqr, bval, L, &int_modsq_L);
-            out.F_L_sqr[ib] = std::norm(out.F_L[ib]);
-            out.F_L_integrand_sqr[ib] = int_modsq_L;
+        for (int it=0; it<ntheta; ++it) {
+            const int idx = ib*ntheta + it;
+            const double bval = out.b[ib];
+            const double thetaval = out.theta[it];
+            // T polarization (vector integration returns real & imag)
+            double int_modsq_T = 0.0;
+            out.F_T[idx] = ScatteringAmplitudeF(xpom, Qsqr, bval, thetaval, T);
+            if (Qsqr > 0) {
+                double int_modsq_L = 0.0;
+                out.F_L[idx] = ScatteringAmplitudeF(xpom, Qsqr, bval, thetaval, L);
+            }
         }
     }
 
-    // Integrate over b for total cross sections in nb
-    double sigma_T = 0.0, sigma_L = 0.0;
-    for (int ib=0; ib<nbperp; ++ib) {
-        double bval = out.b[ib];
-        sigma_T += out.F_T_sqr[ib] * bval * db;
-        if (Qsqr > 0) sigma_L += out.F_L_sqr[ib] * bval * db;
-    }
-    sigma_T *= 1e7 * HBARC * HBARC / (8. * M_PI);
-    sigma_L *= 1e7 * HBARC * HBARC / (8. * M_PI);
-    out.sigma_T = sigma_T;
-    out.sigma_L = sigma_L;
     return out;
 }
 

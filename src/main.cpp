@@ -78,6 +78,7 @@ int main(int argc, char* argv[])
     std::vector<double> tlist;
     double maxb = 10. / 0.19733;    // GeV^-1
     int nbperp = 25;
+    int ntheta = 64;
     double w = 100;
     double xp = -1;
     bool skewedness = false;
@@ -119,6 +120,7 @@ int main(int argc, char* argv[])
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
         cout << "-mint, -maxt, -tstep" << endl;
         cout << "-maxb, -nbperp" << endl;
+        cout << "-ntheta" << endl;
         cout << "-nrqcd_parameters A B" << endl;
         cout << "-nrqcd_parameters_from_file" << endl;
         cout << "-periodic_boundary_conditions: use periodic boundary conditions" << endl;
@@ -342,6 +344,8 @@ int main(int argc, char* argv[])
             maxb=StrToReal(argv[i+1]);
         else if (string(argv[i])=="-nbperp")
             nbperp=StrToInt(argv[i+1]);
+        else if (string(argv[i])=="-ntheta")
+            ntheta=StrToInt(argv[i+1]);
         else if (string(argv[i])=="-no_t_in_xpom")
             t_in_xpom = 0.0;
         else if (string(argv[i])=="-nrqcd_parameters")
@@ -576,27 +580,25 @@ int main(int argc, char* argv[])
             cerr << "xpom = " << xpom << ", can't do this!" << endl;
         }
             
-        auto data = diff.ComputeTotalCrossSection(xpom, Qsqr, nbperp, maxb);
-        cout << "# Total cross section (transverse): " << data.sigma_T << " nb" << endl;
-        cout << "# Total cross section (longitudinal): " << data.sigma_L << " nb" << endl;
-        cout << "# b (GeV^-1)  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag, transverse |F|^2, longitudinal |F|^2" << endl;
+        auto data = diff.ComputeTotalCrossSection(xpom, Qsqr, nbperp, maxb, ntheta);
+        cout << "# b (GeV^-1) theta  F  columns: transverse real, transverse imag, longitudinal real, longitudinal imag" << endl;
         for (int ib=0; ib<nbperp; ++ib) {
             const double bval = data.b[ib];
-            const std::complex<double>& FT = data.F_T[ib];
-            std::complex<double> FL(0.,0.);
-            double FT_sqr = data.F_T_sqr[ib];
-            double FL_sqr = 0.0;
-            if (Qsqr > 0) {
-                FL = data.F_L[ib];
-                FL_sqr = data.F_L_sqr[ib];
+            for (int itheta=0; itheta<ntheta; ++itheta) {
+                const double theta = data.theta[itheta];
+                const int idx = ib*ntheta + itheta;
+                const std::complex<double>& FT = data.F_T[idx];
+                std::complex<double> FL(0.,0.);
+                if (Qsqr > 0) {
+                    FL = data.F_L[idx];
+                }
+                cout.precision(5);
+                cout << std::fixed << bval << " " << theta << " ";
+                cout.precision(10);
+                cout << std::scientific
+                     << FT.real() << " " << FT.imag() << " "
+                     << FL.real() << " " << FL.imag() << endl;
             }
-            cout.precision(5);
-            cout << std::fixed << bval << " ";
-            cout.precision(10);
-            cout << std::scientific
-                 << FT.real() << " " << FT.imag() << " "
-                 << FL.real() << " " << FL.imag() << " "
-                 << FT_sqr << " " << FL_sqr << endl;
         }
     }
 
