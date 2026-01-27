@@ -219,6 +219,128 @@ TEST(gauss_boosted_normalization_upsilon_3s)
     gsl_integration_workspace_free(w); 
 }
 
+
+TEST(totxs_directly_vs_integrate_dsigma_dt)
+{
+    global_rng = gsl_rng_alloc(gsl_rng_default);
+    FACTORIZE_ZINT=false;
+    BoostedGauss wf("gauss-boosted_mzsat.dat");
+    Ipsat_Proton proton(MZNONSAT); // Nonsat, so we get exp(-B|t|) behavior
+    double B=4.0; // GeV^-2
+    proton.SetProtonWidth(0);
+    proton.SetQuarkWidth(B);
+    proton.InitializeTarget();
+
+    Diffraction diff(proton, wf);
+
+    double xp=1e-3; double Qsqr=10;
+    MCINTPOINTS=3e5;
+
+
+    double dsdt0 = std::norm(diff.ScatteringAmplitude(xp, Qsqr, 0, T))/(16.0*M_PI);
+    double totxs_from_dsdt0 = dsdt0 /B ; // since we have exp(-B*t) behavior
+   
+    // The next test (commented out) integrates the t spectra to get the cross section
+    // To speed up this test, it is commented out by default. Note that only in the case of 
+    // ipnonsat dipole (MZNONSAT) we have pure exponential t dependence, so the test works
+    // With saturation (MZSAT), can't compute totxs from dsigma/dt(t=0), and one has to do the t integral
+    // using the code below
+
+    /*
+    // Integrate |diff.ScatteringAmplitude(xp, Qsqr, t, T)|^2 from t=0 to t=2 using GSL
+    auto integrand_gsl = [](double t, void* params) -> double {
+        auto* p = static_cast<std::pair<Diffraction*, std::pair<double, double>>*>(params);
+        Diffraction* diff = p->first;
+        double xp = p->second.first;
+        double Qsqr = p->second.second;
+        complex<double> amp = diff->ScatteringAmplitude(xp, Qsqr, t, T);
+        //cout << "t=" << t << " amp=" << amp << " |amp|^2=" << std::norm(amp) << " xp=" << xp << " Q2=" << Qsqr << endl;
+        return std::norm(amp) / (16.0 * M_PI);
+    };
+    
+    auto params = std::make_pair(&diff, std::make_pair(xp, Qsqr));
+    gsl_function F;
+    F.function = integrand_gsl;
+    F.params = &params;
+    
+    gsl_integration_workspace* w = gsl_integration_workspace_alloc(1000);
+    double totalxs_integrated, error;
+    gsl_integration_qags(&F, 0, 2.0, 0, 1e-2, 100, w, &totalxs_integrated, &error);
+    gsl_integration_workspace_free(w);
+        
+    
+    ASSERT_ALMOST_EQUAL(totalxs_integrated, totxs_from_dsdt0, 1e-7);
+    */
+
+
+    // Test total cross section integration without t integral, using the ScatteringAmpltitudeF function
+
+    struct IntegrandParams2D {
+        Diffraction* diff;
+        double xpom;
+        double Qsqr;
+        double b;
+        double (*integrand_theta_2d)(double, void*);
+        gsl_integration_workspace* w_theta;
+    };
+
+    auto integrand_theta_2d = [](double theta, void* params) -> double {
+        IntegrandParams2D* p = static_cast<IntegrandParams2D*>(params);
+        std::complex<double> amp_f = p->diff->ScatteringAmplitudeF(p->xpom, p->Qsqr, p->b, theta, T);
+        //cout << "Evaluated " << amp_f << " at b=" << p->b << " theta=" << theta << endl;
+        return std::norm(amp_f);
+    };
+
+    const int INT_SUBIDVS = 8;
+    const double INTACC = 1e-2;
+
+    auto integrand_b = [](double b, void* params) -> double {
+        IntegrandParams2D* p = static_cast<IntegrandParams2D*>(params);
+        p->b = b;
+
+        gsl_function F_theta;
+        F_theta.function = p->integrand_theta_2d;
+        F_theta.params = p;
+
+       /* gsl_integration_workspace* w_theta = p->w_theta;
+        double result_theta, error_theta;
+        gsl_integration_qag(&F_theta, 0, 2.0 * M_PI, 0, INTACC, INT_SUBIDVS, GSL_INTEG_GAUSS15, w_theta, &result_theta, &error_theta);
+        */
+       // Use the fact that our dipole is rotationally symmetric 
+        double result_theta = F_theta.function(0, F_theta.params) * 2.0 * M_PI;
+        return result_theta * b; // b factor for polar coordinates integration (b db dtheta)
+    };
+
+    IntegrandParams2D params_2d;
+    params_2d.diff = &diff;
+    params_2d.xpom = xp;
+    params_2d.Qsqr = Qsqr;
+    params_2d.integrand_theta_2d = integrand_theta_2d;
+    params_2d.w_theta = gsl_integration_workspace_alloc(INT_SUBIDVS);
+
+    gsl_function F_b;
+    double (*bintegrand)(double, void*) = integrand_b;  
+    F_b.function = integrand_b;
+    F_b.params = &params_2d;
+
+    gsl_integration_workspace* w_b = gsl_integration_workspace_alloc(INT_SUBIDVS);
+    double result_2d, error_2d;
+    gsl_integration_qag(&F_b, 0, 14.0, 0, INTACC, INT_SUBIDVS, GSL_INTEG_GAUSS15, w_b, &result_2d, &error_2d);
+    gsl_integration_workspace_free(w_b);
+    gsl_integration_workspace_free(params_2d.w_theta);
+
+    double cohxs = result_2d/(16.0*M_PI*M_PI);
+
+    //cout << "Integrated ScatteringAmplitudeF^2 over b and theta: " << cohxs << endl;
+    //cout << "from dsimga/dt(t=0)" << totxs_from_dsdt0 << endl;
+
+    cout << "Note: ratio between total cross section computed directly from ScatteringAmplitudeF and from dsigma/dt(t=0): " << totxs_from_dsdt0 / cohxs  << endl;
+
+    ASSERT_ALMOST_EQUAL(cohxs, totxs_from_dsdt0, 1e-6);
+
+}
+
+
 // DO NOT REMOVE
 // Generates a main() function that runs all of your tests.
 // Note: Some versions of g++ incorrectly produce a warning about empty
