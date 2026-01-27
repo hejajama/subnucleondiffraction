@@ -123,6 +123,10 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
         SAParams* prm = static_cast<SAParams*>(ud);
         const double twoPi = 2.0*M_PI;
         const bool fact = prm->fact;
+                if (fact)
+        {
+            cout << "NOTE! Using factorized z integration in ScatteringAmplitudeF!" << endl;
+        }
         // Unpack Cuba randoms
         const double xb = x[0];                // b in [0,1]
         const double xu = x[1];                // u=ln r in [0,1]
@@ -168,25 +172,21 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
         double by = b * sin_tb;
         double rx = r * cos_tr;
         double ry = r * sin_tr;
+        
+        
+        // Quark coordinates
+        // Note: as b is the center of the dipole, not the center-of-mass, no z factors here
         double qx, qy, qbarx, qbary;
-        if (fact) {
-            qx = bx + 0.5*rx; qy = by + 0.5*ry;
-            qbarx = bx - 0.5*rx; qbary = by - 0.5*ry;
-        } else {
-            qx = bx + (1.0 - z)*rx; qy = by + (1.0 - z)*ry;
-            qbarx = bx - z*rx; qbary = by - z*ry;
-        }
+        qx = bx + 0.5*rx; qy = by + 0.5*ry;
+        qbarx = bx - 0.5*rx; qbary = by - 0.5*ry;
+
         double x1[2] = {qx,qy}; double x2[2] = {qbarx,qbary};
         std::complex<double> amp = prm->diff->dipole->ComplexAmplitude(prm->xp, x1, x2);
         // Phase factor with momentum transfer delta
         const double delta = std::sqrt(prm->t);
         if (delta > 0) {
-            double phi;
-            if (fact) {
-                phi = b*delta*cos_tb;
-            } else {
-                phi = b*delta*cos_tb - (0.5 - z)*r*delta*cos_tr;
-            }
+            double phi = b*delta*cos_tb - (0.5 - z)*r*delta*cos_tr;
+            
             const std::complex<double> exponent = std::exp(std::complex<double>(0.0, -phi));
             amp *= exponent;
         }
@@ -241,6 +241,8 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         SuaveParams* prm = static_cast<SuaveParams*>(ud);
         const double twoPi = 2.0*M_PI;
         const bool fact = prm->factorize;
+
+
         const double umin = std::log(prm->rmin), umax = std::log(prm->rmax);
         const double xr = x[0];
         const double xu = x[1];
