@@ -1,0 +1,398 @@
+\documentclass[prd,superscriptaddress,floatfix,nopacs,preprintnumbers,nofootinbib]{revtex4-2}
+
+%% Packages
+
+\usepackage[margin=1.0in]{geometry}
+\usepackage{mathrsfs}
+\usepackage{amssymb,bm}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{slashed}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{dsfont}
+\usepackage{longtable}
+\usepackage{bbm} 
+\usepackage{float}
+\usepackage{tcolorbox}
+\usepackage{lipsum}
+\usepackage[hidelinks]{hyperref}
+
+
+
+
+%% Commands
+
+\newcommand{\Deltat}{\boldsymbol{\Delta}_{\perp}}
+
+\newcommand{\etL}[1]{\boldsymbol{\epsilon}_{\perp #1}}
+\newcommand{\etU}[1]{\boldsymbol{\epsilon}_{\perp}^{#1}}
+
+\newcommand{\ltL}[1]{\boldsymbol{l}_{\perp #1}}
+\newcommand{\ltU}[1]{\boldsymbol{l}_{\perp}^{#1}}
+
+\newcommand{\vtL}[1]{\boldsymbol{v}_{\perp #1}}
+\newcommand{\vtU}[1]{\boldsymbol{v}_{\perp}^{#1}}
+
+\newcommand{\wtL}[1]{\boldsymbol{w}_{\perp #1}}
+\newcommand{\wtU}[1]{\boldsymbol{w}_{\perp}^{#1}}
+
+\newcommand{\wtCL}[1]{\boldsymbol{w}'_{\perp #1}}
+\newcommand{\wtCU}[1]{\boldsymbol{w}_{\perp}^{' #1}}
+
+
+\newcommand{\LtL}[1]{\boldsymbol{L}_{\perp #1}}
+\newcommand{\LtU}[1]{\boldsymbol{L}_{\perp}^{#1}}
+
+\newcommand{\LtCL}[1]{\boldsymbol{L}'_{\perp #1}}
+\newcommand{\LtCU}[1]{\boldsymbol{L}_{\perp}^{' #1}}
+
+\newcommand{\ltoneL}[1]{\boldsymbol{l}_{1\perp #1}}
+\newcommand{\ltoneU}[1]{\boldsymbol{l}_{1\perp}^{#1}}
+
+\newcommand{\lttwoL}[1]{\boldsymbol{l}_{2\perp #1}}
+\newcommand{\lttwoU}[1]{\boldsymbol{l}_{2\perp}^{#1}}
+
+\newcommand{\qtL}[1]{\boldsymbol{q}_{\perp #1}}
+\newcommand{\qtU}[1]{\boldsymbol{q}_{\perp}^{#1}}
+
+\newcommand{\ptL}[1]{\boldsymbol{p}_{\perp #1}}
+\newcommand{\ptU}[1]{\boldsymbol{p}_{\perp}^{#1}}
+
+\newcommand{\pgammatL}[1]{\boldsymbol{p}_{\gamma\perp #1}}
+\newcommand{\pgammatU}[1]{\boldsymbol{p}_{\gamma\perp}^{#1}}
+
+\newcommand{\ptoneL}[1]{\boldsymbol{p}_{1\perp #1}}
+\newcommand{\ptoneU}[1]{\boldsymbol{p}_{1\perp}^{#1}}
+
+\newcommand{\pttwoL}[1]{\boldsymbol{p}_{2\perp #1}}
+\newcommand{\pttwoU}[1]{\boldsymbol{p}_{2\perp}^{#1}}
+
+\newcommand{\ktL}[1]{\boldsymbol{k}_{\perp #1}}
+\newcommand{\ktU}[1]{\boldsymbol{k}_{\perp}^{#1}}
+
+\newcommand{\pgtL}[1]{\boldsymbol{p}_{g\perp #1}}
+\newcommand{\pgtU}[1]{\boldsymbol{p}_{g\perp}^{#1}}
+
+\newcommand{\PtL}[1]{\boldsymbol{P}_{\perp #1}}
+\newcommand{\PtU}[1]{\boldsymbol{P}_{\perp}^{#1}}
+
+\newcommand{\gammatL}[1]{\boldsymbol{\gamma}_{\perp #1}}
+\newcommand{\gammatU}[1]{\boldsymbol{\gamma}_{\perp}^{#1}}
+
+\newcommand{\GammatLU}[2]{\boldsymbol{\Gamma}_{\perp #1}^{#2}}
+
+\newcommand{\GammatCLU}[2]{\boldsymbol{\overline{\Gamma}}_{\perp #1}^{#2}}
+
+\newcommand{\Hcal}{\mathcal{H}}
+\newcommand{\Ocal}{\mathcal{O}}
+\newcommand{\Mcal}{\mathcal{M}}
+\newcommand{\Fcal}{\mathcal{F}}
+\newcommand{\Acal}{\mathcal{A}}
+\newcommand{\Ncal}{\mathcal{N}}
+\newcommand{\Tcal}{\mathcal{T}}
+\newcommand{\Scal}{\mathcal{S}}
+\newcommand{\Ccal}{\mathcal{C}}
+\newcommand{\Pcal}{\mathcal{P}}
+\newcommand{\Rcal}{\mathcal{R}}
+\newcommand{\Ical}{\mathcal{I}}
+\newcommand{\Jcal}{\mathcal{J}}
+\newcommand{\Kcal}{\mathcal{K}}
+
+
+\newcommand{\vect}[1]{\boldsymbol{#1}_{\perp}}
+\newcommand{\kt}{\vect{k}}
+\newcommand{\pt}{\vect{p}}
+\newcommand{\pgt}{\vect{p_g}}
+\newcommand{\pgammat}{\vect{p_\gamma}}
+\newcommand{\Pt}{\vect{P}}
+\newcommand{\Dt}{\vect{\Delta}}
+\newcommand{\qt}{\vect{q}}
+\newcommand{\lt}{\vect{l}}
+\newcommand{\ellt}{\vect{\ell}}
+\newcommand{\ellttwo}{\boldsymbol{\ell_{2\perp}}}
+\newcommand{\vt}{\vect{v}}
+\newcommand{\at}{\vect{a}}
+\newcommand{\bt}{\vect{b}}
+\newcommand{\Bt}{\vect{B}}
+\newcommand{\Kt}{\vect{K}}
+\newcommand{\wt}{\vect{w}}
+\newcommand{\wtbar}{\vect{\bar w}}
+\newcommand{\xt}{\vect{x}}
+\newcommand{\yt}{\vect{y}}
+\newcommand{\zt}{\vect{z}}
+\newcommand{\ut}{\vect{u}}
+\newcommand{\bxt}{\vect{\bar x}}
+\newcommand{\byt}{\vect{\bar y}}
+\newcommand{\bzt}{\vect{\bar z}}
+\newcommand{\Xt}{\vect{X}}
+\newcommand{\Yt}{\vect{Y}}
+\newcommand{\Zt}{\vect{Z}}
+\newcommand{\rt}{\vect{r}}
+\newcommand{\rtp}{\vect{r}'}
+\newcommand{\Rt}{\vect{R}}
+\newcommand{\Lt}{\vect{L}}
+
+\newcommand{\kgt}{\boldsymbol{k_{g\perp}}}
+
+\newcommand{\kht}{\boldsymbol{k_{h\perp}}}
+\newcommand{\pht}{\boldsymbol{p_{h\perp}}}
+
+\newcommand{\xtn}{\boldsymbol{x_{n\perp}}}
+\newcommand{\xtnn}{\boldsymbol{x_{n+1\perp}}}
+
+\newcommand{\xti}{\boldsymbol{x_{i\perp}}}
+\newcommand{\xtii}{\boldsymbol{x_{i+1\perp}}}
+\newcommand{\xtim}{\boldsymbol{x_{i-1\perp}}}
+
+\newcommand{\lti}{\boldsymbol{l_{i\perp}}}
+\newcommand{\ltii}{\boldsymbol{l_{i+1\perp}}}
+\newcommand{\ltim}{\boldsymbol{l_{i-1\perp}}}
+
+\newcommand{\ptk}{\boldsymbol{p_{k\perp}}}
+\newcommand{\ptone}{\boldsymbol{p_{1\perp}}}
+\newcommand{\pttwo}{\boldsymbol{p_{2\perp}}}
+\newcommand{\ptj}{\boldsymbol{p_{j\perp}}}
+\newcommand{\ktone}{\boldsymbol{k_{1\perp}}}
+\newcommand{\kttwo}{\boldsymbol{k_{2\perp}}}
+\newcommand{\ltone}{\boldsymbol{l_{1\perp}}}
+\newcommand{\lttwo}{\boldsymbol{l_{2\perp}}}
+\newcommand{\ltthre}{\boldsymbol{l_{3\perp}}}
+\newcommand{\Ltone}{\boldsymbol{L_{1\perp}}}
+\newcommand{\Lttwo}{\boldsymbol{L_{2\perp}}}
+\newcommand{\Gammat}{\boldsymbol{\Gamma_{\perp}}}
+\newcommand{\Ltthre}{\boldsymbol{L_{3\perp}}}
+\newcommand{\Lttwox}{\boldsymbol{L_{2x\perp}}}
+\newcommand{\Lttwoy}{\boldsymbol{L_{2y\perp}}}
+\newcommand{\Ltthrex}{\boldsymbol{L_{3x\perp}}}
+\newcommand{\Ltthrey}{\boldsymbol{L_{3y\perp}}}
+\newcommand{\wtone}{\boldsymbol{w_{1\perp}}}
+\newcommand{\wttwo}{\boldsymbol{w_{2\perp}}}
+\newcommand{\rtone}{\boldsymbol{r_{1\perp}}}
+\newcommand{\rttwo}{\boldsymbol{r_{2\perp}}}
+\newcommand{\ztone}{\boldsymbol{z_{1\perp}}}
+\newcommand{\zttwo}{\boldsymbol{z_{2\perp}}}
+\newcommand{\xtone}{\boldsymbol{x_{1\perp}}}
+\newcommand{\xttwo}{\boldsymbol{x_{2\perp}}}
+\newcommand{\rxyt}{\boldsymbol{r}_{xy}}
+\newcommand{\ryxt}{\boldsymbol{r}_{yx}}
+\newcommand{\rwyt}{\boldsymbol{r}_{wy}}
+\newcommand{\rwxt}{\boldsymbol{r}_{wx}}
+\newcommand{\rzxt}{\boldsymbol{r}_{zx}}
+\newcommand{\rzyt}{\boldsymbol{r}_{zy}}
+\newcommand{\rzytp}{\boldsymbol{r}_{z'y'}}
+\newcommand{\rxytp}{\boldsymbol{r}_{x'y'}}
+\newcommand{\rxxtp}{\boldsymbol{r}_{xx'}}
+\newcommand{\ryytp}{\boldsymbol{r}_{yy'}}
+\newcommand{\rxypt}{\boldsymbol{r}_{xy'}}
+\newcommand{\rzypt}{\boldsymbol{r}_{zy'}}
+\newcommand{\rzxpt}{\boldsymbol{r}_{zx'}}
+\newcommand{\rzxtp}{\boldsymbol{r}_{z'x'}}
+\newcommand{\rxpyt}{\boldsymbol{r}_{x'y}}
+\newcommand{\rwytp}{\boldsymbol{r}_{w'y'}}
+\newcommand{\et}{\vect{\epsilon}}
+
+\newcommand{\RtS}{\boldsymbol{R}_{\mathrm SE}}
+\newcommand{\RtV}{\boldsymbol{R}_{\mathrm V}}
+\newcommand{\RtR}{\boldsymbol{R}_{\mathrm R}}
+\newcommand{\RtRp}{\boldsymbol{R}_{\mathrm R'}}
+\newcommand{\RtSp}{\boldsymbol{R}_{\mathrm SE'}}
+\newcommand{\RtVp}{\boldsymbol{R}_{\mathrm V'}}
+
+
+\newcommand{\Nc}{N_c}
+\newcommand{\der}{\mathrm{d}}
+\newcommand{\dijet}{2\textrm{jet}}
+\newcommand{\Tr}{\mathrm{Tr}}
+
+
+\renewcommand{\arraystretch}{1.2}
+
+\newcommand{\FS}[1]{{\color{red} \bf FS: #1}}
+
+
+\begin{document}
+\maketitle
+
+
+
+% \begin{align}
+%     &\frac{\partial}{\partial \ln(1/x)} \frac{1}{N_c}\langle \Tr[V(\xt)V^\dagger(\yt)] \rangle_x \nonumber\\
+%     & =  \int \frac{\der^2 \zt}{2\pi} \Kcal(\zt,\xt,\yt) \left[  \frac{1}{N_c}\langle \Tr[V(\xt)V^\dagger(\zt)] \rangle_x \frac{1}{N_c}\langle \Tr[V(\zt)V^\dagger(\yt)]\rangle_x  - \frac{1}{N_c}\langle \Tr[V(\xt)V^\dagger(\yt)] \rangle_x \right]
+% \end{align}
+% \begin{align}
+%     \Kcal(\zt,\xt,\yt) = \frac{\alpha_s N_c}{\pi} \frac{(\xt-\yt)^2}{(\xt-\zt)^2 (\zt-\yt)^2}
+% \end{align}
+
+% Take $\yt \to \infty$:
+% \begin{align}
+%     &\frac{\partial}{\partial \ln(1/x)} \frac{1}{N_c}\langle \Tr[V(\xt)] \rangle_x \nonumber\\
+%     & =  \int \frac{\der^2 \zt}{2\pi} \frac{\alpha_s N_c}{\pi} \frac{1}{(\xt-\zt)^2} \left[  \frac{1}{N_c}\langle \Tr[V(\xt)V^\dagger(\zt)]\rangle_x  \frac{1}{N_c}\langle \Tr[V(\zt)]\rangle_x  - \frac{1}{N_c}\langle \Tr[V(\xt)] \rangle_x \right]
+% \end{align}
+
+% \newpage
+
+% The JIMWLK hamiltonian is given by
+% \begin{align}
+%     H_{\rm{LO}} = \frac{1}{2} \int \der^2 \ut \der^2 \vt \frac{\delta}{\delta A^{+,a}_{cl}(\ut)} \eta^{ab}(\ut,\vt) \frac{\delta}{\delta A^{+,b}_{cl}(\vt)} \label{eq:JIMWLK-Hamiltonian}
+% \end{align}
+% \begin{align}
+%     H_{LO,R} = \frac{1}{2} \int \der^2 \ut \der^2 \vt  \eta^{ab}(\ut,\vt) \frac{\delta}{\delta A^{+,a}_{cl}(\ut)} \frac{\delta}{\delta A^{+,b}_{cl}(\vt)} \label{eq:JIMWLK-Hamiltonian-real}
+% \end{align}
+% \begin{align}
+%     H_{LO,V} = \frac{1}{2} \int \der^2 \ut \der^2 \vt \left(\frac{\delta \eta^{ab}(\ut,\vt)}{\delta A^{+,a}_{cl}(\ut)}  \right) \frac{\delta}{\delta A^{+,b}_{cl}(\vt)} \label{eq:JIMWLK-Hamiltonian-virtual}
+% \end{align}
+% with 
+% \begin{align}
+%     \eta^{ab}(\ut,\vt)=\frac{1}{\pi}\int\frac{\der^2\zt}{(2\pi)^2}\frac{(\ut-\zt)(\vt-\zt)}{(\ut-\zt)^2(\vt-\zt)^2}[1+U^\dagger(\ut)U(\vt)-U^\dagger(\ut)U(\zt)-U^\dagger(\zt)U(\vt)]^{ab}
+% \end{align}
+% The action of the derivative is given by
+% \begin{align}
+%     \frac{\delta V(\xt)}{\delta A^{+,b}(\vt)} = -ig \delta_{xv} V(\xt) t^b
+% \end{align}
+% \begin{align}
+%     \frac{\delta^2 V(\xt)}{\delta A^{+,a}(\ut) \delta A^{+,b}(\vt)} = -ig \delta_{xv} \frac{\delta V(\xt)}{\delta A^{+,a}(\ut)} t^b = -g^2 \delta_{xv} \delta_{xu} V(\xt) t^a t^b
+% \end{align}
+% \subsection{Real}
+% We have
+% \begin{align}
+%     H_{LO,R} V(\xt) & = \frac{-g^2}{2} \int \der^2 \ut \der^2 \vt  \eta^{ab}(\ut,\vt) \delta_{xv} \delta_{xu} V(\xt) t^a t^b \\
+%     &= \frac{-g^2}{2}  \eta^{ab}(\xt,\xt) V(\xt) t^a t^b
+% \end{align}
+% Note
+% \begin{align}
+%     \eta^{ab}(\xt,\xt)=\frac{1}{\pi}\int\frac{\der^2\zt}{(2\pi)^2}\frac{1}{(\xt-\zt)^2}[2-U^\dagger(\xt)U(\zt)-U^\dagger(\zt)U(\xt)]^{ab}
+% \end{align}
+% \begin{align}
+%     H_{LO,R} V(\xt) & = \frac{-g^2}{2}  \frac{1}{\pi}\int\frac{\der^2\zt}{(2\pi)^2}\frac{1}{(\xt-\zt)^2}[2-U^\dagger(\xt)U(\zt)-U^\dagger(\zt)U(\xt)]^{ab} V(\xt) t^a t^b
+% \end{align}
+% Note
+% \begin{align}
+%    [U^\dagger(\zt)U(\xt)]^{ab}  t^a t^b & =(U^\dagger)^{ac}(\zt)U^{cb}(\xt) t^a t^b \\
+%    & =U^{ca}(\zt)U^{cb}(\xt) t^a t^b \\
+%    & = V^\dagger(\zt) t^c V(\zt) V^\dagger(\xt) t^c V(\xt)
+% \end{align}
+% then
+% \begin{align}
+%     &H_{LO,R} V(\xt) \nonumber \\
+%     & = \frac{-g^2}{2}  \frac{1}{\pi}\int\frac{\der^2\zt}{(2\pi)^2}\frac{1}{(\xt-\zt)^2} V(\xt) ( 2 C_F - V^\dagger(\xt) t^c V(\xt) V^\dagger(\zt) t^c V(\zt) - V^\dagger(\zt) t^c V(\zt) V^\dagger(\xt) t^c V(\xt) )
+% \end{align}
+% \begin{align}
+%     \Tr[V(\xt) V^\dagger(\xt) t^c V(\xt) V^\dagger(\zt) t^c V(\zt)] &= \Tr[t^c V(\xt) V^\dagger(\zt) t^c V(\zt)] \\
+%     & = \frac{1}{2}\Tr[V(\zt)] \Tr[ V(\xt) V^\dagger(\zt)] - \frac{1}{2N_c} \Tr[V(\xt)]
+% \end{align}
+% \begin{align}
+%     \Tr[V(\xt) V^\dagger(\zt) t^c V(\zt) V^\dagger(\xt) t^c V(\xt) ] =\frac{1}{2} \Tr[ V(\xt) V(\xt) V^\dagger(\zt)] \Tr[V(\zt) V^\dagger(\xt)] - \frac{1}{2N_c} \Tr[V(\xt)]
+% \end{align}
+% Thus
+% \begin{align}
+%     &H_{LO,R} \Tr[V(\xt)] = \frac{-g^2}{2}  \frac{1}{\pi}\int\frac{\der^2\zt}{(2\pi)^2} \frac{1}{(\xt-\zt)^2} \nonumber \\
+%     &  \left(N_c \Tr[V(\xt) ] - \frac{1}{2}\Tr[V(\zt)] \Tr[ V(\xt) V^\dagger(\zt)] - \frac{1}{2} \Tr[ V(\xt) V(\xt) V^\dagger(\zt)] \Tr[V(\zt) V^\dagger(\xt)] \right)
+% \end{align}
+
+% \subsection{Virtual}
+% The virtual part is computed in a similar fashion with the help of the following two identities:
+% \begin{align}
+%     \frac{1}{2} \int \der^2 \ut  \left(\frac{\delta \eta^{ab}(\ut,\vt)}{\delta A^{+,a}_{cl}(\ut)}  \right) = \frac{ig}{2\pi} \int \frac{\der^2 \zt}{(2\pi)^2} \frac{1}{(\vt-\zt)^2} \Tr\left[T^b U^\dagger(\vt) U(\zt) \right]
+% \end{align}
+
+% \begin{align}
+%     \Tr\left[T^a U^\dagger(\vt) U(\zt) \right] = \Tr[V^\dagger(\vt) V(\zt)t^a ] \Tr[V(\vt) V^\dagger(\zt)] - (v \leftrightarrow z) \label{eq:Tr-adjoint-to-fundamental}
+% \end{align}
+% Then
+% \begin{align}
+%     H_{LO,V} V(\xt) & = \frac{-ig }{2} \int \der^2 \ut \der^2 \vt \left(\frac{\delta \eta^{ab}(\ut,\vt)}{\delta A^{+,a}_{cl}(\ut)}  \right)  \delta_{xv} V(\xt) t^b \\
+%     & = \frac{-ig }{2} \int \der^2 \ut \left(\frac{\delta \eta^{ab}(\ut,\xt)}{\delta A^{+,a}_{cl}(\ut)}  \right)  V(\xt) t^b \\
+%     & = \frac{g^2}{2\pi} \int \frac{\der^2 \zt}{(2\pi)^2} \frac{1}{(\xt-\zt)^2} \Tr\left[T^b U^\dagger(\xt) U(\zt) \right]  V(\xt) t^b \\
+%     & = \frac{g^2}{2\pi} \int \frac{\der^2 \zt}{(2\pi)^2} \frac{1}{(\xt-\zt)^2} (\Tr[V^\dagger(\xt) V(\zt)t^b ] \Tr[V(\xt) V^\dagger(\zt)] - (x \leftrightarrow z) ) V(\xt) t^b
+% \end{align}
+% Note
+% \begin{align}
+%     \Tr[V^\dagger(\xt) V(\zt)t^b ] \Tr[ V(\xt) t^b] = \frac{1}{2} \Tr[V(\zt)] -\frac{1}{2N_c} \Tr[V^\dagger(\xt) V(\zt)] \Tr[ V(\xt)] 
+% \end{align}
+% \begin{align}
+%     \Tr[V^\dagger(\zt) V(\xt)t^b ] \Tr[ V(\xt) t^b] = \frac{1}{2} \Tr[V^\dagger(\zt) V(\xt) V(\xt)] -\frac{1}{2N_c} \Tr[V^\dagger(\zt) V(\xt)] \Tr[ V(\xt)] 
+% \end{align}
+% then
+% \begin{align}
+%     &H_{LO,V} V(\xt) 
+%     = \frac{g^2}{2\pi} \int \frac{\der^2 \zt}{(2\pi)^2} \frac{1}{(\xt-\zt)^2} \nonumber \\
+%     & \left(\frac{1}{2}\Tr[V(\zt)] \Tr[V(\xt) V^\dagger(\zt)] - \frac{1}{2}\Tr[V^\dagger(\zt) V(\xt) V(\xt)] \Tr[V(\zt) V^\dagger(\xt)]\right)
+% \end{align}
+% \subsection{Real + Virtual}
+% \begin{align}
+%     &H_{LO} \Tr[V(\xt)] = \frac{g^2 N_c }{2\pi}\int\frac{\der^2\zt}{(2\pi)^2} \frac{1}{(\xt-\zt)^2} \left( \frac{1}{N_c }\Tr[V(\zt)] \Tr[ V(\xt) V^\dagger(\zt)] -\Tr[V(\xt) ]  \right)
+% \end{align}
+% \begin{align}
+%     &H_{LO} \frac{1}{N_c } \Tr[V(\xt)] = \frac{\alpha_s N_c }{\pi}\int\frac{\der^2\zt}{2\pi} \frac{1}{(\xt-\zt)^2} \left( \frac{1}{N_c }\Tr[V(\zt)] \frac{1}{N_c } \Tr[ V(\xt) V^\dagger(\zt)] -\frac{1}{N_c } \Tr[V(\xt) ]  \right)
+% \end{align}
+
+% \newpage
+
+
+The differential cross-section for coherent vector meson production:
+\begin{align}
+    \frac{\der \sigma^{\gamma^* + A \to V + A}}{\der |t|}  = \frac{1}{16\pi} \left|\left\langle \mathcal{A} \right\rangle_\Omega\right|^2
+\end{align}
+Note
+\begin{align}
+    \der |t| = \der |\Deltat|^2 = 2 |\Deltat| \der |\Deltat| = \frac{1}{\pi}\der^2 \Deltat
+\end{align}
+Then we can write the differential cross-section as
+\begin{align}
+    \frac{\der \sigma^{\gamma^* + A \to V + A}}{\der^2 \Deltat}  = \frac{1}{16\pi^2} \left|\left\langle \mathcal{A} \right\rangle_\Omega\right|^2
+\end{align}
+\begin{align}
+    \sigma^{\gamma^* + A \to V + A}  = \frac{1}{16\pi^2} \int \der^2 \Deltat \left|\left\langle \mathcal{A} \right\rangle_\Omega\right|^2
+\end{align}
+Recall
+\begin{align}
+    \mathcal{A} = 2i\int \der^2 {\rt} \der^2 \bt  \frac{\der z}{4\pi} e^{-i \bt \cdot \Deltat} [\Psi_V^* \Psi_\gamma] (Q^2,\rt,z) N_\Omega(\rt,\bt,z,x)
+\end{align}
+where\footnote{Off-forward phase has been absorbed into the dipole coordinates}
+\begin{align}
+    N_\Omega(\rt,\bt,z,x) = 1-\frac{1}{N_c} \Tr\left[V(\bt + (1-z)\rt) V^\dagger(\bt - z\rt) \right]
+\end{align}
+Let us define
+\begin{align}
+    F(\bt,x) = \int \der^2 {\rt} \der z   [\Psi_V^* \Psi_\gamma] (Q^2,\rt,z) N_\Omega(\rt,\bt,z,x) 
+\end{align}
+Then
+\begin{align}
+    \mathcal{A} = i \int \frac{\der^2 \bt}  {2\pi} e^{-i \bt \cdot \Deltat} F(\bt,x)
+\end{align}
+Then
+\begin{align}
+    |\langle \mathcal{A} \rangle_{\Omega}|^2 &= \int \frac{\der^2 \bt}  {2\pi} e^{-i \bt \cdot \Deltat} \langle F(\bt,x) \rangle_{\Omega} \int \frac{\der^2 \bt'}  {2\pi} e^{i \bt' \cdot \Deltat} \langle F^{*}(\bt',x) \rangle_{\Omega}
+\end{align}
+The integral over $\Dt$ is trivial as it only appears on the phase giving a $(2\pi)^2\delta^{(2)}(\bt-\bt')$, we then integrate over $\bt'$
+\begin{align}
+    \int \der^2 \Dt |\langle \mathcal{A} \rangle_{\Omega}|^2 &= \int \der^2 \Dt 
+ \int \frac{\der^2 \bt}  {2\pi} e^{-i \bt \cdot \Deltat} \langle F(\bt,x) \rangle_{\Omega} \int \frac{\der^2 \bt'}  {2\pi} e^{i \bt' \cdot \Deltat} \langle F^{*}(\bt',x) \rangle_{\Omega} \\
+ & =  \int \der^2 \bt \langle F(\bt,x) \rangle_{\Omega} \langle F^{*}(\bt,x) \rangle_{\Omega} \nonumber \\
+ & = \int \der^2 \bt |\langle F(\bt,x) \rangle_{\Omega}|^2
+\end{align}
+Finally, we have
+\begin{align}
+    \sigma^{\gamma^* + A \to V + A}  = \frac{1}{16\pi^2} \int \der^2 \bt |\langle F(\bt,x) \rangle_{\Omega}|^2
+\end{align}
+where
+\begin{align}
+    F(\bt,x) = \int \der^2 {\rt} \der z   [\Psi_V^* \Psi_\gamma] (Q^2,\rt,z) N_\Omega(\rt,\bt,z,x) 
+\end{align}
+Event-by-event $F(\bt,x)$ might depend on the angle of $\bt$ but after average it only depends on $|\bt|$, so for a given $x$, $\langle F(|\bt|,x) \rangle_{\Omega}$ can be stored in a one-dimensional table. $\langle F(|\bt|,x) \rangle_{\Omega}$ should be a smooth function of $|\bt|$, it can be understood as an $x$-dependent "effective" thickness function \footnote{In the dilute limit in which $\langle N_\Omega(\rt,\bt,z,x) 
+\rangle_{\Omega} = \langle N_\Omega(\rt,x) \rangle_{\Omega} T(\bt)$, then $\langle F(\bt,x) \rangle_{\Omega} \propto T(\bt)$}.
+\begin{align}
+    \sigma^{\gamma^* + A \to V + A}  = \frac{1}{8\pi} \int |\bt| \der |\bt| |\langle F(|\bt|,x) \rangle_{\Omega}|^2
+\end{align}
+Then the total coherent cross-section is computed from a one-dimensional integral over $|\bt|$.
+
+In order to compute the incoherent cross section, one has to store $F(|\bt|,\theta)$ for every configuration and compute
+The incoherent cross-section is
+\begin{align}
+    \sigma^{\gamma^* + A \to V + A^*}  = \frac{1}{16\pi^2} \int \der^2 \bt \Big[\langle |F(\bt,x) |^2 \rangle_{\Omega} -  |\langle F(\bt,x) \rangle_{\Omega} |^2  
+ \Big].
+\end{align}
+
+
+\end{document}
