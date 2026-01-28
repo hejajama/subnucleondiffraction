@@ -8,26 +8,8 @@
 #include "diffraction.hpp"
 #include "subnucleon_config.hpp"
 #include "virtual_photon.hpp"
-#include "gauss_boost.hpp"
-
-//#include "src/wilsonline.hpp"
 
 using namespace std;
-/*
-int main()
-{
-std::vector < std::vector < std::complex<double> > > data;
-
-vector <complex<double> > l1; 
-vector <complex< double > > l2;
-vector <complex < double > > l3;
-
-l1.push_back(1);
-l1.push_back(2 + 1i);
-l1.push_back(-1-4i);
-
-}
-*/
 
 #include "unit_test_framework.hpp"
 
@@ -49,7 +31,6 @@ TEST(vector_class) {
 TEST(forward_jpsi_amplitude_ipsat_mzwf)
 {
     global_rng = gsl_rng_alloc(gsl_rng_default);
-    FACTORIZE_ZINT=false;
     BoostedGauss wf("gauss-boosted_mzsat.dat");
     Ipsat_Proton proton(MZSAT);
     proton.SetProtonWidth(0);
@@ -59,7 +40,7 @@ TEST(forward_jpsi_amplitude_ipsat_mzwf)
     Diffraction diff(proton, wf);
 
     double xp=1e-3; double Qsqr=10; double t=0.1;
-    MCINTPOINTS=3e6;
+    diff.SetMCIntPoints(3e6);
     ASSERT_ALMOST_EQUAL(diff.ScatteringAmplitude(xp, Qsqr, t, T).real(),0.04884376518,1e-3); 
 }
 
@@ -74,11 +55,11 @@ TEST(structure_function_ipsat)
     proton.InitializeTarget();
     Diffraction f2(proton, photon);
 
-    FACTORIZE_ZINT=true;
+    f2.SetFactorizeZInt(true);
     double xbj=1e-3, Qsqr=2;
 
     photon.SetQuark(LIGHT, 0.03);
-    MCINTPOINTS=7e4;
+    f2.SetMCIntPoints(7e4);
 
     // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
     double xs_t = f2.ScatteringAmplitude(xbj, Qsqr, 0, T).real();
@@ -223,7 +204,6 @@ TEST(gauss_boosted_normalization_upsilon_3s)
 TEST(totxs_directly_vs_integrate_dsigma_dt)
 {
     global_rng = gsl_rng_alloc(gsl_rng_default);
-    FACTORIZE_ZINT=false;
     BoostedGauss wf("gauss-boosted_mzsat.dat");
     Ipsat_Proton proton(MZNONSAT); // Nonsat, so we get exp(-B|t|) behavior
     double B=4.0; // GeV^-2
@@ -234,11 +214,15 @@ TEST(totxs_directly_vs_integrate_dsigma_dt)
     Diffraction diff(proton, wf);
 
     double xp=1e-3; double Qsqr=10;
-    MCINTPOINTS=3e5;
+    diff.SetMCIntPoints(3e5);
 
 
-    double dsdt0 = std::norm(diff.ScatteringAmplitude(xp, Qsqr, 0, T))/(16.0*M_PI);
-    double totxs_from_dsdt0 = dsdt0 /B ; // since we have exp(-B*t) behavior
+    double dsdt0_T = std::norm(diff.ScatteringAmplitude(xp, Qsqr, 0, T))/(16.0*M_PI);
+    double totxs_from_dsdt0_T = dsdt0_T /B ; // since we have exp(-B*t) behavior
+
+    double dsdt0_L = std::norm(diff.ScatteringAmplitude(xp, Qsqr, 0, L))/(16.0*M_PI);
+    double totxs_from_dsdt0_L = dsdt0_L /B ; 
+    
    
     // The next test (commented out) integrates the t spectra to get the cross section
     // To speed up this test, it is commented out by default. Note that only in the case of 
@@ -269,7 +253,7 @@ TEST(totxs_directly_vs_integrate_dsigma_dt)
     gsl_integration_workspace_free(w);
         
     
-    ASSERT_ALMOST_EQUAL(totalxs_integrated, totxs_from_dsdt0, 1e-7);
+    ASSERT_ALMOST_EQUAL(totalxs_integrated, totxs_from_dsdt0_T, 1e-7);
     */
 
 
@@ -282,12 +266,12 @@ TEST(totxs_directly_vs_integrate_dsigma_dt)
         double b;
         double (*integrand_theta_2d)(double, void*);
         gsl_integration_workspace* w_theta;
+        Polarization pol;
     };
 
     auto integrand_theta_2d = [](double theta, void* params) -> double {
         IntegrandParams2D* p = static_cast<IntegrandParams2D*>(params);
-        std::complex<double> amp_f = p->diff->ScatteringAmplitudeF(p->xpom, p->Qsqr, p->b, theta, T);
-        //cout << "Evaluated " << amp_f << " at b=" << p->b << " theta=" << theta << endl;
+        std::complex<double> amp_f = p->diff->ScatteringAmplitude_tIntegrated(p->xpom, p->Qsqr, p->b, theta, p->pol);
         return std::norm(amp_f);
     };
 
@@ -324,19 +308,20 @@ TEST(totxs_directly_vs_integrate_dsigma_dt)
     F_b.params = &params_2d;
 
     gsl_integration_workspace* w_b = gsl_integration_workspace_alloc(INT_SUBIDVS);
-    double result_2d, error_2d;
-    gsl_integration_qag(&F_b, 0, 14.0, 0, INTACC, INT_SUBIDVS, GSL_INTEG_GAUSS15, w_b, &result_2d, &error_2d);
+    params_2d.pol = T;
+    double result_2d_T, error_2d_T;
+    double result_2d_L, error_2d_L;
+    gsl_integration_qag(&F_b, 0, 14.0, 0, INTACC, INT_SUBIDVS, GSL_INTEG_GAUSS15, w_b, &result_2d_T, &error_2d_T);
+    params_2d.pol = L;
+    gsl_integration_qag(&F_b, 0, 14.0, 0, INTACC, INT_SUBIDVS, GSL_INTEG_GAUSS15, w_b, &result_2d_L, &error_2d_L);
     gsl_integration_workspace_free(w_b);
     gsl_integration_workspace_free(params_2d.w_theta);
 
-    double cohxs = result_2d/(16.0*M_PI*M_PI);
+    double cohxs_T = result_2d_T/(16.0*M_PI*M_PI);
+    double cohxs_L = result_2d_L/(16.0*M_PI*M_PI);
 
-    //cout << "Integrated ScatteringAmplitudeF^2 over b and theta: " << cohxs << endl;
-    //cout << "from dsimga/dt(t=0)" << totxs_from_dsdt0 << endl;
-
-    cout << "Note: ratio between total cross section computed directly from ScatteringAmplitudeF and from dsigma/dt(t=0): " << totxs_from_dsdt0 / cohxs  << endl;
-
-    ASSERT_ALMOST_EQUAL(cohxs, totxs_from_dsdt0, 1e-6);
+    ASSERT_ALMOST_EQUAL(cohxs_T, totxs_from_dsdt0_T, std::min(cohxs_T,totxs_from_dsdt0_T)/1e2);
+    ASSERT_ALMOST_EQUAL(cohxs_L, totxs_from_dsdt0_L, std::min(cohxs_L,totxs_from_dsdt0_L)/1e2);
 
 }
 

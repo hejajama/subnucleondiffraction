@@ -19,16 +19,21 @@ class Diffraction
 public:
     Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_);
     
-    // Calculate amplitude A, this will later be averaged and squared
+    // Scattering amplitude, integrated over b, r, z
+    // See docs/t_integrated_vm_production for definition
+    // Note: t is taken to be positive
     std::complex<double> ScatteringAmplitude(double xpom, double Qsqr, double t,
         Polarization pol=T);
-    // Forward amplitude at t=0 integrating over theta_b internally (Suave vector integration)
-    std::complex<double> ScatteringAmplitudeF(double xpom, double Qsqr, double b,
-        double theta_b, Polarization pol=T);
-
     std::complex<double> ScatteringAmplitudeIntegrand(double xpom, double Qsqr, double t,
         double r, double theta_r, double b, double theta_b, double z,
-        Polarization pol=T);
+        Polarization pol=T);    
+
+    // Scattering amplitude integrated over t at fixed b
+    // See docs/t_integrated_vm_production for definition
+    std::complex<double> ScatteringAmplitude_tIntegrated(double xpom, double Qsqr, double b,
+        double theta_b, Polarization pol=T);
+
+    
 
     // Calculate scattering amplitude in case of cylinderical cymmetry (e.g. ipsat with no constituent quarks)
     double ScatteringAmplitudeRotationalSymmetry(double xpom, double Qsqr, 
@@ -60,7 +65,11 @@ public:
 
     TotalCrossSectionData ComputeTotalCrossSection(double xpom, double Qsqr,
         int nbperp, double maxb, int ntheta);
-	
+    
+    void SetFactorizeZInt(bool fz) { factorize_zint = fz; } 
+    bool GetFactorizeZInt() const { return factorize_zint; }
+    void SetMCIntPoints(unsigned int points) { mcintpoints = points; }
+    unsigned int GetMCIntPoints() const { return mcintpoints; }
 
 private:
     double MAXR;
@@ -70,7 +79,10 @@ private:
     double zlimit;
     
     double beta;
-    double show_vegas_iterations;
+
+    bool factorize_zint = false;
+
+    unsigned int mcintpoints = 1e5;
     
 };
 #endif /* diffraction_hpp */

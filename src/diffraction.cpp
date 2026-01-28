@@ -32,7 +32,6 @@ Diffraction::Diffraction(DipoleAmplitude& dipole_, WaveFunction& wavef_)
     wavef=&wavef_;
     zlimit=0.00000001;
 	MAXR=10*5.068;
-    show_vegas_iterations=true;
 }
 
 
@@ -116,7 +115,7 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
         1e-10,
         MAXR,
         zlimit,
-        FACTORIZE_ZINT,
+        factorize_zint,
         pol
     };
     auto integrand = [](const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* ud)->int {
@@ -171,7 +170,8 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
         
         
         // Quark coordinates
-        // Note: as b is the center of the dipole, not the center-of-mass, no z factors here
+        // Note: as b is the center of the dipole, not the center-of-mass, no z factors here, 
+        // but instead we have the off-forward phase below
         double qx, qy, qbarx, qbary;
         qx = bx + 0.5*rx; qy = by + 0.5*ry;
         qbarx = bx - 0.5*rx; qbary = by - 0.5*ry;
@@ -194,12 +194,12 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
         f[1] = J * measure_r * static_cast<cubareal>(val.imag());
         return 0;
     };
-    const int ndim = FACTORIZE_ZINT ? 4 : 5;
+    const int ndim = factorize_zint ? 4 : 5;
     const int ncomp = 2;
     int nregions=0, neval=0, fail=0; double integral[2], error[2], prob[2];
     const int nvec = 1; const double epsrel = MCINTACCURACY, epsabs = 0.0;
     const int flags = 0, seed = 0;
-    const int mineval = MCINTPOINTS/10; const int maxeval = MCINTPOINTS;
+    const int mineval = mcintpoints/10; const int maxeval = mcintpoints;
     const int nnew = mineval/20, nmin = 300; const double flatness = 1.0;
     Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed,
         mineval, maxeval, nnew, nmin, flatness,
@@ -207,7 +207,7 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
     return std::complex<double>(integral[0], integral[1]);
 }
 
-std::complex<double> Diffraction::ScatteringAmplitudeF(
+std::complex<double> Diffraction::ScatteringAmplitude_tIntegrated(
     double xpom, double Qsqr, double b, double theta_b, Polarization pol) {
     struct SuaveParams {
         Diffraction* diff;
@@ -230,7 +230,7 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         zlimit,
         1e-10,
         MAXR,
-        FACTORIZE_ZINT,
+        factorize_zint,
         pol
     };
     auto integrand = [](const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *ud)->int{
@@ -264,7 +264,6 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
                     scalar *= prm->diff->wavef->PsiSqr_L_intz(prm->Q2, r);
             }
         } else {
-            const double inv4pi = 1.0/(4.0*M_PI);
             if (prm->pol == T)
                 scalar *= prm->diff->wavef->PsiSqr_T(prm->Q2, r, z);
             else
@@ -296,28 +295,28 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         //  theta_r: 2pi  (in J)
         //  u = ln r mapping: u = umin + (umax-umin)*xu gives width (umax-umin) in J and dr = r du adds extra r
         //  optional z: width (1 - 2 zmin) in J
-        // scalar currently includes factor 2*r * overlap; needs extra r from dr=r du
-        const double measure_r = r; // from dr = r du
+        // scalar currently includes factor r * overlap; needs extra r from dr=r du
+        const double measure_u_r = r; // u = ln r
         // Components: real, imag
-        f[0] = J * measure_r * scalar * amp_r; // real part
-        f[1] = J * measure_r * scalar * amp_i; // imag part
+        f[0] = J * measure_u_r * scalar * amp_r; // real part
+        f[1] = J * measure_u_r * scalar * amp_i; // imag part
         return 0;
     };
 
-    if (FACTORIZE_ZINT)
+    if (factorize_zint)
     {   
-        cerr << "FACTORIZE_ZINT in ScatteringAmplitudeF has not been tested" << endl;
+        cerr << "factorize_zint in ScatteringAmpltiude_tIntegrated has not been tested" << endl;
         exit(1);
     }
 
-    const int ndim = FACTORIZE_ZINT ? 2 : 3;
+    const int ndim = factorize_zint ? 2 : 3;
     const int ncomp = 2; // real, imag
     int nregions=0, neval=0, fail=0;
     double integral[2], error[2], prob[2];
     const int nvec = 1;
     const double epsrel = MCINTACCURACY, epsabs = 0.0;
     const int flags = 0, seed = 0;
-    const int mineval = MCINTPOINTS/10; const int maxeval = MCINTPOINTS;
+    const int mineval = mcintpoints/10; const int maxeval = mcintpoints;
     const int nnew = mineval/20, nmin = 300; const double flatness = 1.0;
 
     Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed,
@@ -351,10 +350,10 @@ Diffraction::TotalCrossSectionData Diffraction::ComputeTotalCrossSection(
             const double thetaval = out.theta[it];
             // T polarization (vector integration returns real & imag)
             double int_modsq_T = 0.0;
-            out.F_T[idx] = ScatteringAmplitudeF(xpom, Qsqr, bval, thetaval, T);
+            out.F_T[idx] = ScatteringAmplitude_tIntegrated(xpom, Qsqr, bval, thetaval, T);
             if (Qsqr > 0) {
                 double int_modsq_L = 0.0;
-                out.F_L[idx] = ScatteringAmplitudeF(xpom, Qsqr, bval, thetaval, L);
+                out.F_L[idx] = ScatteringAmplitude_tIntegrated(xpom, Qsqr, bval, thetaval, L);
             }
         }
     }

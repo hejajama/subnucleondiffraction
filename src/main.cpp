@@ -53,7 +53,7 @@ enum WAVEF
     NRQCD
 };
 
-std::string InfoStr(MODE mode);
+std::string InfoStr(MODE mode, const Diffraction& diff);
 
 vector<double> NRQCD_parameters_from_file(int id);
 
@@ -91,6 +91,8 @@ int main(int argc, char* argv[])
 
     bool ipglasma=false;
     bool periodic_boundary_conditions=false;
+    bool factorize_zint=false;
+    unsigned int mcintpoints = 1e5;
 
     // nrqcd parameters
     double NRQCD_A=0.213;
@@ -141,7 +143,7 @@ int main(int argc, char* argv[])
                     auto_mcintpoints = true;
             }
             if (!auto_mcintpoints)
-                MCINTPOINTS = StrToReal(argv[i+1]);
+                mcintpoints = StrToReal(argv[i+1]);
         }
         else if (string(argv[i])=="-Q2")
             Qsqr = StrToReal(argv[i+1]);
@@ -360,7 +362,10 @@ int main(int argc, char* argv[])
             NRQCD_B = params[1];
         }
         else if (string(argv[i])=="-periodic_boundary_conditions")
+        {
             periodic_boundary_conditions=true;
+            cerr <<"# WARNING: Using periodic boundary conditions, this is only for testing purposes, you probably don't want to do this!" << endl;
+        }
      else if (string(argv[i]).substr(0,1)=="-")
         {
             cerr << "Unknown parameter " << argv[i] << endl;
@@ -407,7 +412,7 @@ int main(int argc, char* argv[])
     else if (wavef_model == NRQCD)
     {
         wavef = new NRQCD_WF(NRQCD_A, NRQCD_B);
-        FACTORIZE_ZINT=true;
+        factorize_zint=true;
         cout << "# " << *(NRQCD_WF*)wavef << endl;
     }
     else if (wavef_model == DVCS)
@@ -443,9 +448,9 @@ int main(int argc, char* argv[])
 
     Diffraction diff(*amp, *wavef);
     diff.SetMaxR(maxr*5.068);
+    diff.SetFactorizeZInt(factorize_zint);
 
-    cout << "# " << InfoStr(mode) << endl;
-    //cout << "# " << *wavef << endl;
+    cout << "# " << InfoStr(mode,diff) << endl; 
 
     double mp = 0.938;
     double meson_mass = wavef->MesonMass();
@@ -547,7 +552,7 @@ int main(int argc, char* argv[])
             }
             
             if(auto_mcintpoints)
-                MCINTPOINTS = MCpoints(t);
+                diff.SetMCIntPoints( MCpoints(t));
             
             cout.precision(5);
             std::complex<double> trans = diff.ScatteringAmplitude(xpom, Qsqr, t, T);
@@ -629,7 +634,6 @@ int main(int argc, char* argv[])
 
     else if (mode == F2)
     {
-        FACTORIZE_ZINT=true;
         cout << "#F2(Qsqr=" << Qsqr << ", xbj=" << xbj << "): light charm tot F_L(light) F_L(charm) F_L(tot)" << endl;
         double orig_x = xbj;
         WaveFunction * photon = new VirtualPhoton();;
@@ -639,6 +643,7 @@ int main(int argc, char* argv[])
         amp->SetSkewedness(false);
         Diffraction f2(*amp, *photon);
        	f2.SetMaxR(maxr*5.068);
+        f2.SetFactorizeZInt(true);
         cout << "#Maxr = " << f2.MaxR() << endl;
         // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
         // Note* 4pi, as convention in BoostedGaussian and VirtualPhoton classes are different!!!
@@ -694,18 +699,20 @@ int main(int argc, char* argv[])
 }
 
 
-string InfoStr(MODE mode)
+string InfoStr(MODE mode, const Diffraction& diff)
 {
     stringstream info;
 
-    info << "Parameters: MCINTPOINTS: " << MCINTPOINTS << " ZINT_INTERVALS " << ZINT_INTERVALS << " MCINTACCURACY " << MCINTACCURACY << " ZINT_RELACCURACY " << ZINT_RELACCURACY;
+    info << "Parameters: MCINTPOINTS: " << diff.GetMCIntPoints() <<  " MCINTACCURACY " << MCINTACCURACY << " ";
     info << ". Integration method Suave ";
 
     info << endl << amp->InfoStr();
 
-    if (FACTORIZE_ZINT)
+
+    if (diff.GetFactorizeZInt())
         info <<"# z integral factorized";
-    else info << "# z integral not factorized";
+    else 
+        info << "# z integral not factorized";
 
     return info.str();
 }

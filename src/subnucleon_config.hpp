@@ -20,17 +20,6 @@ const double JPSI_MASS = 3.0969;
 const double FMGEV = 5.068;
 const double HBARC = 0.197327053; // GeV fm
 
-extern bool FACTORIZE_ZINT;   // if true, we neglect exp[(1-z)r.Delta] coupling and
-    // the only z dependence is in the wave function 
-
-extern int MCINTPOINTS ;
-
-enum PROCESS
-{
-    COHERENT,
-    INCOHERENT
-};
-
 
 // Globar random number generator - avoid initializing it mulitple times
 #include <gsl/gsl_rng.h>
