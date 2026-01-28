@@ -123,10 +123,6 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
         SAParams* prm = static_cast<SAParams*>(ud);
         const double twoPi = 2.0*M_PI;
         const bool fact = prm->fact;
-                if (fact)
-        {
-            cout << "NOTE! Using factorized z integration in ScatteringAmplitudeF!" << endl;
-        }
         // Unpack Cuba randoms
         const double xb = x[0];                // b in [0,1]
         const double xu = x[1];                // u=ln r in [0,1]
@@ -253,8 +249,7 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         const double r = std::exp(u);
         const double z = fact ? 0.5 : (prm->zmin + (1.0 - 2.0*prm->zmin) * xz);
         // Common factors
-        // r from Jacobians, 2 as we have written sigma_qq = 2 N
-        double scalar = 2.0 * r; // r from Jacobian (du->dr adds r)
+        double scalar = r; // r from Jacobian (du->dr adds r)
         if (fact) {
             if (prm->diff->wavef->WaveFunctionType() == "NRQCD") {
                 double delta = 0.0; // t=0
@@ -271,15 +266,11 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         } else {
             const double inv4pi = 1.0/(4.0*M_PI);
             if (prm->pol == T)
-                scalar *= prm->diff->wavef->PsiSqr_T(prm->Q2, r, z) * inv4pi;
+                scalar *= prm->diff->wavef->PsiSqr_T(prm->Q2, r, z);
             else
-                scalar *= prm->diff->wavef->PsiSqr_L(prm->Q2, r, z) * inv4pi;
+                scalar *= prm->diff->wavef->PsiSqr_L(prm->Q2, r, z);
         }
-        // Recall quark and gluon positions:
-        // Quark: b + zr
-        // Antiquark: b - (1-z) r
-        // If do like Lappi, Mantysaari: set z=1/2 here
-        // Dipole amplitude
+       
         const double cos_tb = std::cos(theta_b_int);
         const double sin_tb = std::sin(theta_b_int);
         const double cos_tr = std::cos(theta_r);
@@ -289,8 +280,7 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         double rx = r * cos_tr;
         double ry = r * sin_tr;
         // q and antiq positions
-        // Note my convention is that b is the center of the dipole (geometric center), not center of mass (z weighted)
-        // Consequently I get (0.5-z)r. Delta phase
+        // Note: no off forward phase, instead b is the center-of-mass of the dipole
         double qx = bx + (1. - z) * rx;
         double qy = by + (1. - z) * ry;
         double qbarx = bx - z * rx;
@@ -314,6 +304,12 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
         return 0;
     };
 
+    if (FACTORIZE_ZINT)
+    {   
+        cerr << "FACTORIZE_ZINT in ScatteringAmplitudeF has not been tested" << endl;
+        exit(1);
+    }
+
     const int ndim = FACTORIZE_ZINT ? 2 : 3;
     const int ncomp = 2; // real, imag
     int nregions=0, neval=0, fail=0;
@@ -323,6 +319,7 @@ std::complex<double> Diffraction::ScatteringAmplitudeF(
     const int flags = 0, seed = 0;
     const int mineval = MCINTPOINTS/10; const int maxeval = MCINTPOINTS;
     const int nnew = mineval/20, nmin = 300; const double flatness = 1.0;
+
     Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed,
         mineval, maxeval, nnew, nmin, flatness,
         NULL, NULL, &nregions, &neval, &fail, integral, error, prob);
