@@ -449,6 +449,7 @@ int main(int argc, char* argv[])
     Diffraction diff(*amp, *wavef);
     diff.SetMaxR(maxr*5.068);
     diff.SetFactorizeZInt(factorize_zint);
+    diff.SetMCIntPoints(mcintpoints);
 
     cout << "# " << InfoStr(mode,diff) << endl; 
 
