@@ -8,6 +8,7 @@
 #include "diffraction.hpp"
 #include "subnucleon_config.hpp"
 #include "virtual_photon.hpp"
+#include "wilsonline.hpp"
 
 using namespace std;
 
@@ -26,6 +27,37 @@ TEST(vector_class) {
     ASSERT_ALMOST_EQUAL((v1+v2).GetX(), 6, eps)
     ASSERT_ALMOST_EQUAL((v1+v2*(-4)).GetY(), 2+(-1)*(-4), eps)
     ASSERT_ALMOST_EQUAL(v1.Len(), std::sqrt(1*1+2*2),eps);
+}
+
+TEST(Wilson_line_class)
+{
+    WilsonLine w1;
+    w1.Set(0,0,1.0);
+    w1.Set(0,1,1.0);
+    w1.Set(0,2,std::complex<double>(1,-1));
+    w1.Set(1,0,std::complex<double>(0,1));
+    w1.Set(1,1,2.0);
+    w1.Set(1,2,std::complex<double>(-1,2));
+    w1.Set(2,0,0.0);
+    w1.Set(2,1,1.0);
+    w1.Set(2,2,std::complex<double>(0,1));
+
+
+    WilsonLine w2 = w1.HermitianConjugate(); // Internally  ComplexConjugate().Transpose();
+
+    ASSERT_ALMOST_EQUAL(w2(0,0).real(),1.0,1e-7);
+    ASSERT_ALMOST_EQUAL(w2(0,1).real(),0, 1e-7);
+    ASSERT_ALMOST_EQUAL(w2(0,1).imag(),-1, 1e-7);
+    ASSERT_ALMOST_EQUAL(w2(0,2).imag(),0.0,1e-7);
+    ASSERT_ALMOST_EQUAL(w2(1,0).real(),1,1e-7);
+    ASSERT_ALMOST_EQUAL(w2(1,0).imag(),0,1e-7);
+    ASSERT_ALMOST_EQUAL(w2(2,2).imag(),-1.0,1e-7);
+    ASSERT_ALMOST_EQUAL(w2(2,1).real(),-1.0,1e-7);
+    ASSERT_ALMOST_EQUAL(w2(2,1).imag(),-2,1e-7);
+
+    ASSERT_ALMOST_EQUAL(w1.Trace().real(),3.0,1e-7);
+    ASSERT_ALMOST_EQUAL(w1.Trace().imag(),1.0,1e-7);
+    
 }
 
 TEST(forward_jpsi_amplitude_ipsat_mzwf)
