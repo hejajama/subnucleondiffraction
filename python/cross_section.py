@@ -7,6 +7,7 @@ The format changed in 11/2024. By default the new format is used.
 Heikki Mäntysaari <heikki.mantysaari@jyu.fi>
 '''
 
+import os
 import numpy as np
 import scipy
 from typing import Tuple
@@ -46,7 +47,7 @@ def CoherentCrossSection(dirname:str,minconf:int=0,maxconf:int=250, amplitude:bo
                          polarization:str="T", show_warnings=True, return_integrated: bool = False,
                          integration_method: str = "simpson") -> tuple:
     '''Coherent cross section in mb, imaginary part neglected
-    Returns tvals [GeV^2], dsigma/dt [mb/GeV^2], staterrr
+    Returns tvals [GeV^2], dsigma/dt [mb/GeV^2], staterrr, number of configurations included
 
     polarization: T or L (transverse, longitudinal)
     
@@ -64,17 +65,17 @@ def CoherentCrossSection(dirname:str,minconf:int=0,maxconf:int=250, amplitude:bo
     for i in range(minconf,maxconf+1):
         #try:
         if file_format == "old":
-            fn=dirname+"/real/spectra_"+str(i)
-            if polarization=="T":
-                column=1
-            elif polarization=="L":
-                column=2
+            fn = os.path.join(dirname, "real", "spectra_" + str(i))
+            if polarization == "T":
+                column = 1
+            elif polarization == "L":
+                column = 2
         else:
-            fn=dirname+"spectra_"+str(i)
-            if polarization=="T":
-                column=1
-            elif polarization=="L":
-                column=3
+            fn = os.path.join(dirname, "spectra_" + str(i))
+            if polarization == "T":
+                column = 1
+            elif polarization == "L":
+                column = 3
 
         try:
             dat=np.loadtxt(fn)
@@ -139,7 +140,7 @@ def CoherentCrossSection(dirname:str,minconf:int=0,maxconf:int=250, amplitude:bo
         return tvals, xs, staterr
 
     int_xs, int_err = _integrate_with_uncertainty(xs, staterr, tvals, method=integration_method)
-    return tvals, xs, staterr, int_xs, int_err
+    return tvals, xs, staterr, int_xs, int_err, len(xsvals)
     
 
 def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400, 
@@ -147,7 +148,7 @@ def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400,
                            show_warnings=True, return_integrated: bool = False,
                            integration_method: str = "simpson") -> tuple:
     '''Coherent cross section in mb
-    Returns tvals [GeV^2], dsigma/dt [mb/GeV^2], staterrr
+    Returns tvals [GeV^2], dsigma/dt [mb/GeV^2], staterrr, number of configurations included
     
     polarization: T or L (transverse, longitudinal)
     
@@ -164,13 +165,13 @@ def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400,
     data_i = []
     for i in range(minconf, maxconf + 1):  
         if file_format == "old":
-            fn = dirname + "/real/spectra_" + str(i)
+            fn = os.path.join(dirname, "real", "spectra_" + str(i))
             if polarization == "T":
                 column = 1
             elif polarization == "L":
                 column = 2
         else:
-            fn = dirname + "/spectra_" + str(i)
+            fn = os.path.join(dirname, "spectra_" + str(i))
             if polarization == "T":
                 column = 1
             elif polarization == "L":
@@ -214,9 +215,9 @@ def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400,
         if file_format == "old":
             ## imag
             try:
-                tmpdata_i = np.loadtxt(dirname + "/imag/spectra_" + str(i))
+                tmpdata_i = np.loadtxt(os.path.join(dirname, "imag", "spectra_" + str(i)))
             except IOError:
-                print("File ", dirname + "/imag/spectra_" + str(i), " does not exist, but real part was there, RESULTS MAY NOT MAKE SENSE")
+                print("File ", os.path.join(dirname, "imag", "spectra_" + str(i)), " does not exist, but real part was there, RESULTS MAY NOT MAKE SENSE")
                 return np.array([]), np.array([]), np.array([])
         
             if len(tmpdata_i) == 0:
@@ -239,15 +240,27 @@ def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400,
 
     data_r = np.array(data_r)
     data_i = np.array(data_i)
+
+    nconfigs = len(data_r)
+    if nconfigs < 2:
+        raise ValueError(
+            "IncoherentCrossSection requires at least two valid configurations "
+            "to estimate the uncertainty; found " + str(nconfigs)
+        )
+
+    # Split the configurations that were actually read.  ``maxconf`` is only
+    # an upper file-index limit, and may be much larger than nconfigs when
+    # files are absent or skipped.
+    split = nconfigs // 2
     
     if file_format == "old":
         var = np.var(data_r[:, :, column], axis=0) + np.var(data_i[:, :, column], axis=0)
-        halfvar1 = np.var(data_r[0:maxconf // 2, :, column], axis=0) + np.var(data_i[0:maxconf // 2, :, column], axis=0)
-        halfvar2 = np.var(data_r[maxconf // 2:, :, column], axis=0) + np.var(data_i[maxconf // 2:, :, column], axis=0)
+        halfvar1 = np.var(data_r[:split, :, column], axis=0) + np.var(data_i[:split, :, column], axis=0)
+        halfvar2 = np.var(data_r[split:, :, column], axis=0) + np.var(data_i[split:, :, column], axis=0)
     else:
         var = np.var(data_r[:, :, column], axis=0) + np.var(data_r[:, :, column + 1], axis=0)
-        halfvar1 = np.var(data_r[0:maxconf // 2, :, column], axis=0) + np.var(data_r[0:maxconf // 2, :, column + 1], axis=0)
-        halfvar2 = np.var(data_r[maxconf // 2:, :, column], axis=0) + np.var(data_r[maxconf // 2:, :, column + 1], axis=0)
+        halfvar1 = np.var(data_r[:split, :, column], axis=0) + np.var(data_r[:split, :, column + 1], axis=0)
+        halfvar2 = np.var(data_r[split:, :, column], axis=0) + np.var(data_r[split:, :, column + 1], axis=0)
 
     err1 = np.abs(halfvar1 - var)
     err2 = np.abs(halfvar2 - var)
@@ -260,7 +273,7 @@ def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400,
         return tvals, xs, staterr
 
     int_xs, int_err = _integrate_with_uncertainty(xs, staterr, tvals, method=integration_method)
-    return tvals, xs, staterr, int_xs, int_err
+    return tvals, xs, staterr, int_xs, int_err, nconfigs
     
 
 ######### Kinematics
@@ -400,14 +413,14 @@ if __name__ == "__main__":
     dirname = args.dir
     maxconf = args.maxconf
 
-    tvals_coh, xs_coh, staterr_coh, int_coh, int_coh_err = CoherentCrossSection(
+    tvals_coh, xs_coh, staterr_coh, int_coh, int_coh_err, nev = CoherentCrossSection(
         dirname, maxconf=maxconf, return_integrated=True
     )
-    tvals_incoh, xs_incoh, staterr_incoh, int_incoh, int_incoh_err = IncoherentCrossSection(
+    tvals_incoh, xs_incoh, staterr_incoh, int_incoh, int_incoh_err, nev = IncoherentCrossSection(
         dirname, maxconf=maxconf, return_integrated=True
     )
 
-    print("# Cross sections at W="+str(WFromSteps(steps=args.steps, meson="jpsi", ds=args.ds))+" GeV")
+    print("# Cross sections, events included:", nev)
     print("# t [GeV^2] cohxs [mb/GeV^2] staterr_coh [mb/GeV^2] incohxs [mb/GeV^2] staterr_incoh [mb/GeV^2]")
     for t, cohxs, cohxserr, incohxs, incohxserr in zip(tvals_coh, xs_coh, staterr_coh, xs_incoh, staterr_incoh):
         print(t, cohxs, cohxserr, incohxs, incohxserr)

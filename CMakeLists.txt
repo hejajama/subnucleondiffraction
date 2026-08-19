@@ -11,6 +11,10 @@ set(CMAKE_BUILD_TYPE Release)
 # Required to compile on MacOS with homebrew installed OpenMP
 cmake_policy(SET CMP0074 NEW)
 
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(DISABLE_OUT_OF_BOUND_CHECK)
+endif()
+
 # Git module
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 include(GetGitRevisionDescription)

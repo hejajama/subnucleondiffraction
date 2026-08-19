@@ -217,7 +217,7 @@ int main(int argc, char* argv[])
                 else if (string(argv[i+2])=="ipglasma_binary")
                 {
                     ipglasma=true;
-                    amp = new IPGlasma(argv[i+3], StrToReal(argv[i+4]), BINARY);
+                    amp = new IPGlasma(argv[i+3],0 , BINARY);
                 }
                 else
                 {
@@ -229,7 +229,7 @@ int main(int argc, char* argv[])
             {
                 if (string(argv[i+2])=="smoothnuke")
                 {
-                    amp = new Smooth_ws_nuke(A);
+                    amp = new Smooth_ws_nuke(A,MZSAT);
                 }
                 else
                 {
@@ -421,7 +421,8 @@ int main(int argc, char* argv[])
         cout << "# " << *(DVCSPhoton*)wavef << endl;
     }
 
-    amp->SetSkewedness(skewedness);
+    if (skewedness)
+        amp->SetSkewedness(skewedness);
     if (qsfluct_sigma > 0)
     {
         if (A==1)
