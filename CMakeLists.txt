@@ -25,10 +25,6 @@ git_local_changes(GIT_LOCAL_CHANGES)
 find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIRS})
 
-
-find_package(GSL REQUIRED)
-include_directories(${GSL_INCLUDE_DIRS})
-
 # Paths to LCPT dipole amplitude code 
 # Uncomment and add correct dirs if use, also modify src/ipsat_proton.hpp and src/CMakeLists.txt
 #include_directories("/Users/hejajama/code/rhorho")
@@ -40,6 +36,14 @@ include_directories(${GSL_INCLUDE_DIRS})
 
 add_subdirectory(src)
 add_subdirectory(tools)
+
+# Cuba does not compile if the compiler uses a new C23 standard,
+# force C17
+set_target_properties(cuba PROPERTIES
+  C_STANDARD 17
+  C_STANDARD_REQUIRED ON
+  C_EXTENSIONS ON
+)
 
 set_target_properties(subnucleondiffraction PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" )
