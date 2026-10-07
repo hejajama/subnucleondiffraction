@@ -55,8 +55,8 @@ std::complex<double> IPGlasma::ComplexAmplitude(double xpom, double q1[2], doubl
 	
 		
     // First find corresponding grid indeces
-    WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
-    WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
+    const WilsonLine& quark = GetWilsonLine(q1[0], q1[1]);
+    const WilsonLine& antiquark = GetWilsonLine(q2[0], q2[1]);
     
     //antiquark = antiquark.HermitianConjugate();
 
@@ -97,7 +97,7 @@ const WilsonLine& IPGlasma::GetWilsonLine(double x, double y) const
     x=q[0];
     y=q[1];
 
-    std::vector<int> coords = LatticeCoordinates(x,y);
+    std::array<int, 2> coords = LatticeCoordinates(x,y);
 
     // Handle edges
     if (coords[0] < 0)
@@ -236,10 +236,8 @@ int IPGlasma::LoadData(std::string fname, double step, WilsonLineDataFileType ty
     return 0;
 }
 
-std::vector<int> IPGlasma::LatticeCoordinates(double x, double y)
+std::array<int, 2> IPGlasma::LatticeCoordinates(double x, double y)
 {
-    std::vector<int> ret;
-
     // Site i covers [xcoords[i], xcoords[i] + lattice_spacing). The lattice
     // runs from xcoords[0] = -L/2 to xcoords[N-1] = L/2 - lattice_spacing,
     // so shift by the first coordinate, not the last
@@ -250,7 +248,7 @@ std::vector<int> IPGlasma::LatticeCoordinates(double x, double y)
     int ix = std::floor(x/lattice_spacing);
     int iy = std::floor(y/lattice_spacing);
 
-    return std::vector<int> {ix, iy}; 
+    return {ix, iy};
 }
 
 int IPGlasma::WilsonLineCoordinate(int  xind, int yind)
@@ -401,10 +399,8 @@ std::vector<double> &IPGlasma::GetXCoordinates()
 }
 
 
-std::vector<int> IPGlasma::LatticeCoordinates(double x, double y) const
+std::array<int, 2> IPGlasma::LatticeCoordinates(double x, double y) const
 {
-    std::vector<int> ret;
-
     // Site i covers [xcoords[i], xcoords[i] + lattice_spacing). The lattice
     // runs from xcoords[0] = -L/2 to xcoords[N-1] = L/2 - lattice_spacing,
     // so shift by the first coordinate, not the last
@@ -415,7 +411,7 @@ std::vector<int> IPGlasma::LatticeCoordinates(double x, double y) const
     int ix = std::floor(x/lattice_spacing);
     int iy = std::floor(y/lattice_spacing);
 
-    return std::vector<int> {ix, iy}; 
+    return {ix, iy};
 }
 
 int IPGlasma::WilsonLineCoordinate(int  xind, int yind) const

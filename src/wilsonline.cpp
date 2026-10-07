@@ -15,42 +15,6 @@ using std::endl;
 
 
 
-void WilsonLine::Set(int row, int column, std::complex<double> value)
-{
-#ifndef DISABLE_OUT_OF_BOUND_CHECK
-    if (row >= NC or row < 0)
-    {
-        throw std::out_of_range("Invalid row index " + std::to_string(row) +  ", num of rows in matrix:  "  + std::to_string(NC));
-        
-    }
-    if (column >= NC or column < 0)
-    {
-        throw std::out_of_range("Invalid column index " + std::to_string(column) +  ", num of columns in matrix: "  + std::to_string(NC));
-    }
-#endif
-
-    data[row][column] = value;
-
-}
-
-std::complex<double> WilsonLine::operator()(int row, int column) const
-{
-#ifndef DISABLE_OUT_OF_BOUND_CHECK
-    if (row >= NC or row < 0)
-    {
-        throw std::out_of_range("Invalid row index " + std::to_string(row) +  ", num of rows in matrix:  "  + std::to_string(NC));
-        
-    }
-    if (column >= NC or column < 0)
-    {
-        throw std::out_of_range("Invalid column index " + std::to_string(column) +  ", num of columns in matrix: "  + std::to_string(NC));
-    }
-#endif 
-
-    return data[row][column];
-
-} 
-
 WilsonLine WilsonLine::operator*(WilsonLine& w)
 {
 
@@ -71,26 +35,28 @@ WilsonLine WilsonLine::operator*(WilsonLine& w)
 }
 
 // Multiplies this by w^\dagger, returns the product
-// Fast in BLAS
-WilsonLine WilsonLine::MultiplyByHermitianConjugate(const WilsonLine& w)
+// Evaluated in every dipole amplitude, so work on the elements directly
+// (the indices are always valid here)
+WilsonLine WilsonLine::MultiplyByHermitianConjugate(const WilsonLine& w) const
 {
     WilsonLine result;
     for (int i = 0; i < NC; ++i) {
         for (int j = 0; j < NC; ++j) {
-            result(i, j) = 0;
+            std::complex<double> sum(0.0, 0.0);
             for (int k = 0; k < NC; ++k) {
-                result.Set(i, j, result(i,j) + (*this)(i, k) * std::conj(w(j, k)));
+                sum += data[i][k] * std::conj(w.data[j][k]);
             }
+            result.data[i][j] = sum;
         }
     }
     return result;
-    
+
 }
 
 std::complex<double> WilsonLine::Trace() const {
     std::complex<double> trace = 0;
     for (int i = 0; i < NC; ++i) {
-        trace += (*this)(i, i);
+        trace += data[i][i];
     }
     return trace;
 }

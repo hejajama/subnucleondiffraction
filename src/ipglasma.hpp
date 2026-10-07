@@ -9,6 +9,7 @@
 
 #include <string>
 #include <vector>
+#include <array>
 #include "dipole.hpp"
 #include "wilsonline.hpp"
 
@@ -52,14 +53,14 @@ public:
 
     void ApplyPeriodicBoundaryConditions(double q[2]) const; 
 
-    std::vector<int> LatticeCoordinates(double x, double y) const;
+    std::array<int, 2> LatticeCoordinates(double x, double y) const;
     int WilsonLineCoordinate(int  xind, int yind) const;
     
 
     double X(int ix) { return xcoords[ix]; }
     double Y(int iy) { return ycoords[iy]; }
 
-    std::vector<int> LatticeCoordinates(double x, double y);
+    std::array<int, 2> LatticeCoordinates(double x, double y);
     int WilsonLineCoordinate(int  xind, int yind);
     WilsonLine& GetWilsonLine(int i) { return wilsonlines[i]; }
 
