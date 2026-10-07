@@ -7,6 +7,7 @@
 
 #include "ipglasma.hpp"
 #include <string>
+#include <cmath>
 #include <gsl/gsl_randist.h>
 #include <fstream>
 #include <sstream>
@@ -239,13 +240,15 @@ std::vector<int> IPGlasma::LatticeCoordinates(double x, double y)
 {
     std::vector<int> ret;
 
-    // Note: My lattice is from -L/2 to L/2, so I need to shift the coordinates
-    x = x + xcoords[xcoords.size()-1];
-    y = y + ycoords[ycoords.size()-1];
+    // Site i covers [xcoords[i], xcoords[i] + lattice_spacing). The lattice
+    // runs from xcoords[0] = -L/2 to xcoords[N-1] = L/2 - lattice_spacing,
+    // so shift by the first coordinate, not the last
+    x = x - xcoords[0];
+    y = y - ycoords[0];
     double lattice_spacing = xcoords[1]-xcoords[0];
 
-    int ix = x/lattice_spacing; 
-    int iy = y/lattice_spacing; 
+    int ix = std::floor(x/lattice_spacing);
+    int iy = std::floor(y/lattice_spacing);
 
     return std::vector<int> {ix, iy}; 
 }
@@ -402,13 +405,15 @@ std::vector<int> IPGlasma::LatticeCoordinates(double x, double y) const
 {
     std::vector<int> ret;
 
-    // Note: My lattice is from -L/2 to L/2, so I need to shift the coordinates
-    x = x + xcoords[xcoords.size()-1];
-    y = y + ycoords[ycoords.size()-1];
+    // Site i covers [xcoords[i], xcoords[i] + lattice_spacing). The lattice
+    // runs from xcoords[0] = -L/2 to xcoords[N-1] = L/2 - lattice_spacing,
+    // so shift by the first coordinate, not the last
+    x = x - xcoords[0];
+    y = y - ycoords[0];
     double lattice_spacing = xcoords[1]-xcoords[0];
 
-    int ix = x/lattice_spacing; 
-    int iy = y/lattice_spacing; 
+    int ix = std::floor(x/lattice_spacing);
+    int iy = std::floor(y/lattice_spacing);
 
     return std::vector<int> {ix, iy}; 
 }
