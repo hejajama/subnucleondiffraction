@@ -66,7 +66,7 @@ Wilson lines generated using the IPGlasma code can be used instead of the IPsat 
 
 The step size in fm, and should be `L/N` (`L` is the lattice length, `N` number of lattice points). Note: everywhere else this code uses GeV^n units.
 
-It is more efficient use Wilson lines in binary format (generated using the `writeWilsonLines 2` option in IP-Glasma; `writeInitialWilsonLines 2` before IP-Glasma 2.0)
+It is more efficient to use Wilson lines in binary format (generated using the `writeWilsonLines 2` option in IP-Glasma; `writeInitialWilsonLines 2` before IP-Glasma 2.0)
 
     -dipole 1 ipglasma_binary FILENAME
 
