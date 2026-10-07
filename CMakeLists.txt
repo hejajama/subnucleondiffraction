@@ -11,16 +11,16 @@ set(CMAKE_BUILD_TYPE Release)
 # Required to compile on MacOS with homebrew installed OpenMP
 cmake_policy(SET CMP0074 NEW)
 
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(DISABLE_OUT_OF_BOUND_CHECK)
+endif()
+
 # Git module
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(GIT_DESCRIBE)
 git_local_changes(GIT_LOCAL_CHANGES)
-
-find_package(GSL REQUIRED)
-include_directories(${GSL_INCLUDE_DIRS})
-
 
 find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIRS})
@@ -36,6 +36,14 @@ include_directories(${GSL_INCLUDE_DIRS})
 
 add_subdirectory(src)
 add_subdirectory(tools)
+
+# Cuba does not compile if the compiler uses a new C23 standard,
+# force C17
+set_target_properties(cuba PROPERTIES
+  C_STANDARD 17
+  C_STANDARD_REQUIRED ON
+  C_EXTENSIONS ON
+)
 
 set_target_properties(subnucleondiffraction PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" )

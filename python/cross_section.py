@@ -7,6 +7,7 @@ The format changed in 11/2024. By default the new format is used.
 Heikki Mäntysaari <heikki.mantysaari@jyu.fi>
 '''
 
+import os
 import numpy as np
 import scipy
 from typing import Tuple
@@ -18,16 +19,45 @@ GEVSQRTONB = 1.0e7/(5.068*5.068)
 GEVSQRTOMB=GEVSQRTONB*1e-6
 
 
+def _integration_weights(x: np.ndarray, method: str = "simpson") -> np.ndarray:
+    '''Return effective quadrature weights for a 1D grid x.'''
+    if method == "simpson":
+        return scipy.integrate.simpson(np.eye(len(x)), x=x, axis=1)
+    if method == "trapezoid":
+        return scipy.integrate.trapezoid(np.eye(len(x)), x=x, axis=1)
+    raise ValueError(f"Unknown integration_method '{method}'. Supported: simpson, trapezoid")
+
+
+def _integrate_with_uncertainty(y: np.ndarray, yerr: np.ndarray, x: np.ndarray,
+                                method: str = "simpson") -> Tuple[float, float]:
+    '''Integrate y(x) and propagate pointwise uncorrelated uncertainties yerr(x).'''
+    if method == "simpson":
+        integral = float(scipy.integrate.simpson(y, x=x))
+    elif method == "trapezoid":
+        integral = float(scipy.integrate.trapezoid(y, x=x))
+    else:
+        raise ValueError(f"Unknown integration_method '{method}'. Supported: simpson, trapezoid")
+
+    weights = _integration_weights(x, method=method)
+    integral_err = float(np.sqrt(np.sum((weights * yerr) ** 2)))
+    return integral, integral_err
+
+
 def CoherentCrossSection(dirname:str,minconf:int=0,maxconf:int=250, amplitude:bool=False, file_format:str="new", 
-                         polarization:str="T", show_warnings=True) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+                         polarization:str="T", show_warnings=True, return_integrated: bool = False,
+                         integration_method: str = "simpson") -> tuple:
     '''Coherent cross section in mb, imaginary part neglected
-    Returns tvals [GeV^2], dsigma/dt [mb/GeV^2], staterrr
+    Returns tvals [GeV^2], dsigma/dt [mb/GeV^2], staterrr, number of configurations included
 
     polarization: T or L (transverse, longitudinal)
     
     file_format: new or old
         new: both real and imaginary part in the same file
         old: real and imaginary part in separate files
+
+    return_integrated: if True, append integrated cross section (or amplitude) and
+        propagated uncertainty to the return tuple
+    integration_method: quadrature used for integrated values (simpson or trapezoid)
     '''
 
     xsvals=[]
@@ -35,17 +65,17 @@ def CoherentCrossSection(dirname:str,minconf:int=0,maxconf:int=250, amplitude:bo
     for i in range(minconf,maxconf+1):
         #try:
         if file_format == "old":
-            fn=dirname+"/real/spectra_"+str(i)
-            if polarization=="T":
-                column=1
-            elif polarization=="L":
-                column=2
+            fn = os.path.join(dirname, "real", "spectra_" + str(i))
+            if polarization == "T":
+                column = 1
+            elif polarization == "L":
+                column = 2
         else:
-            fn=dirname+"/spectra_"+str(i)
-            if polarization=="T":
-                column=1
-            elif polarization=="L":
-                column=3
+            fn = os.path.join(dirname, "spectra_" + str(i))
+            if polarization == "T":
+                column = 1
+            elif polarization == "L":
+                column = 3
 
         try:
             dat=np.loadtxt(fn)
@@ -93,7 +123,12 @@ def CoherentCrossSection(dirname:str,minconf:int=0,maxconf:int=250, amplitude:bo
             
         
     if amplitude:
-        return tvals,np.mean(xsvals, axis=0), scipy.stats.sem(xsvals, axis=0)
+        amp_mean = np.mean(xsvals, axis=0)
+        amp_err = scipy.stats.sem(xsvals, axis=0)
+        if not return_integrated:
+            return tvals, amp_mean, amp_err
+        int_val, int_err = _integrate_with_uncertainty(amp_mean, amp_err, tvals, method=integration_method)
+        return tvals, amp_mean, amp_err, int_val, int_err
     
     xs = np.square(np.mean(xsvals,axis=0))/(16.0*np.pi)*GEVSQRTONB/1000/1000
     #staterr=scipy.stats.sem(np.square(xsvals),axis=0)/(16.0*np.pi)*GEVSQRTONB/1000/1000
@@ -101,33 +136,42 @@ def CoherentCrossSection(dirname:str,minconf:int=0,maxconf:int=250, amplitude:bo
     
     #print("staterr shape",staterr.shape)
     
-    return tvals,xs,staterr
+    if not return_integrated:
+        return tvals, xs, staterr
+
+    int_xs, int_err = _integrate_with_uncertainty(xs, staterr, tvals, method=integration_method)
+    return tvals, xs, staterr, int_xs, int_err, len(xsvals)
     
 
 def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400, 
                            file_format: str = "new", polarization: str = "T",
-                           show_warnings=True) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+                           show_warnings=True, return_integrated: bool = False,
+                           integration_method: str = "simpson") -> tuple:
     '''Coherent cross section in mb
-    Returns tvals [GeV^2], dsigma/dt [mb/GeV^2], staterrr
+    Returns tvals [GeV^2], dsigma/dt [mb/GeV^2], staterrr, number of configurations included
     
     polarization: T or L (transverse, longitudinal)
     
     file_format: new or old
         new: both real and imaginary part in the same file
         old: real and imaginary part in separate files
+
+    return_integrated: if True, append integrated cross section and propagated
+        uncertainty to the return tuple
+    integration_method: quadrature used for integrated values (simpson or trapezoid)
     '''
     tvals = []
     data_r = []
     data_i = []
     for i in range(minconf, maxconf + 1):  
         if file_format == "old":
-            fn = dirname + "/real/spectra_" + str(i)
+            fn = os.path.join(dirname, "real", "spectra_" + str(i))
             if polarization == "T":
                 column = 1
             elif polarization == "L":
                 column = 2
         else:
-            fn = dirname + "/spectra_" + str(i)
+            fn = os.path.join(dirname, "spectra_" + str(i))
             if polarization == "T":
                 column = 1
             elif polarization == "L":
@@ -171,9 +215,9 @@ def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400,
         if file_format == "old":
             ## imag
             try:
-                tmpdata_i = np.loadtxt(dirname + "/imag/spectra_" + str(i))
+                tmpdata_i = np.loadtxt(os.path.join(dirname, "imag", "spectra_" + str(i)))
             except IOError:
-                print("File ", dirname + "/imag/spectra_" + str(i), " does not exist, but real part was there, RESULTS MAY NOT MAKE SENSE")
+                print("File ", os.path.join(dirname, "imag", "spectra_" + str(i)), " does not exist, but real part was there, RESULTS MAY NOT MAKE SENSE")
                 return np.array([]), np.array([]), np.array([])
         
             if len(tmpdata_i) == 0:
@@ -196,21 +240,40 @@ def IncoherentCrossSection(dirname: str, minconf: int = 0, maxconf: int = 400,
 
     data_r = np.array(data_r)
     data_i = np.array(data_i)
+
+    nconfigs = len(data_r)
+    if nconfigs < 2:
+        raise ValueError(
+            "IncoherentCrossSection requires at least two valid configurations "
+            "to estimate the uncertainty; found " + str(nconfigs)
+        )
+
+    # Split the configurations that were actually read.  ``maxconf`` is only
+    # an upper file-index limit, and may be much larger than nconfigs when
+    # files are absent or skipped.
+    split = nconfigs // 2
     
     if file_format == "old":
         var = np.var(data_r[:, :, column], axis=0) + np.var(data_i[:, :, column], axis=0)
-        halfvar1 = np.var(data_r[0:maxconf // 2, :, column], axis=0) + np.var(data_i[0:maxconf // 2, :, column], axis=0)
-        halfvar2 = np.var(data_r[maxconf // 2:, :, column], axis=0) + np.var(data_i[maxconf // 2:, :, column], axis=0)
+        halfvar1 = np.var(data_r[:split, :, column], axis=0) + np.var(data_i[:split, :, column], axis=0)
+        halfvar2 = np.var(data_r[split:, :, column], axis=0) + np.var(data_i[split:, :, column], axis=0)
     else:
         var = np.var(data_r[:, :, column], axis=0) + np.var(data_r[:, :, column + 1], axis=0)
-        halfvar1 = np.var(data_r[0:maxconf // 2, :, column], axis=0) + np.var(data_r[0:maxconf // 2, :, column + 1], axis=0)
-        halfvar2 = np.var(data_r[maxconf // 2:, :, column], axis=0) + np.var(data_r[maxconf // 2:, :, column + 1], axis=0)
+        halfvar1 = np.var(data_r[:split, :, column], axis=0) + np.var(data_r[:split, :, column + 1], axis=0)
+        halfvar2 = np.var(data_r[split:, :, column], axis=0) + np.var(data_r[split:, :, column + 1], axis=0)
 
     err1 = np.abs(halfvar1 - var)
     err2 = np.abs(halfvar2 - var)
     errs = (err1 + err2) * 0.5
     
-    return tvals, var / (16.0 * np.pi) * GEVSQRTONB / 1000 / 1000, errs / (16.0 * np.pi) * GEVSQRTONB / 1000 / 1000
+    xs = var / (16.0 * np.pi) * GEVSQRTONB / 1000 / 1000
+    staterr = errs / (16.0 * np.pi) * GEVSQRTONB / 1000 / 1000
+
+    if not return_integrated:
+        return tvals, xs, staterr
+
+    int_xs, int_err = _integrate_with_uncertainty(xs, staterr, tvals, method=integration_method)
+    return tvals, xs, staterr, int_xs, int_err, nconfigs
     
 
 ######### Kinematics
@@ -350,10 +413,16 @@ if __name__ == "__main__":
     dirname = args.dir
     maxconf = args.maxconf
 
-    tvals_coh, xs_coh, staterr_coh = CoherentCrossSection(dirname, maxconf=maxconf)
-    tvals_incoh, xs_incoh, staterr_incoh = IncoherentCrossSection(dirname, maxconf=maxconf)
+    tvals_coh, xs_coh, staterr_coh, int_coh, int_coh_err, nev = CoherentCrossSection(
+        dirname, maxconf=maxconf, return_integrated=True
+    )
+    tvals_incoh, xs_incoh, staterr_incoh, int_incoh, int_incoh_err, nev = IncoherentCrossSection(
+        dirname, maxconf=maxconf, return_integrated=True
+    )
 
-    print("# Cross sections at W="+str(WFromSteps(steps=args.steps, meson="jpsi", ds=args.ds))+" GeV")
+    print("# Cross sections, events included:", nev)
     print("# t [GeV^2] cohxs [mb/GeV^2] staterr_coh [mb/GeV^2] incohxs [mb/GeV^2] staterr_incoh [mb/GeV^2]")
     for t, cohxs, cohxserr, incohxs, incohxserr in zip(tvals_coh, xs_coh, staterr_coh, xs_incoh, staterr_incoh):
         print(t, cohxs, cohxserr, incohxs, incohxserr)
+    print("# Integrated coherent xs [mb] +- staterr:", int_coh, int_coh_err)
+    print("# Integrated incoherent xs [mb] +- staterr:", int_incoh, int_incoh_err)

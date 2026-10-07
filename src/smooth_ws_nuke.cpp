@@ -37,7 +37,7 @@ using namespace std;
 Smooth_ws_nuke::Smooth_ws_nuke(int A_, Ipsat_version ipsatv)
 {
     ipsat_version = ipsatv;
-    smooth_approximation = false;
+    smooth_approximation = true;
     
     if (ipsat_version == MZSAT)
     {
@@ -96,9 +96,12 @@ double Smooth_ws_nuke::Amplitude(double xpom, double q1[2], double q2[2] )
     
     if (smooth_approximation)
     {
+	double exp = r*r * M_PI*M_PI / (2.0 * NC) * mzipsat->Alphas_xg(xpom, mzipsat->MuSqr(r)) * A * T_A_interpolator->Evaluate(b); 
+	if (!saturation or exp < 1e-8)
+		return exp;	
         // KT (41): Assumes large A and small dipole xs, not really realistic
         
-         return 1.0 - std::exp( -r*r * M_PI*M_PI / (2.0 * NC) * mzipsat->Alphas_xg(xpom, mzipsat->MuSqr(r)) * A * T_A_interpolator->Evaluate(b));
+    return 1.0 - std::exp( -exp);
     }
     
     
