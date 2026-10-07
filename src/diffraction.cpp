@@ -373,10 +373,8 @@ Diffraction::TotalCrossSectionData Diffraction::ComputeTotalCrossSection(
             const double bval = out.b[ib];
             const double thetaval = out.theta[it];
             // T polarization (vector integration returns real & imag)
-            double int_modsq_T = 0.0;
             out.F_T[idx] = ScatteringAmplitude_tIntegrated(xpom, Qsqr, bval, thetaval, T);
             if (Qsqr > 0) {
-                double int_modsq_L = 0.0;
                 out.F_L[idx] = ScatteringAmplitude_tIntegrated(xpom, Qsqr, bval, thetaval, L);
             }
         }
