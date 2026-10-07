@@ -69,7 +69,6 @@ int main(int argc, char* argv[])
     double maxr=99;    
     double Qsqr=0;
     double xbj=0; // x for F2
-    double t=0.1;
     int A=1;
     int he3_id=-1;   // Used to set He3 configuration
     double mint=0;
@@ -574,7 +573,8 @@ int main(int argc, char* argv[])
         if (xp < 0)
         {
             cout << "#  Q^2=" << Qsqr << ", W=" << w << endl;
-            xpom = (meson_mass*meson_mass+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+            // The amplitude is integrated over t, so evaluate xpom at t=0
+            xpom = (meson_mass*meson_mass+Qsqr)/(w*w+Qsqr-mp*mp);
         }
         else
         {
