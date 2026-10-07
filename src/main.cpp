@@ -520,11 +520,6 @@ int main(int argc, char* argv[])
                 cout << endl;
             }
         }
-        
-         
-        
-         
-        return 0;
     }
     
     else if (mode == SATURATION_SCALE)
@@ -538,7 +533,6 @@ int main(int argc, char* argv[])
             }
             cout << endl;
         }
-        return 0;
     }
     
     else if (mode == AMPLITUDE_DT)
