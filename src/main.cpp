@@ -475,7 +475,7 @@ int main(int argc, char* argv[])
             double min = ((IPGlasma*)amp)->MinX();
             double step =((IPGlasma*)amp)->XStep();
             cout << "# Grid min " << min << " 1/GeV, max " << max << " 1/GeV, step " << step << " 1/GeV" << endl;
-            cout << "# 1/Nc(1-Tr[V(0)V(x,y)]) (re im)  1/Nc(1-Tr[V(x,y)V(x,y)])  1/Nc(Tr[1-V(x,y)])  " << endl;
+            cout << "# y [fm]  x [fm]  1/Nc(1-Tr[V(0)V(x,y)]) (re im)  1/Nc(1-Tr[V(x,y)V(x,y)])  1/Nc(Tr[1-V(x,y)])  " << endl;
             for (double y=min+step/2; y < max-step/2; y+=step)
             {
                 for (double x=min+step/2; x < max-step/2; x+=step)
@@ -496,7 +496,7 @@ int main(int argc, char* argv[])
             double max = 25;
             double min = -25;
             double step = 0.1;
-            cout << "# x y N(0,(x,y)) T(b) " << endl;
+            cout << "# y [fm]  x [fm]  N(0,(x,y))  T(b) " << endl;
             for (double y=min+step/2; y < max-step/2; y+=step)
             {
                 for (double x=min+step/2; x < max-step/2; x+=step)
