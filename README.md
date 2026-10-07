@@ -66,11 +66,13 @@ Wilson lines generated using the IPGlasma code can be used instead of the IPsat 
 
 The step size in fm, and should be `L/N` (`L` is the lattice length, `N` number of lattice points). Note: everywhere else this code uses GeV^n units.
 
-It is more efficient use Wilson lines in binary format (generated using the `writeInitialWilsonLines 2` option in IP-Glasma)
+It is more efficient use Wilson lines in binary format (generated using the `writeWilsonLines 2` option in IP-Glasma; `writeInitialWilsonLines 2` before IP-Glasma 2.0)
 
     -dipole 1 ipglasma_binary FILENAME
 
 In this case there is no need to specify the step size.
+
+Both formats are read in the Wilson-line layout of IP-Glasma 2.0 and later (sites with `ix` outer and `iy` inner, matrix elements row-major). Wilson lines written by older IP-Glasma versions store each matrix transposed (text) or the lattice with x and y swapped (binary); use an older commit of this code for them.
  
 The code outputs the squared momentum transfer |t| and complex scattering amplitudes separately for the transverse and longitudinal photon, the syntax is
 

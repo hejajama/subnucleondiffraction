@@ -12,6 +12,8 @@
 #include "dipole.hpp"
 #include "wilsonline.hpp"
 
+// Both formats are read in the layout of IP-Glasma >= 2.0: sites ix outer,
+// iy inner, matrix elements row-major
 enum WilsonLineDataFileType
 {
     BINARY,

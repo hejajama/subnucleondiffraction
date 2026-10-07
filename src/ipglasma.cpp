@@ -194,7 +194,6 @@ int IPGlasma::LoadData(std::string fname, double step, WilsonLineDataFileType ty
         
         // Save Wilson line
         WilsonLine w(matrix);
-        w = w.Transpose();
         wilsonlines.push_back(w);
         
         if (w.Size() != 3)
@@ -315,7 +314,7 @@ int IPGlasma::LoadBinaryData(std::string fname, double step)
                 int j=MatrixIndx/3;
                 int k=MatrixIndx-j*3;
                 
-                int indx = N*iy + ix;
+                int indx = N*ix + iy;
                 wilsonlines[indx].Set(j,k, std::complex<double> (re,im));
             }
             INPUT_CTR++;
