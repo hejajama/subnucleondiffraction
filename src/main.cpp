@@ -483,7 +483,8 @@ int main(int argc, char* argv[])
             double min = ((IPGlasma*)amp)->MinX();
             double step =((IPGlasma*)amp)->XStep();
             cout << "# Grid min " << min << " 1/GeV, max " << max << " 1/GeV, step " << step << " 1/GeV" << endl;
-            cout << "# y [fm]  x [fm]  1/Nc(1-Tr[V(0)V(x,y)]) (re im)  1/Nc(1-Tr[V(x,y)V(x,y)])  1/Nc(Tr[1-V(x,y)])  " << endl;
+            cout << "# y [fm]  x [fm]  Re N(0,(x,y))  Im N(0,(x,y))  N((x,y),(x,y)) (always 0, the dipole is smaller than the lattice spacing)  1-Re Tr[V(x,y)]/Nc" << endl;
+            cout << "# with the dipole amplitude N(a,b) = 1 - Tr[V(a) V^dagger(b)]/Nc" << endl;
             for (double y=min+step/2; y < max-step/2; y+=step)
             {
                 for (double x=min+step/2; x < max-step/2; x+=step)
