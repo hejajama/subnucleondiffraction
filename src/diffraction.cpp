@@ -213,7 +213,8 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
     const int nvec = 1; const double epsrel = MCINTACCURACY, epsabs = 0.0;
     const int flags = 0, seed = 0;
     const int mineval = mcintpoints/10; const int maxeval = mcintpoints;
-    // Suave fails to allocate its regions if nnew < nmin (mcintpoints < 60000)
+    // Suave fails to allocate its regions if nnew < nmin (mcintpoints < 60000);
+    // it then still evaluates at least nmin points (main() rejects fewer)
     const int nmin = 300; const int nnew = std::max(mineval/20, nmin); const double flatness = 1.0;
     Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed,
         mineval, maxeval, nnew, nmin, flatness,
@@ -340,7 +341,8 @@ std::complex<double> Diffraction::ScatteringAmplitude_tIntegrated(
     const double epsrel = MCINTACCURACY, epsabs = 0.0;
     const int flags = 0, seed = 0;
     const int mineval = mcintpoints/10; const int maxeval = mcintpoints;
-    // Suave fails to allocate its regions if nnew < nmin (mcintpoints < 60000)
+    // Suave fails to allocate its regions if nnew < nmin (mcintpoints < 60000);
+    // it then still evaluates at least nmin points (main() rejects fewer)
     const int nmin = 300; const int nnew = std::max(mineval/20, nmin); const double flatness = 1.0;
 
     Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed,

@@ -374,6 +374,14 @@ int main(int argc, char* argv[])
         }
     }
 
+    // Suave starts with nmin = 300 points (see Diffraction), so a smaller
+    // budget could not be honored
+    if (!auto_mcintpoints and mcintpoints < 300)
+    {
+        cerr << "-mcintpoints must be at least 300, got " << mcintpoints << endl;
+        exit(1);
+    }
+
     if (tlist.size() == 0) {
         if (tstep <= 0)
         {
