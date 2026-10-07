@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <cmath>
 
 #include <gsl/gsl_rng.h>
 
@@ -119,7 +120,8 @@ int main(int argc, char* argv[])
         cout << "-wavef_file filename" << endl;
         cout << "-wavef gauslc/boostedgaussian/DVCS/NRQCD" << endl;
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
-        cout << "-mint, -maxt, -tstep" << endl;
+        cout << "-mint, -maxt, -tstep: t grid from mint to maxt (inclusive) in steps of tstep" << endl;
+        cout << "-tlist t1,t2,...: compute these t values instead of the -mint/-maxt/-tstep grid" << endl;
         cout << "-maxb, -nbperp" << endl;
         cout << "-ntheta" << endl;
         cout << "-nrqcd_parameters A B" << endl;
@@ -373,8 +375,16 @@ int main(int argc, char* argv[])
     }
 
     if (tlist.size() == 0) {
-        for (double t = mint; t < maxt; t += tstep)
-            tlist.push_back(t);
+        if (tstep <= 0)
+        {
+            cerr << "-tstep must be positive, got " << tstep << endl;
+            exit(1);
+        }
+        // t = mint, mint+tstep, ..., maxt (included if it is on the grid);
+        // an integer index avoids the drift of adding up tstep
+        const int nt = static_cast<int>(std::floor((maxt - mint)/tstep + 1e-9)) + 1;
+        for (int i = 0; i < nt; i++)
+            tlist.push_back(mint + i*tstep);
     }
 
     // Initialize global random number generator
