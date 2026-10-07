@@ -646,6 +646,8 @@ int main(int argc, char* argv[])
         Diffraction f2(*amp, *photon);
        	f2.SetMaxR(maxr*5.068);
         f2.SetFactorizeZInt(true);
+        // F2 is computed from the amplitude at t=0
+        f2.SetMCIntPoints(auto_mcintpoints ? MCpoints(0) : mcintpoints);
         cout << "#Maxr = " << f2.MaxR() << endl;
         // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
         // Note* 4pi, as convention in BoostedGaussian and VirtualPhoton classes are different!!!
