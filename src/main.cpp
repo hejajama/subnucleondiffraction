@@ -110,11 +110,11 @@ int main(int argc, char* argv[])
     {
         cout << "-Q2, -W, -xp: set kinematics" << endl;
         cout << "-dipole A [ipglasma,ipglasma_binary,ipsatproton,smoothnuke] [ipglasmafile ipglasmastep (fm), ipsat_proton_width ipsat_proton_quark_width] [fluxtube tube_normalization] [com]    com: move origin to Center of Mass (with constituent quark ipsat)" << endl;
-        cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
+        cout << "-corrections: calculate correction R_g^2(1+\\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points/auto" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
         cout << "-qsfluct sigma: set width of Q_s fluctuations (0: disable); only for ipsatproton!" << endl;
-        cout << "-qsfluctshape [local,quarks]: set Q_s^2 to fluctuate at each point / for each quark" << endl;
+        cout << "-qsfluctshape quarks: set Q_s^2 to fluctuate for each quark (the only shape implemented)" << endl;
         cout << "-satscale: print saturation scale" << endl;
         cout << "-F2 Qsqr x: calculate structure function" << endl;
         cout << "-wavef_file filename" << endl;
