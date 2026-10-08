@@ -33,7 +33,8 @@ std::complex<double> IPGlasma::ComplexAmplitude(double xpom, double q1[2], doubl
     ApplyPeriodicBoundaryConditions(q1);
     ApplyPeriodicBoundaryConditions(q2);
     
-    // Out of grid? Return 0 (probably very large dipole)
+    // Out of grid? Only an error with periodic boundary conditions; otherwise
+    // GetWilsonLine() uses V = 1 outside the lattice
 
     if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
         or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
@@ -99,17 +100,15 @@ const WilsonLine& IPGlasma::GetWilsonLine(double x, double y) const
 
     std::array<int, 2> coords = LatticeCoordinates(x,y);
 
-    // Handle edges
-    if (coords[0] < 0)
-        coords[0] = 0;
-    if (coords[0] >= xcoords.size())
-        coords[0] = xcoords.size()-1;
+    // Outside the lattice there is no target, V = 1 (using the Wilson lines at
+    // the edge instead would extend the field at the edge out to any distance)
+    if (coords[0] < 0 or coords[0] >= static_cast<int>(xcoords.size())
+        or coords[1] < 0 or coords[1] >= static_cast<int>(ycoords.size()))
+    {
+        static const WilsonLine identity = [] { WilsonLine w; w.InitializeAsIdentity(); return w; }();
+        return identity;
+    }
 
-    if (coords[1] < 0)
-        coords[1] = 0;
-    if (coords[1] >= ycoords.size())
-        coords[1] = ycoords.size()-1;
-    
     return GetWilsonLine( WilsonLineCoordinate(coords[0],coords[1]));
     
 }
