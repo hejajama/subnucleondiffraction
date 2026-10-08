@@ -24,7 +24,10 @@ static void RefineGrid(cThis *t, Grid grid, Grid margsum)
   }
   norm += margsum[NBINS - 1] = .5*(prev + cur);
 
-  if( norm == 0 ) return;
+  /* Local change (subnucleondiffraction, see LOCAL_CHANGES.md): also keep
+     the grid if 1/norm overflows, i.e. the f^2 sums are denormal because the
+     integrand is (practically) zero; otherwise r = inf gives NaN bins */
+  if( norm == 0 || !isfinite(1/norm) ) return;
   norm = 1/norm;
 
   /* compute the importance function for each bin */

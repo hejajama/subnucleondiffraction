@@ -16,3 +16,14 @@ detected" abort.
 
 The change sets the result and the variance of such a region to 0. It only
 applies when the weight sum is 0, so all other results are unchanged.
+
+## suave/Grid.c: grid refinement for a (practically) zero integrand
+
+`RefineGrid` normalizes the smoothed sums of f^2 per bin with
+`norm = 1/sum`. Where the integrand is (practically) zero, these sums can be
+denormal (~1e-323), so `1/sum` overflows to infinity, every bin gets
+`r = inf`, and the importance `((r - 1)/log(r))^1.5` is NaN. The NaN grid
+then gives NaN sample coordinates.
+
+The change keeps the previous grid in that case, as Suave already does when
+the sum is exactly 0.
