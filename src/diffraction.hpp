@@ -30,8 +30,10 @@ public:
 
     // Scattering amplitude integrated over t at fixed b
     // See docs/t_integrated_vm_production for definition
+    // epsabs: absolute accuracy goal for Suave, which lets it stop early where
+    // the integrand is negligible (large b, see ComputeTotalCrossSection)
     std::complex<double> ScatteringAmplitude_tIntegrated(double xpom, double Qsqr, double b,
-        double theta_b, Polarization pol=T);
+        double theta_b, Polarization pol=T, double epsabs=0.0);
 
     
 
