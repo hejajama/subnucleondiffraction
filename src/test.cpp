@@ -254,39 +254,6 @@ TEST(totxs_directly_vs_integrate_dsigma_dt)
 
     double dsdt0_L = std::norm(diff.ScatteringAmplitude(xp, Qsqr, 0, L))/(16.0*M_PI);
     double totxs_from_dsdt0_L = dsdt0_L /B ; 
-    
-   
-    // The next test (commented out) integrates the t spectra to get the cross section
-    // To speed up this test, it is commented out by default. Note that only in the case of 
-    // ipnonsat dipole (MZNONSAT) we have pure exponential t dependence, so the test works
-    // With saturation (MZSAT), can't compute totxs from dsigma/dt(t=0), and one has to do the t integral
-    // using the code below
-
-    /*
-    // Integrate |diff.ScatteringAmplitude(xp, Qsqr, t, T)|^2 from t=0 to t=2 using GSL
-    auto integrand_gsl = [](double t, void* params) -> double {
-        auto* p = static_cast<std::pair<Diffraction*, std::pair<double, double>>*>(params);
-        Diffraction* diff = p->first;
-        double xp = p->second.first;
-        double Qsqr = p->second.second;
-        complex<double> amp = diff->ScatteringAmplitude(xp, Qsqr, t, T);
-        //cout << "t=" << t << " amp=" << amp << " |amp|^2=" << std::norm(amp) << " xp=" << xp << " Q2=" << Qsqr << endl;
-        return std::norm(amp) / (16.0 * M_PI);
-    };
-    
-    auto params = std::make_pair(&diff, std::make_pair(xp, Qsqr));
-    gsl_function F;
-    F.function = integrand_gsl;
-    F.params = &params;
-    
-    gsl_integration_workspace* w = gsl_integration_workspace_alloc(1000);
-    double totalxs_integrated, error;
-    gsl_integration_qags(&F, 0, 2.0, 0, 1e-2, 100, w, &totalxs_integrated, &error);
-    gsl_integration_workspace_free(w);
-        
-    
-    ASSERT_ALMOST_EQUAL(totalxs_integrated, totxs_from_dsdt0_T, 1e-7);
-    */
 
 
     // Test total cross section integration without t integral, using the ScatteringAmpltitudeF function
@@ -352,8 +319,37 @@ TEST(totxs_directly_vs_integrate_dsigma_dt)
     double cohxs_T = result_2d_T/(16.0*M_PI*M_PI);
     double cohxs_L = result_2d_L/(16.0*M_PI*M_PI);
 
-    ASSERT_ALMOST_EQUAL(cohxs_T, totxs_from_dsdt0_T, std::min(cohxs_T,totxs_from_dsdt0_T)/1e2);
-    ASSERT_ALMOST_EQUAL(cohxs_L, totxs_from_dsdt0_L, std::min(cohxs_L,totxs_from_dsdt0_L)/1e2);
+    // dsigma/dt(t=0)/B assumes a purely exponential t spectrum, which it is not
+    // exactly (with 3e6 points the difference is ~1.1% for T and ~0.7% for L),
+    // so allow 2%
+    ASSERT_ALMOST_EQUAL(cohxs_T, totxs_from_dsdt0_T, std::min(cohxs_T,totxs_from_dsdt0_T)/50);
+    ASSERT_ALMOST_EQUAL(cohxs_L, totxs_from_dsdt0_L, std::min(cohxs_L,totxs_from_dsdt0_L)/50);
+
+    // Integrate dsigma/dt = |A|^2/(16 pi) over t in [0, 2] GeV^2 with an 8-point
+    // Gauss-Legendre rule (enough for this ~exp(-B t) spectrum; the part above
+    // t = 2 is ~exp(-8)). This agrees with the direct result within ~0.1%.
+    struct TIntegrandParams {
+        Diffraction* diff;
+        double xpom;
+        double Qsqr;
+        Polarization pol;
+    };
+    auto integrand_t = [](double t, void* params) -> double {
+        TIntegrandParams* p = static_cast<TIntegrandParams*>(params);
+        return std::norm(p->diff->ScatteringAmplitude(p->xpom, p->Qsqr, t, p->pol)) / (16.0 * M_PI);
+    };
+    gsl_integration_glfixed_table* gl_table = gsl_integration_glfixed_table_alloc(8);
+    TIntegrandParams tparams{&diff, xp, Qsqr, T};
+    gsl_function F_t;
+    F_t.function = integrand_t;
+    F_t.params = &tparams;
+    double totxs_tint_T = gsl_integration_glfixed(&F_t, 0, 2.0, gl_table);
+    tparams.pol = L;
+    double totxs_tint_L = gsl_integration_glfixed(&F_t, 0, 2.0, gl_table);
+    gsl_integration_glfixed_table_free(gl_table);
+
+    ASSERT_ALMOST_EQUAL(cohxs_T, totxs_tint_T, std::min(cohxs_T,totxs_tint_T)/1e2);
+    ASSERT_ALMOST_EQUAL(cohxs_L, totxs_tint_L, std::min(cohxs_L,totxs_tint_L)/1e2);
 
 }
 
