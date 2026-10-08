@@ -113,8 +113,11 @@ static void Sample(This *t, cnumber nnew, Region *region,
   region->df = --df;
 
   for( c = cumul, res = region->result; c < C; ++c, ++res ) {
-    creal sigsq = 1/c->weightsum;
-    creal avg = sigsq*c->avgsum;
+    /* Local change (subnucleondiffraction, see LOCAL_CHANGES.md): no sample
+       set with at least nmin points (weightsum == 0), i.e. the region's
+       samples were (practically) all zero; avoid 1/0 and 0*inf = NaN */
+    creal sigsq = (c->weightsum > 0) ? 1/c->weightsum : 0;
+    creal avg = (c->weightsum > 0) ? sigsq*c->avgsum : 0;
 
     if( LAST ) {
       res->sigsq = 1/c->weight;
