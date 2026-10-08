@@ -63,7 +63,9 @@ static void Fluct(cThis *t, Var *var,
     for( dim = 0; dim < t->ndim; ++dim ) {
       Var *v = &var[2*dim + (*x++ >= .5*(b[dim].lower + b[dim].upper))];
       crealL f = v->fluct + ft;
-      v->fluct = MaxL(f, REALL_MAX/2);
+      /* Local change (subnucleondiffraction, see LOCAL_CHANGES.md): cap the
+         sum (MinL); MaxL pinned every fluctuation to REALL_MAX/2 */
+      v->fluct = MinL(f, REALL_MAX/2);
       ++v->n;
     }
   }

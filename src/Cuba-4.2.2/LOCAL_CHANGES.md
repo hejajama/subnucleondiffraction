@@ -27,3 +27,20 @@ then gives NaN sample coordinates.
 
 The change keeps the previous grid in that case, as Suave already does when
 the sum is exactly 0.
+
+## suave/Fluct.c: fluctuations capped instead of pinned
+
+`Fluct` accumulates the fluctuation of each half of a region with
+`v->fluct = MaxL(f, REALL_MAX/2)`, which sets every sum to at least
+`REALL_MAX/2`. All dimensions and halves then get the same fluctuation, so
+Suave always bisects the widest dimension and splits the new samples evenly,
+independently of the integrand; only the choice of the region to split
+(largest error) is adaptive. The line is the same in the Cuba 4.2.1 and
+4.2.2 releases and looks like a typo for `MinL`, an overflow cap.
+
+The change uses `MinL`. Tested with subnucleondiffraction on 6 JIMWLK-evolved
+IP-Glasma Wilson lines each for p and Pb (amplitude vs t and the
+t-integrated amplitude at 1e5, 3e5, 1e6 points, against 1e7-point
+references): the integrals agree within the integration error, and the
+error at fixed points is about halved in most cases (no gain for the Pb
+amplitude vs t, which has diffractive minima).
