@@ -19,6 +19,8 @@ using namespace std;
 
 #include <complex>
 
+#include <algorithm>
+#include <cmath>
 #include <functional>
 #include <iomanip>
 #include <cstdlib>
@@ -105,11 +107,17 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
         double zmin;
         bool fact;
         Polarization pol;
+        // Derived once per integral instead of at every integrand evaluation
+        bool nrqcd;
+        double umin;
+        double umax;
+        double delta;
+        double J;
     };
     SAParams p{
         this,
         xpom,
-        Qsqr, 
+        Qsqr,
         t,
         10*5.068,
         1e-10,
@@ -118,6 +126,13 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
         factorize_zint,
         pol
     };
+    p.nrqcd = wavef->WaveFunctionType() == "NRQCD";
+    p.umin = std::log(p.rmin);
+    p.umax = std::log(p.rmax);
+    p.delta = std::sqrt(t);
+    // Jacobian: bmax * (umax-umin) * (2pi)^2 * z-width (if unfactorized)
+    const double twoPi = 2.0*M_PI;
+    p.J = p.bmax * (p.umax-p.umin) * (twoPi*twoPi) * (p.fact ? 1.0 : (1.0 - 2.0*p.zmin));
     auto integrand = [](const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* ud)->int {
         SAParams* prm = static_cast<SAParams*>(ud);
         const double twoPi = 2.0*M_PI;
@@ -130,7 +145,7 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
         const double xz = fact ? 0.5 : x[4];   // z in [0,1]
         // Map to physical
         const double b = prm->bmax * xb;
-        const double umin = std::log(prm->rmin), umax = std::log(prm->rmax);
+        const double umin = prm->umin, umax = prm->umax;
         const double u = umin + (umax-umin) * xu;
         const double r = std::exp(u);
         const double theta_b = twoPi * xtb;
@@ -139,12 +154,11 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
         // Overlap and scalar prefactor (2 r b * overlap)
         double scalar = 2.0 * r * b;
         if (fact) {
-            if (prm->diff->wavef->WaveFunctionType() == "NRQCD") {
-                double delta_local = std::sqrt(prm->t);
+            if (prm->nrqcd) {
                 if (prm->pol == T)
-                    scalar *= ((NRQCD_WF*)prm->diff->wavef)->PsiSqr_T_intz(prm->Q2, r, delta_local, theta_r);
+                    scalar *= ((NRQCD_WF*)prm->diff->wavef)->PsiSqr_T_intz(prm->Q2, r, prm->delta, theta_r);
                 else
-                    scalar *= ((NRQCD_WF*)prm->diff->wavef)->PsiSqr_L_intz(prm->Q2, r, delta_local, theta_r);
+                    scalar *= ((NRQCD_WF*)prm->diff->wavef)->PsiSqr_L_intz(prm->Q2, r, prm->delta, theta_r);
             } else {
                 if (prm->pol == T)
                     scalar *= prm->diff->wavef->PsiSqr_T_intz(prm->Q2, r);
@@ -179,16 +193,16 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
         double x1[2] = {qx,qy}; double x2[2] = {qbarx,qbary};
         std::complex<double> amp = prm->diff->dipole->ComplexAmplitude(prm->xp, x1, x2);
         // Phase factor with momentum transfer delta
-        const double delta = std::sqrt(prm->t);
+        const double delta = prm->delta;
         if (delta > 0) {
             double phi = b*delta*cos_tb - (0.5 - z)*r*delta*cos_tr;
-            
-            const std::complex<double> exponent = std::exp(std::complex<double>(0.0, -phi));
+
+            // exp(-i phi)
+            const std::complex<double> exponent(std::cos(phi), -std::sin(phi));
             amp *= exponent;
         }
         std::complex<double> val = scalar * amp;
-        // Jacobian: bmax * (umax-umin) * (2pi)^2 * z-width (if unfactorized)
-        const double J = prm->bmax * (umax-umin) * (twoPi*twoPi) * (fact ? 1.0 : (1.0 - 2.0*prm->zmin));
+        const double J = prm->J;
         const double measure_r = r; // from dr = r du
         f[0] = J * measure_r * static_cast<cubareal>(val.real());
         f[1] = J * measure_r * static_cast<cubareal>(val.imag());
@@ -200,7 +214,9 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
     const int nvec = 1; const double epsrel = MCINTACCURACY, epsabs = 0.0;
     const int flags = 0, seed = 0;
     const int mineval = mcintpoints/10; const int maxeval = mcintpoints;
-    const int nnew = mineval/20, nmin = 300; const double flatness = 1.0;
+    // Suave fails to allocate its regions if nnew < nmin (mcintpoints < 60000);
+    // it then still evaluates at least nmin points (main() rejects fewer)
+    const int nmin = 300; const int nnew = std::max(mineval/20, nmin); const double flatness = 1.0;
     Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed,
         mineval, maxeval, nnew, nmin, flatness,
         NULL, NULL, &nregions, &neval, &fail, integral, error, prob);
@@ -208,7 +224,7 @@ std::complex<double> Diffraction::ScatteringAmplitude(double xpom, double Qsqr, 
 }
 
 std::complex<double> Diffraction::ScatteringAmplitude_tIntegrated(
-    double xpom, double Qsqr, double b, double theta_b, Polarization pol) {
+    double xpom, double Qsqr, double b, double theta_b, Polarization pol, double epsabs) {
     struct SuaveParams {
         Diffraction* diff;
         double xpom;
@@ -220,6 +236,12 @@ std::complex<double> Diffraction::ScatteringAmplitude_tIntegrated(
         double rmax;
         bool factorize;
         Polarization pol;
+        // Derived once per integral instead of at every integrand evaluation
+        bool nrqcd;
+        double umin;
+        double umax;
+        double J;
+        long nonfinite; // number of integrand evaluations that returned NaN/inf
     };
     SuaveParams p{
         this,
@@ -233,13 +255,19 @@ std::complex<double> Diffraction::ScatteringAmplitude_tIntegrated(
         factorize_zint,
         pol
     };
+    p.nrqcd = wavef->WaveFunctionType() == "NRQCD";
+    p.umin = std::log(p.rmin);
+    p.umax = std::log(p.rmax);
+    // Overall Jacobian (theta_r, u, z (if not factorized))
+    p.J = 2.0*M_PI * (p.umax-p.umin) * (p.factorize ? 1.0 : (1.0 - 2.0*p.zmin));
+    p.nonfinite = 0;
     auto integrand = [](const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *ud)->int{
         SuaveParams* prm = static_cast<SuaveParams*>(ud);
         const double twoPi = 2.0*M_PI;
         const bool fact = prm->factorize;
 
 
-        const double umin = std::log(prm->rmin), umax = std::log(prm->rmax);
+        const double umin = prm->umin, umax = prm->umax;
         const double xr = x[0];
         const double xu = x[1];
         const double xz = fact ? 0.5 : x[2];
@@ -251,7 +279,7 @@ std::complex<double> Diffraction::ScatteringAmplitude_tIntegrated(
         // Common factors
         double scalar = r; // r from Jacobian (du->dr adds r)
         if (fact) {
-            if (prm->diff->wavef->WaveFunctionType() == "NRQCD") {
+            if (prm->nrqcd) {
                 double delta = 0.0; // t=0
                 if (prm->pol == T)
                     scalar *= ((NRQCD_WF*)prm->diff->wavef)->PsiSqr_T_intz(prm->Q2, r, delta, theta_r);
@@ -289,8 +317,13 @@ std::complex<double> Diffraction::ScatteringAmplitude_tIntegrated(
         std::complex<double> amp = prm->diff->dipole->ComplexAmplitude(prm->xpom, x1, x2);
         const double amp_r = amp.real();
         const double amp_i = amp.imag();
-        // Overall Jacobian (theta_r, u, z (if not factorized))
-        const double J = twoPi * (umax-umin) * (fact ? 1.0 : (1.0 - 2.0*prm->zmin));
+        if (!std::isfinite(amp_r) || !std::isfinite(amp_i) || !std::isfinite(scalar)) {
+            // Do not let a single bad point poison the Suave variance estimate
+            ++prm->nonfinite;
+            f[0] = 0.0; f[1] = 0.0;
+            return 0;
+        }
+        const double J = prm->J;
         // Jacobian pieces:
         //  theta_r: 2pi  (in J)
         //  u = ln r mapping: u = umin + (umax-umin)*xu gives width (umax-umin) in J and dr = r du adds extra r
@@ -314,14 +347,26 @@ std::complex<double> Diffraction::ScatteringAmplitude_tIntegrated(
     int nregions=0, neval=0, fail=0;
     double integral[2], error[2], prob[2];
     const int nvec = 1;
-    const double epsrel = MCINTACCURACY, epsabs = 0.0;
+    const double epsrel = MCINTACCURACY;
     const int flags = 0, seed = 0;
     const int mineval = mcintpoints/10; const int maxeval = mcintpoints;
-    const int nnew = mineval/20, nmin = 300; const double flatness = 1.0;
+    // Suave fails to allocate its regions if nnew < nmin (mcintpoints < 60000);
+    // it then still evaluates at least nmin points (main() rejects fewer)
+    const int nmin = 300; const int nnew = std::max(mineval/20, nmin); const double flatness = 1.0;
 
     Suave(ndim, ncomp, integrand, &p, nvec, epsrel, epsabs, flags, seed,
         mineval, maxeval, nnew, nmin, flatness,
         NULL, NULL, &nregions, &neval, &fail, integral, error, prob);
+    // fail != 0 alone only means that the relative accuracy goal was not
+    // reached within maxeval, which is the normal case here
+    if (p.nonfinite > 0 || !std::isfinite(integral[0]) || !std::isfinite(integral[1])) {
+        #pragma omp critical
+        cerr << "# ScatteringAmplitude_tIntegrated: Suave fail=" << fail << " b=" << b
+             << " theta_b=" << theta_b << " neval=" << neval << " nregions=" << nregions
+             << " nonfinite_evals=" << p.nonfinite
+             << " result=(" << integral[0] << " +- " << error[0] << ", "
+             << integral[1] << " +- " << error[1] << ")" << endl;
+    }
     return std::complex<double>(integral[0], integral[1]);
 }
 
@@ -342,6 +387,16 @@ Diffraction::TotalCrossSectionData Diffraction::ComputeTotalCrossSection(
     for (int it=0; it<ntheta; ++it)
         out.theta[it] = it * dtheta;
 
+    // With epsabs = 0, Suave uses all maxeval points also where the integrand is
+    // (practically) zero, at large b. Set an absolute accuracy goal relative to
+    // the amplitude at the smallest b, so that it stops early there; elsewhere
+    // the error stays far above it and the results are unchanged.
+    std::complex<double> F_ref = ScatteringAmplitude_tIntegrated(xpom, Qsqr, out.b[0], 0.0, T);
+    double scale = std::abs(F_ref);
+    if (Qsqr > 0)
+        scale = std::max(scale, std::abs(ScatteringAmplitude_tIntegrated(xpom, Qsqr, out.b[0], 0.0, L)));
+    const double epsabs = 1e-3 * MCINTACCURACY * scale;
+
     #pragma omp parallel for schedule(dynamic) collapse(2)
     for (int ib=0; ib<nbperp; ++ib) {
         for (int it=0; it<ntheta; ++it) {
@@ -349,11 +404,9 @@ Diffraction::TotalCrossSectionData Diffraction::ComputeTotalCrossSection(
             const double bval = out.b[ib];
             const double thetaval = out.theta[it];
             // T polarization (vector integration returns real & imag)
-            double int_modsq_T = 0.0;
-            out.F_T[idx] = ScatteringAmplitude_tIntegrated(xpom, Qsqr, bval, thetaval, T);
+            out.F_T[idx] = ScatteringAmplitude_tIntegrated(xpom, Qsqr, bval, thetaval, T, epsabs);
             if (Qsqr > 0) {
-                double int_modsq_L = 0.0;
-                out.F_L[idx] = ScatteringAmplitude_tIntegrated(xpom, Qsqr, bval, thetaval, L);
+                out.F_L[idx] = ScatteringAmplitude_tIntegrated(xpom, Qsqr, bval, thetaval, L, epsabs);
             }
         }
     }

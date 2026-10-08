@@ -7,6 +7,7 @@
 
 #include "ipglasma.hpp"
 #include <string>
+#include <cmath>
 #include <gsl/gsl_randist.h>
 #include <fstream>
 #include <sstream>
@@ -32,7 +33,8 @@ std::complex<double> IPGlasma::ComplexAmplitude(double xpom, double q1[2], doubl
     ApplyPeriodicBoundaryConditions(q1);
     ApplyPeriodicBoundaryConditions(q2);
     
-    // Out of grid? Return 0 (probably very large dipole)
+    // Out of grid? Only an error with periodic boundary conditions; otherwise
+    // GetWilsonLine() uses V = 1 outside the lattice
 
     if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
         or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
@@ -54,8 +56,8 @@ std::complex<double> IPGlasma::ComplexAmplitude(double xpom, double q1[2], doubl
 	
 		
     // First find corresponding grid indeces
-    WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
-    WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
+    const WilsonLine& quark = GetWilsonLine(q1[0], q1[1]);
+    const WilsonLine& antiquark = GetWilsonLine(q2[0], q2[1]);
     
     //antiquark = antiquark.HermitianConjugate();
 
@@ -96,19 +98,17 @@ const WilsonLine& IPGlasma::GetWilsonLine(double x, double y) const
     x=q[0];
     y=q[1];
 
-    std::vector<int> coords = LatticeCoordinates(x,y);
+    std::array<int, 2> coords = LatticeCoordinates(x,y);
 
-    // Handle edges
-    if (coords[0] < 0)
-        coords[0] = 0;
-    if (coords[0] >= xcoords.size())
-        coords[0] = xcoords.size()-1;
+    // Outside the lattice there is no target, V = 1 (using the Wilson lines at
+    // the edge instead would extend the field at the edge out to any distance)
+    if (coords[0] < 0 or coords[0] >= static_cast<int>(xcoords.size())
+        or coords[1] < 0 or coords[1] >= static_cast<int>(ycoords.size()))
+    {
+        static const WilsonLine identity = [] { WilsonLine w; w.InitializeAsIdentity(); return w; }();
+        return identity;
+    }
 
-    if (coords[1] < 0)
-        coords[1] = 0;
-    if (coords[1] >= ycoords.size())
-        coords[1] = ycoords.size()-1;
-    
     return GetWilsonLine( WilsonLineCoordinate(coords[0],coords[1]));
     
 }
@@ -194,7 +194,6 @@ int IPGlasma::LoadData(std::string fname, double step, WilsonLineDataFileType ty
         
         // Save Wilson line
         WilsonLine w(matrix);
-        w = w.Transpose();
         wilsonlines.push_back(w);
         
         if (w.Size() != 3)
@@ -236,19 +235,19 @@ int IPGlasma::LoadData(std::string fname, double step, WilsonLineDataFileType ty
     return 0;
 }
 
-std::vector<int> IPGlasma::LatticeCoordinates(double x, double y)
+std::array<int, 2> IPGlasma::LatticeCoordinates(double x, double y)
 {
-    std::vector<int> ret;
-
-    // Note: My lattice is from -L/2 to L/2, so I need to shift the coordinates
-    x = x + xcoords[xcoords.size()-1];
-    y = y + ycoords[ycoords.size()-1];
+    // Site i covers [xcoords[i], xcoords[i] + lattice_spacing). The lattice
+    // runs from xcoords[0] = -L/2 to xcoords[N-1] = L/2 - lattice_spacing,
+    // so shift by the first coordinate, not the last
+    x = x - xcoords[0];
+    y = y - ycoords[0];
     double lattice_spacing = xcoords[1]-xcoords[0];
 
-    int ix = x/lattice_spacing; 
-    int iy = y/lattice_spacing; 
+    int ix = std::floor(x/lattice_spacing);
+    int iy = std::floor(y/lattice_spacing);
 
-    return std::vector<int> {ix, iy}; 
+    return {ix, iy};
 }
 
 int IPGlasma::WilsonLineCoordinate(int  xind, int yind)
@@ -315,7 +314,7 @@ int IPGlasma::LoadBinaryData(std::string fname, double step)
                 int j=MatrixIndx/3;
                 int k=MatrixIndx-j*3;
                 
-                int indx = N*iy + ix;
+                int indx = N*ix + iy;
                 wilsonlines[indx].Set(j,k, std::complex<double> (re,im));
             }
             INPUT_CTR++;
@@ -399,19 +398,19 @@ std::vector<double> &IPGlasma::GetXCoordinates()
 }
 
 
-std::vector<int> IPGlasma::LatticeCoordinates(double x, double y) const
+std::array<int, 2> IPGlasma::LatticeCoordinates(double x, double y) const
 {
-    std::vector<int> ret;
-
-    // Note: My lattice is from -L/2 to L/2, so I need to shift the coordinates
-    x = x + xcoords[xcoords.size()-1];
-    y = y + ycoords[ycoords.size()-1];
+    // Site i covers [xcoords[i], xcoords[i] + lattice_spacing). The lattice
+    // runs from xcoords[0] = -L/2 to xcoords[N-1] = L/2 - lattice_spacing,
+    // so shift by the first coordinate, not the last
+    x = x - xcoords[0];
+    y = y - ycoords[0];
     double lattice_spacing = xcoords[1]-xcoords[0];
 
-    int ix = x/lattice_spacing; 
-    int iy = y/lattice_spacing; 
+    int ix = std::floor(x/lattice_spacing);
+    int iy = std::floor(y/lattice_spacing);
 
-    return std::vector<int> {ix, iy}; 
+    return {ix, iy};
 }
 
 int IPGlasma::WilsonLineCoordinate(int  xind, int yind) const

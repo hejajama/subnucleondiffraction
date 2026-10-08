@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <cmath>
 
 #include <gsl/gsl_rng.h>
 
@@ -69,7 +70,6 @@ int main(int argc, char* argv[])
     double maxr=99;    
     double Qsqr=0;
     double xbj=0; // x for F2
-    double t=0.1;
     int A=1;
     int he3_id=-1;   // Used to set He3 configuration
     double mint=0;
@@ -110,17 +110,18 @@ int main(int argc, char* argv[])
     {
         cout << "-Q2, -W, -xp: set kinematics" << endl;
         cout << "-dipole A [ipglasma,ipglasma_binary,ipsatproton,smoothnuke] [ipglasmafile ipglasmastep (fm), ipsat_proton_width ipsat_proton_quark_width] [fluxtube tube_normalization] [com]    com: move origin to Center of Mass (with constituent quark ipsat)" << endl;
-        cout << "-corrections: calculate correction R_g^2(1+\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
+        cout << "-corrections: calculate correction R_g^2(1+\\beta^2) as a function of t. Requires rot. sym. dipole amplitude." << endl;
         cout << "-mcintpoints points/auto" << endl;
         cout << "-skewedness: enable skewedness in dipole amplitude" << endl;
         cout << "-qsfluct sigma: set width of Q_s fluctuations (0: disable); only for ipsatproton!" << endl;
-        cout << "-qsfluctshape [local,quarks]: set Q_s^2 to fluctuate at each point / for each quark" << endl;
+        cout << "-qsfluctshape quarks: set Q_s^2 to fluctuate for each quark (the only shape implemented)" << endl;
         cout << "-satscale: print saturation scale" << endl;
         cout << "-F2 Qsqr x: calculate structure function" << endl;
         cout << "-wavef_file filename" << endl;
         cout << "-wavef gauslc/boostedgaussian/DVCS/NRQCD" << endl;
         cout << "-He3 [config_id], REQUIRES A=3!"<< endl;
-        cout << "-mint, -maxt, -tstep" << endl;
+        cout << "-mint, -maxt, -tstep: t grid from mint to maxt (inclusive) in steps of tstep" << endl;
+        cout << "-tlist t1,t2,...: compute these t values instead of the -mint/-maxt/-tstep grid" << endl;
         cout << "-maxb, -nbperp" << endl;
         cout << "-ntheta" << endl;
         cout << "-nrqcd_parameters A B" << endl;
@@ -373,9 +374,25 @@ int main(int argc, char* argv[])
         }
     }
 
+    // Suave starts with nmin = 300 points (see Diffraction), so a smaller
+    // budget could not be honored
+    if (!auto_mcintpoints and mcintpoints < 300)
+    {
+        cerr << "-mcintpoints must be at least 300, got " << mcintpoints << endl;
+        exit(1);
+    }
+
     if (tlist.size() == 0) {
-        for (double t = mint; t < maxt; t += tstep)
-            tlist.push_back(t);
+        if (tstep <= 0)
+        {
+            cerr << "-tstep must be positive, got " << tstep << endl;
+            exit(1);
+        }
+        // t = mint, mint+tstep, ..., maxt (included if it is on the grid);
+        // an integer index avoids the drift of adding up tstep
+        const int nt = static_cast<int>(std::floor((maxt - mint)/tstep + 1e-9)) + 1;
+        for (int i = 0; i < nt; i++)
+            tlist.push_back(mint + i*tstep);
     }
 
     // Initialize global random number generator
@@ -466,7 +483,8 @@ int main(int argc, char* argv[])
             double min = ((IPGlasma*)amp)->MinX();
             double step =((IPGlasma*)amp)->XStep();
             cout << "# Grid min " << min << " 1/GeV, max " << max << " 1/GeV, step " << step << " 1/GeV" << endl;
-            cout << "# 1/Nc(1-Tr[V(0)V(x,y)]) (re im)  1/Nc(1-Tr[V(x,y)V(x,y)])  1/Nc(Tr[1-V(x,y)])  " << endl;
+            cout << "# y [fm]  x [fm]  Re N(0,(x,y))  Im N(0,(x,y))  N((x,y),(x,y)) (always 0, the dipole is smaller than the lattice spacing)  1-Re Tr[V(x,y)]/Nc" << endl;
+            cout << "# with the dipole amplitude N(a,b) = 1 - Tr[V(a) V^dagger(b)]/Nc" << endl;
             for (double y=min+step/2; y < max-step/2; y+=step)
             {
                 for (double x=min+step/2; x < max-step/2; x+=step)
@@ -487,7 +505,7 @@ int main(int argc, char* argv[])
             double max = 25;
             double min = -25;
             double step = 0.1;
-            cout << "# x y N(0,(x,y)) T(b) " << endl;
+            cout << "# y [fm]  x [fm]  N(0,(x,y))  T(b) " << endl;
             for (double y=min+step/2; y < max-step/2; y+=step)
             {
                 for (double x=min+step/2; x < max-step/2; x+=step)
@@ -511,11 +529,6 @@ int main(int argc, char* argv[])
                 cout << endl;
             }
         }
-        
-         
-        
-         
-        return 0;
     }
     
     else if (mode == SATURATION_SCALE)
@@ -529,7 +542,6 @@ int main(int argc, char* argv[])
             }
             cout << endl;
         }
-        return 0;
     }
     
     else if (mode == AMPLITUDE_DT)
@@ -574,7 +586,8 @@ int main(int argc, char* argv[])
         if (xp < 0)
         {
             cout << "#  Q^2=" << Qsqr << ", W=" << w << endl;
-            xpom = (meson_mass*meson_mass+Qsqr+t_in_xpom*t)/(w*w+Qsqr-mp*mp);
+            // The amplitude is integrated over t, so evaluate xpom at t=0
+            xpom = (meson_mass*meson_mass+Qsqr)/(w*w+Qsqr-mp*mp);
         }
         else
         {
@@ -646,6 +659,8 @@ int main(int argc, char* argv[])
         Diffraction f2(*amp, *photon);
        	f2.SetMaxR(maxr*5.068);
         f2.SetFactorizeZInt(true);
+        // F2 is computed from the amplitude at t=0
+        f2.SetMCIntPoints(auto_mcintpoints ? MCpoints(0) : mcintpoints);
         cout << "#Maxr = " << f2.MaxR() << endl;
         // Use the fact that photon-proton cross section is just diffractive amplitude at t=0
         // Note* 4pi, as convention in BoostedGaussian and VirtualPhoton classes are different!!!
